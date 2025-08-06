@@ -156,3 +156,37 @@ def edit_implique(fiche_id):
 
     return render_template("edit_implique.html", fiche=fiche)
 
+
+@main_bp.route("/evenement/new", methods=["GET", "POST"])
+def create_evenement():
+    if "user_id" not in session:
+        return redirect(url_for("main.login"))
+
+    user = Utilisateur.query.get(session["user_id"])
+    if user.role != "codep":
+        flash("Accès réservé aux CODEP.")
+        return redirect(url_for("main.dashboard"))
+
+    if request.method == "POST":
+        try:
+            nom = request.form.get("nom")
+            description = request.form.get("description")
+
+            # Générer numéro événement
+            now = datetime.now()
+            departement = "038"
+            code = f"{departement}{now.strftime('%y%m')}{str(Evenement.query.count() + 1).zfill(2)}"
+
+            evt = Evenement(code=code, nom=nom, description=description)
+            db.session.add(evt)
+            db.session.commit()
+
+            flash(f"Événement créé avec le code {code}")
+            return redirect(url_for("main.dashboard"))
+        except Exception as e:
+            print("❌ Erreur création événement :", e)
+            flash("Erreur lors de la création de l’événement.")
+
+    return render_template("evenement_new.html")
+
+

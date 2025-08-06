@@ -120,9 +120,8 @@ def export():
     output.seek(0)
     return send_file(output, mimetype='text/csv', download_name='impliques.csv', as_attachment=True)
 
-@app.before_first_request
-def init_db():
-    db.create_all()
-
+# --- INIT DB ---
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True, host='0.0.0.0', port=5000)

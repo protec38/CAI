@@ -107,3 +107,28 @@ def dashboard():
 
     fiches = FicheImplique.query.filter_by(evenement_id=user.evenement.id).all()
     return render_template("dashboard.html", user=user, evenement=user.evenement, impliques=fiches)
+
+@main_bp.route("/fiche/new", methods=["GET", "POST"])
+@login_required
+def fiche_new():
+    user = get_current_user()
+    if not user or not user.evenement_id:
+        return redirect(url_for("main_bp.evenement_new"))
+
+    if request.method == "POST":
+        # Exemple de récupération de données du formulaire
+        nom = request.form.get("nom")
+        prenom = request.form.get("prenom")
+
+        from .models import FicheImplique
+        new_fiche = FicheImplique(
+            nom=nom,
+            prenom=prenom,
+            numero_fiche="AUTO"  # Génère correctement ton numéro ici
+        )
+        db.session.add(new_fiche)
+        db.session.commit()
+        return redirect(url_for("main_bp.dashboard"))
+
+    return render_template("fiche_new.html", user=user)
+

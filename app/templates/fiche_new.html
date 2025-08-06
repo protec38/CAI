@@ -1,28 +1,165 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Nouvelle Fiche Impliqué</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Nouvelle Fiche Impliqué</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f7f9fc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        .submit-btn {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1a242f;
+        }
+    </style>
 </head>
 <body>
-  <div class="login-container">
-    <h2>Créer une fiche impliqué</h2>
-    <form method="POST">
-      <label for="nom">Nom</label>
-      <input type="text" name="nom" required>
+    <div class="container">
+        <h1>Créer une Fiche Impliqué</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label for="numero_fiche">Numéro Fiche</label>
+                <input type="text" name="numero_fiche" required>
+            </div>
 
-      <label for="prenom">Prénom</label>
-      <input type="text" name="prenom" required>
+            <div class="form-group">
+                <label for="humain">Type</label>
+                <select name="humain">
+                    <option value="True">Humain</option>
+                    <option value="False">Matériel</option>
+                </select>
+            </div>
 
-      <label for="humain">
-        <input type="checkbox" name="humain" checked>
-        Humain ?
-      </label>
+            <div class="form-group">
+                <label for="nom">Nom</label>
+                <input type="text" name="nom">
+            </div>
 
-      <button type="submit" class="btn">Créer la fiche</button>
-    </form>
-    <a href="{{ url_for('main_bp.dashboard') }}">⬅ Retour au tableau de bord</a>
-  </div>
+            <div class="form-group">
+                <label for="prenom">Prénom</label>
+                <input type="text" name="prenom">
+            </div>
+
+            <div class="form-group">
+                <label for="date_naissance">Date de naissance</label>
+                <input type="date" name="date_naissance">
+            </div>
+
+            <div class="form-group">
+                <label for="nationalite">Nationalité</label>
+                <input type="text" name="nationalite">
+            </div>
+
+            <div class="form-group-full">
+                <label for="adresse">Adresse</label>
+                <input type="text" name="adresse">
+            </div>
+
+            <div class="form-group">
+                <label for="telephone">Téléphone</label>
+                <input type="text" name="telephone">
+            </div>
+
+            <div class="form-group">
+                <label for="personne_a_prevenir">Personne à prévenir</label>
+                <input type="text" name="personne_a_prevenir">
+            </div>
+
+            <div class="form-group">
+                <label for="tel_personne_a_prevenir">Téléphone à prévenir</label>
+                <input type="text" name="tel_personne_a_prevenir">
+            </div>
+
+            <div class="form-group">
+                <label for="recherche_personne">Recherche de personne</label>
+                <textarea name="recherche_personne" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="difficulte">Difficultés</label>
+                <textarea name="difficulte" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="competences">Compétences</label>
+                <textarea name="competences" rows="2"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="effets_perso">Effets personnels</label>
+                <input type="text" name="effets_perso">
+            </div>
+
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <input type="text" name="destination">
+            </div>
+
+            <div class="form-group">
+                <label for="moyen_transport">Moyen de transport</label>
+                <input type="text" name="moyen_transport">
+            </div>
+
+            <div class="submit-btn">
+                <button type="submit">Enregistrer la fiche</button>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

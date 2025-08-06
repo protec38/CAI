@@ -2,61 +2,117 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Créer un événement</title>
+    <title>Choisir ou Créer un Événement</title>
     <style>
         body {
             background: linear-gradient(to right, #002f6c, #ff6f00);
-            color: white;
             font-family: Arial, sans-serif;
-            padding: 20px;
+            color: white;
+            margin: 0;
+            padding: 0;
         }
 
         .container {
-            max-width: 600px;
-            margin: auto;
+            max-width: 700px;
+            margin: 60px auto;
             background: white;
             color: black;
-            padding: 20px;
             border-radius: 10px;
-        }
-
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            background-color: #002f6c;
-            color: white;
-            border: none;
-            font-weight: bold;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
         }
 
         h2 {
             text-align: center;
             color: #002f6c;
         }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #002f6c;
+            color: white;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #001f4c;
+        }
+
+        .section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+
+        .flash {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Créer un événement</h2>
+        <h2>Rejoindre un Événement</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
         <form method="POST">
-            <label>Nom de l’événement :</label>
-            <input type="text" name="nom" required>
-
-            <label>Type :</label>
-            <select name="type">
-                <option value="CHU">CHU</option>
-                <option value="CAI">CAI</option>
-                <option value="PRV">PRV</option>
+            <label for="evenement_id">Sélectionnez un événement existant :</label>
+            <select name="evenement_id" id="evenement_id" required>
+                <option value="" disabled selected>-- Choisissez --</option>
+                {% for evt in evenements %}
+                    <option value="{{ evt.id }}">{{ evt.numero }} - {{ evt.nom }}</option>
+                {% endfor %}
             </select>
-
-            <button type="submit">Créer</button>
+            <button type="submit">Entrer dans l’événement</button>
         </form>
+
+        {% if user.is_admin or user.role == 'codep' %}
+        <div class="section">
+            <h2>Créer un nouvel Événement</h2>
+            <form method="POST">
+                <label for="nom">Nom de l’événement :</label>
+                <input type="text" name="nom" required>
+
+                <label for="type">Type :</label>
+                <select name="type">
+                    <option value="CAI">CAI</option>
+                    <option value="CHU">CHU</option>
+                    <option value="PRV">PRV</option>
+                </select>
+
+                <input type="hidden" name="create_evt" value="1">
+                <button type="submit">Créer l’événement</button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>

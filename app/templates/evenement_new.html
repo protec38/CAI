@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Créer un événement</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="form-container">
+    <h2>Créer un nouvel événement</h2>
+
+    <form method="POST">
+      <label for="nom">Nom de l’événement</label>
+      <input type="text" name="nom" required>
+
+      <label for="description">Description</label>
+      <textarea name="description" rows="4"></textarea>
+
+      <button type="submit">Créer</button>
+    </form>
+
+    <a href="{{ url_for('main.dashboard') }}">⬅ Retour</a>
+  </div>
+</body>
+</html>

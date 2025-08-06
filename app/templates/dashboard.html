@@ -6,58 +6,63 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="dashboard-container">
-    <h1>Tableau de bord - Centre d'Accueil</h1>
+  <div class="container">
+    <h2>Tableau de bord</h2>
 
-    <div class="counters">
-      <p><strong>Total impliqués :</strong> {{ total }}</p>
-      <p><strong>Humains :</strong> {{ humains }}</p>
-      <p><strong>Animaux :</strong> {{ animaux }}</p>
-      <p><strong>Sortis :</strong> {{ sortis }}</p>
+    <div class="stats">
+      <div class="stat-box">
+        <h3>Total</h3>
+        <p>{{ total }}</p>
+      </div>
+      <div class="stat-box orange">
+        <h3>Humains</h3>
+        <p>{{ humains }}</p>
+      </div>
+      <div class="stat-box">
+        <h3>Animaux</h3>
+        <p>{{ animaux }}</p>
+      </div>
+      <div class="stat-box orange">
+        <h3>Sorties</h3>
+        <p>{{ sortis }}</p>
+      </div>
     </div>
 
-    <div class="actions">
-      <a class="button" href="{{ url_for('main.create_implique') }}">➕ Créer une fiche impliqué</a>
-      <a class="button" href="{{ url_for('main.logout') }}">🔒 Déconnexion</a>
-      {% if user and user.role == "codep" %}
-        <a class="button" href="{{ url_for('main.create_evenement') }}">📋 Créer un événement</a>
-      {% endif %}
-    </div>
+    <a href="{{ url_for('main.create_implique') }}">
+      <button>Créer une fiche impliqué</button>
+    </a>
 
-    <table>
+    <table border="0" cellpadding="10" cellspacing="0" style="width:100%; margin-top: 30px;">
       <thead>
-        <tr>
-          <th>N°</th>
+        <tr style="background-color:#014c8c; color:white;">
+          <th>#</th>
           <th>Nom</th>
           <th>Prénom</th>
-          <th>Nationalité</th>
-          <th>Entrée</th>
-          <th>Sortie</th>
+          <th>Type</th>
+          <th>Date entrée</th>
+          <th>Date sortie</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for f in impliques %}
-        <tr>
-          <td>{{ f.numero_fiche }}</td>
-          <td>{{ f.nom }}</td>
-          <td>{{ f.prenom }}</td>
-          <td>{{ f.nationalite }}</td>
-          <td>{{ f.date_entree.strftime('%Y-%m-%d %H:%M') }}</td>
+        {% for fiche in impliques %}
+        <tr style="background-color: {{ 'white' if loop.index0 % 2 == 0 else '#f7f7f7' }}">
+          <td>{{ fiche.numero_fiche }}</td>
+          <td>{{ fiche.nom }}</td>
+          <td>{{ fiche.prenom }}</td>
+          <td>{{ 'Humain' if fiche.humain else 'Animal' }}</td>
+          <td>{{ fiche.date_entree.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>{% if fiche.date_sortie %}{{ fiche.date_sortie.strftime('%Y-%m-%d %H:%M') }}{% else %}-{% endif %}</td>
           <td>
-            {% if f.date_sortie %}
-              {{ f.date_sortie.strftime('%Y-%m-%d %H:%M') }}
-            {% else %}
-              <a href="{{ url_for('main.signaler_sortie', fiche_id=f.id) }}">Signaler une sortie</a>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{{ url_for('main.edit_implique', fiche_id=f.id) }}">✏️ Modifier</a>
+            <a href="{{ url_for('main.edit_implique', fiche_id=fiche.id) }}">Modifier</a> |
+            <a href="{{ url_for('main.signaler_sortie', fiche_id=fiche.id) }}">Sortie</a>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+
+    <a href="{{ url_for('main.logout') }}">Déconnexion</a>
   </div>
 </body>
 </html>

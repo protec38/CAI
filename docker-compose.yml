@@ -1,0 +1,15 @@
+version: '3'
+services:
+  cai:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=supersecret
+      - ENTREE_USER=entree
+      - ENTREE_PASS=entreepass
+      - SORTIE_USER=sortie
+      - SORTIE_PASS=sortiepass
+    volumes:
+      - .:/app
+    restart: unless-stopped

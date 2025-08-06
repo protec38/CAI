@@ -107,6 +107,8 @@ def dashboard():
     return render_template("dashboard.html", user=user, evenement=evenement, impliques=fiches)
 
 # ➕ Création fiche impliqué
+from datetime import datetime
+
 @main_bp.route("/fiche/new", methods=["GET", "POST"])
 @login_required
 def fiche_new():
@@ -116,18 +118,26 @@ def fiche_new():
         flash("Aucun événement sélectionné.", "error")
         return redirect(url_for("main_bp.evenement_new"))
 
-    # ✅ Calculer le numéro à afficher
     last_fiche = FicheImplique.query.order_by(FicheImplique.id.desc()).first()
     next_id = 1 if not last_fiche else last_fiche.id + 1
     numero_fiche = f"{next_id:04d}"
 
     if request.method == "POST":
+        # 🛠️ Convertir les dates si présentes
+        try:
+            date_naissance = datetime.strptime(request.form.get("date_naissance"), "%Y-%m-%d").date() if request.form.get("date_naissance") else None
+            date_sortie = datetime.strptime(request.form.get("date_sortie"), "%Y-%m-%d").date() if request.form.get("date_sortie") else None
+            date_entree = datetime.now().date()
+        except ValueError:
+            flash("Erreur de format de date.", "error")
+            return redirect(url_for("main_bp.fiche_new"))
+
         fiche = FicheImplique(
             numero_fiche=numero_fiche,
             humain=request.form.get("humain") == "on",
             nom=request.form.get("nom"),
             prenom=request.form.get("prenom"),
-            date_naissance=request.form.get("date_naissance"),
+            date_naissance=date_naissance,
             nationalite=request.form.get("nationalite"),
             adresse=request.form.get("adresse"),
             telephone=request.form.get("telephone"),
@@ -139,7 +149,8 @@ def fiche_new():
             effets_perso=request.form.get("effets_perso"),
             nom_createur=user.nom,
             prenom_createur=user.prenom,
-            date_sortie=request.form.get("date_sortie") or None,
+            date_entree=date_entree,
+            date_sortie=date_sortie,
             destination=request.form.get("destination"),
             moyen_transport=request.form.get("moyen_transport"),
             createur_id=user.id,
@@ -151,6 +162,6 @@ def fiche_new():
         flash("Fiche impliqué créée avec succès.", "success")
         return redirect(url_for("main_bp.dashboard"))
 
-    # 👉 Affiche le formulaire avec le champ prérempli
     return render_template("fiche_new.html", user=user, numero_fiche=numero_fiche)
+
 

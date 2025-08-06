@@ -1,57 +1,98 @@
-<!-- app/templates/dashboard.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Tableau de bord - {{ event.nom }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Tableau de bord</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #002f6c, #ff6f00);
+            color: #fff;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #ffcc00;
+        }
+
+        .btn {
+            background-color: #ffcc00;
+            color: #000;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+        }
+
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .top-actions {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
-<body class="dashboard-page">
-    <div class="container">
-        <h1>Tableau de bord</h1>
-        <h2>Événement : {{ event.nom }} ({{ event.numero }})</h2>
-
-        <div class="stats">
-            <p><strong>Nombre total de fiches :</strong> {{ fiches|length }}</p>
-            <p><strong>Humains présents :</strong> {{ humains|length }}</p>
-            <p><strong>Animaux présents :</strong> {{ animaux|length }}</p>
-            <p><strong>Personnes sorties :</strong> {{ sortis|length }}</p>
-            <p><strong>Personnes présentes :</strong> {{ present|length }}</p>
-        </div>
-
-        <div class="actions">
-            <a href="{{ url_for('main.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
-            {% if session.user_id %}
-                <a href="{{ url_for('main.admin_users') }}" class="btn">Admin - Gérer les utilisateurs</a>
+<body>
+    <div class="header">
+        <h1>Tableau de bord – Événement : {{ evenement.nom }}</h1>
+        <div>
+            {% if user.is_admin or user.role == 'codep' %}
+                <a class="btn" href="{{ url_for('main_bp.evenement_new') }}">Créer un événement</a>
             {% endif %}
-            <a href="{{ url_for('main.logout') }}" class="btn btn-secondary">Déconnexion</a>
+            <a class="btn" href="{{ url_for('main_bp.fiche_new') }}">Créer une fiche impliqué</a>
+            <a class="btn" href="{{ url_for('main_bp.login') }}">Déconnexion</a>
         </div>
-
-        <h3>Liste des fiches</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Numéro</th>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Présent</th>
-                    <th>Date entrée</th>
-                    <th>Date sortie</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for f in fiches %}
-                <tr>
-                    <td>{{ f.numero_fiche }}</td>
-                    <td>{{ f.nom }}</td>
-                    <td>{{ f.prenom }}</td>
-                    <td>{% if not f.date_sortie %}✅{% else %}❌{% endif %}</td>
-                    <td>{{ f.date_entree.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td>{% if f.date_sortie %}{{ f.date_sortie.strftime('%d/%m/%Y %H:%M') }}{% else %}-{% endif %}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
     </div>
+
+    <h2>Liste des personnes impliquées</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Numéro</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Date naissance</th>
+                <th>Nationalité</th>
+                <th>Date entrée</th>
+                <th>Sortie</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fiche in impliques %}
+            <tr>
+                <td>{{ fiche.numero_fiche }}</td>
+                <td>{{ fiche.nom }}</td>
+                <td>{{ fiche.prenom }}</td>
+                <td>{{ fiche.date_naissance }}</td>
+                <td>{{ fiche.nationalite }}</td>
+                <td>{{ fiche.date_entree }}</td>
+                <td>
+                    {% if fiche.date_sortie %}
+                        Oui ({{ fiche.date_sortie }})
+                    {% else %}
+                        Non
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

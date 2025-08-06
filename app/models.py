@@ -4,6 +4,7 @@ from datetime import datetime
 
 class Evenement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    numero = db.Column(db.String(10), unique=True)  # généré automatiquement
     nom = db.Column(db.String(100), nullable=False)
     type = db.Column(db.String(10), default="CAI")
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)

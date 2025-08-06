@@ -57,9 +57,18 @@ def evenement_new():
             nom = request.form["nom"]
             type_evt = request.form["type_evt"]
 
-            nouvel_evt = Evenement(nom=nom, type=type_evt)
-            db.session.add(nouvel_evt)
-            db.session.commit()
+
+    # ➕ Génération automatique du numéro
+    last_evt = Evenement.query.order_by(Evenement.id.desc()).first()
+    if last_evt and last_evt.numero and last_evt.numero.isdigit():
+        last_num = int(last_evt.numero)
+    else:
+        last_num = 0
+    new_numero = str(last_num + 1).zfill(5)  # Format 00001, 00002, etc.
+
+    nouvel_evt = Evenement(nom=nom, type=type_evt, numero=new_numero)
+    db.session.add(nouvel_evt)
+    db.session.commit()
 
             # Associe tous les admin et codep à ce nouvel événement
             users = Utilisateur.query.filter(

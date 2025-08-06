@@ -1,31 +1,36 @@
-# app/models.py
-
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+
+# Table d'association utilisateur <-> evenement
+association_table = db.Table('utilisateur_evenement',
+    db.Column('utilisateur_id', db.Integer, db.ForeignKey('utilisateur.id')),
+    db.Column('evenement_id', db.Integer, db.ForeignKey('evenement.id'))
+)
 
 class Evenement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero = db.Column(db.String(20), unique=True, nullable=False)
     nom = db.Column(db.String(100), nullable=False)
-    type = db.Column(db.String(10), default="CAI")  # CAI / CHU / PRV
+    type = db.Column(db.String(10), default="CAI")
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
-    utilisateurs = db.relationship("Utilisateur", back_populates="evenement", cascade="all, delete")
-    impliques = db.relationship("FicheImplique", back_populates="evenement", cascade="all, delete")
+    
+    utilisateurs = db.relationship("Utilisateur", secondary=association_table, back_populates="evenements")
+    impliques = db.relationship("FicheImplique", back_populates="evenement")
 
 class Utilisateur(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nom_utilisateur = db.Column(db.String(50), unique=True, nullable=False)
     mot_de_passe_hash = db.Column(db.String(128), nullable=False)
-    type_utilisateur = db.Column(db.String(20), nullable=False)  # interne / externe
-    niveau = db.Column(db.String(20))  # encadrant / technicien
-    role = db.Column(db.String(30))    # codep / responsable / bagagerie / autorité / etc.
+    type_utilisateur = db.Column(db.String(20), nullable=False)
+    niveau = db.Column(db.String(20))
+    role = db.Column(db.String(30))
     nom = db.Column(db.String(100))
     prenom = db.Column(db.String(100))
     is_admin = db.Column(db.Boolean, default=False)
     actif = db.Column(db.Boolean, default=True)
-    evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'))
-    evenement = db.relationship("Evenement", back_populates="utilisateurs")
+    
+    evenements = db.relationship("Evenement", secondary=association_table, back_populates="utilisateurs")
 
     def set_password(self, mot_de_passe):
         self.mot_de_passe_hash = generate_password_hash(mot_de_passe)
@@ -57,5 +62,4 @@ class FicheImplique(db.Model):
     moyen_transport = db.Column(db.String(100))
     createur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'))
     evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'))
-
     evenement = db.relationship("Evenement", back_populates="impliques")

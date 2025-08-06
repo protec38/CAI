@@ -28,6 +28,8 @@ def create_app():
 def create_default_users(app):
     from .models import Utilisateur
     with app.app_context():
+        db.create_all()  # 👉 Crée les tables si elles n'existent pas
+
         default_users = [
             ("codep", "codep", "encadrant", "codep"),
             ("responsable", "responsable", "encadrant", "responsable"),
@@ -53,3 +55,4 @@ def create_default_users(app):
                 db.session.add(user)
                 print(f"✅ Utilisateur '{username}' créé avec mot de passe : azerty")
         db.session.commit()
+

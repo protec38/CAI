@@ -1,0 +1,41 @@
+<!-- app/templates/evenement_new.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Événements - CAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="event-page">
+    <div class="container">
+        <h1>Sélection ou création d’un événement</h1>
+
+        <h2>Créer un événement</h2>
+        <form method="post">
+            <input type="hidden" name="create_event" value="1">
+            <label for="nom">Nom de l’événement</label>
+            <input type="text" name="nom" id="nom" required>
+
+            <label for="type">Type</label>
+            <select name="type" id="type">
+                <option value="CAI">CAI</option>
+                <option value="CHU">CHU</option>
+                <option value="PRV">PRV</option>
+            </select>
+
+            <button type="submit">Créer</button>
+        </form>
+
+        <h2>Événements existants</h2>
+        <form method="post">
+            <label for="select">Choisir un événement :</label>
+            <select name="select" id="select" required>
+                {% for evt in events %}
+                    <option value="{{ evt.id }}">{{ evt.numero }} - {{ evt.nom }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Entrer</button>
+        </form>
+    </div>
+</body>
+</html>

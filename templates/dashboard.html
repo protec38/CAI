@@ -21,7 +21,6 @@
 </head>
 <body>
   <h2>Tableau de bord - Centre d’Accueil des Impliqués</h2>
-
   <div class="topbar">
     <div>
       {% if session.user == 'entree' %}
@@ -33,7 +32,6 @@
       <a href="/logout">🔒 Déconnexion</a>
     </div>
   </div>
-
   <table>
     <thead>
       <tr>
@@ -47,8 +45,8 @@
         <th>Animaux</th>
         <th>Effets perso</th>
         <th>Autres</th>
-        <th>Heure d'entrée</th>
-        <th>Heure de sortie</th>
+        <th>Entrée</th>
+        <th>Sortie</th>
         <th>Statut</th>
         {% if session.user == 'sortie' %}<th>Action</th>{% endif %}
       </tr>

@@ -2,21 +2,14 @@ from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-# Table d'association utilisateur <-> evenement
-association_table = db.Table('utilisateur_evenement',
-    db.Column('utilisateur_id', db.Integer, db.ForeignKey('utilisateur.id')),
-    db.Column('evenement_id', db.Integer, db.ForeignKey('evenement.id'))
-)
-
 class Evenement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero = db.Column(db.String(20), unique=True, nullable=False)
     nom = db.Column(db.String(100), nullable=False)
     type = db.Column(db.String(10), default="CAI")
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    utilisateurs = db.relationship("Utilisateur", secondary=association_table, back_populates="evenements")
-    impliques = db.relationship("FicheImplique", back_populates="evenement")
+    utilisateurs = db.relationship("Utilisateur", back_populates="evenement", lazy=True)
+    impliques = db.relationship("FicheImplique", back_populates="evenement", lazy=True)
 
 class Utilisateur(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,10 +20,10 @@ class Utilisateur(db.Model):
     role = db.Column(db.String(30))
     nom = db.Column(db.String(100))
     prenom = db.Column(db.String(100))
+    evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'))
+    evenement = db.relationship("Evenement", back_populates="utilisateurs")
     is_admin = db.Column(db.Boolean, default=False)
     actif = db.Column(db.Boolean, default=True)
-    
-    evenements = db.relationship("Evenement", secondary=association_table, back_populates="utilisateurs")
 
     def set_password(self, mot_de_passe):
         self.mot_de_passe_hash = generate_password_hash(mot_de_passe)

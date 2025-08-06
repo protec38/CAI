@@ -8,10 +8,11 @@ services:
       - SECRET_KEY=fvszfgggzepgkôgz
       - ENTREE_USER=entree
       - ENTREE_PASS=test
-      - SORTIE_USER=sortit
+      - SORTIE_USER=sortie
       - SORTIE_PASS=test
     volumes:
       - .:/app
     restart: unless-stopped
+
 
 

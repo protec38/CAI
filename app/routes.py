@@ -57,7 +57,7 @@ def evenement_new():
             nom = request.form["nom"]
             type_evt = request.form["type_evt"]
 
-            nouvel_evt = Evenement(numero=numero, nom=nom, type=type_evt)
+            nouvel_evt = Evenement(nom=nom, type=type_evt)
             db.session.add(nouvel_evt)
             db.session.commit()
 

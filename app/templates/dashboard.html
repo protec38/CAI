@@ -10,15 +10,15 @@
     <h1>Tableau de bord</h1>
 
     <div class="counters">
-      <p>Total impliqués : {{ total }}</p>
-      <p>Humains : {{ humains }}</p>
-      <p>Animaux : {{ animaux }}</p>
-      <p>Sortis : {{ sortis }}</p>
+      <p><strong>Total impliqués :</strong> {{ total }}</p>
+      <p><strong>Humains :</strong> {{ humains }}</p>
+      <p><strong>Animaux :</strong> {{ animaux }}</p>
+      <p><strong>Sortis :</strong> {{ sortis }}</p>
     </div>
 
     <div class="actions">
-      <a href="{{ url_for('main.create_implique') }}">Créer une fiche impliqué</a>
-      <a href="{{ url_for('main.logout') }}">Déconnexion</a>
+      <a href="{{ url_for('main.create_implique') }}">➕ Créer une fiche impliqué</a>
+      <a href="{{ url_for('main.logout') }}">🔒 Déconnexion</a>
     </div>
 
     <table>
@@ -44,7 +44,7 @@
             {% if f.date_sortie %}
               {{ f.date_sortie.strftime('%Y-%m-%d %H:%M') }}
             {% else %}
-              -
+              <a href="{{ url_for('main.signaler_sortie', fiche_id=f.id) }}">Signaler une sortie</a>
             {% endif %}
           </td>
         </tr>

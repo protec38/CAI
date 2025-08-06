@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Nouvelle Fiche Impliqué</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="login-container">
+    <h2>Créer une fiche impliqué</h2>
+    <form method="POST">
+      <label for="nom">Nom</label>
+      <input type="text" name="nom" required>
+
+      <label for="prenom">Prénom</label>
+      <input type="text" name="prenom" required>
+
+      <label for="humain">
+        <input type="checkbox" name="humain" checked>
+        Humain ?
+      </label>
+
+      <button type="submit" class="btn">Créer la fiche</button>
+    </form>
+    <a href="{{ url_for('main_bp.dashboard') }}">⬅ Retour au tableau de bord</a>
+  </div>
+</body>
+</html>

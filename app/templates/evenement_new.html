@@ -1,41 +1,93 @@
-<!-- app/templates/evenement_new.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Événements - CAI</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Créer un Événement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #002f6c, #ff6f00);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 25px;
+            width: 100%;
+            padding: 10px;
+            background-color: #ffcc00;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #ffaa00;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body class="event-page">
+<body>
     <div class="container">
-        <h1>Sélection ou création d’un événement</h1>
+        <h2>Créer un Événement</h2>
+        <form method="POST">
+            <label for="nom">Nom de l'événement :</label>
+            <input type="text" id="nom" name="nom" required placeholder="ex: CAI Gymnase Paris">
 
-        <h2>Créer un événement</h2>
-        <form method="post">
-            <input type="hidden" name="create_event" value="1">
-            <label for="nom">Nom de l’événement</label>
-            <input type="text" name="nom" id="nom" required>
-
-            <label for="type">Type</label>
-            <select name="type" id="type">
+            <label for="type">Type :</label>
+            <select id="type" name="type">
                 <option value="CAI">CAI</option>
                 <option value="CHU">CHU</option>
-                <option value="PRV">PRV</option>
             </select>
 
-            <button type="submit">Créer</button>
+            <button type="submit">Créer l'événement</button>
         </form>
 
-        <h2>Événements existants</h2>
-        <form method="post">
-            <label for="select">Choisir un événement :</label>
-            <select name="select" id="select" required>
-                {% for evt in events %}
-                    <option value="{{ evt.id }}">{{ evt.numero }} - {{ evt.nom }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Entrer</button>
-        </form>
+        <div class="back-link">
+            <a href="{{ url_for('main_bp.select_role') }}">← Retour</a>
+        </div>
     </div>
 </body>
 </html>

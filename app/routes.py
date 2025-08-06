@@ -41,36 +41,42 @@ def logout():
 
 @main_bp.route("/evenement/new", methods=["GET", "POST"])
 def evenement_new():
-    user = current_user()
-    if not user or not (user.is_admin or user.role == "codep"):
-        flash("Accès refusé", "error")
+    if "user_id" not in session:
         return redirect(url_for("main_bp.login"))
+
+    user = Utilisateur.query.get(session["user_id"])
 
     if request.method == "POST":
         nom = request.form["nom"]
         type_evt = request.form["type_evt"]
-        date_str = datetime.utcnow().strftime("%y%m%d")
-        count = Evenement.query.count() + 1
-        numero = f"038{date_str}{count:02d}"
 
-        new_evt = Evenement(nom=nom, type=type_evt, numero=numero)
-        db.session.add(new_evt)
+        if not (user.is_admin or user.role == "codep"):
+            flash("Vous n’avez pas l’autorisation de créer un événement.", "danger")
+            return redirect(url_for("main_bp.evenement_new"))
+
+        # Générer automatiquement un numéro unique basé sur la date
+        from datetime import datetime
+        base = "038" + datetime.utcnow().strftime("%y%m%d")
+        chrono = 1
+        while True:
+            numero = f"{base}{chrono:02d}"
+            if not Evenement.query.filter_by(numero=numero).first():
+                break
+            chrono += 1
+
+        evt = Evenement(numero=numero, nom=nom, type=type_evt)
+        db.session.add(evt)
         db.session.commit()
 
-        # Associer automatiquement tous les CODEP et ADMIN
-        utilisateurs = Utilisateur.query.all()
-        for u in utilisateurs:
-            if u.is_admin or u.role == "codep":
-                u.evenements.append(new_evt)
-        # Associer aussi l'utilisateur courant
-        if user not in new_evt.utilisateurs:
-            user.evenements.append(new_evt)
-
+        # Associer l'utilisateur admin/codep à l'événement
+        user.evenement_id = evt.id
         db.session.commit()
-        session["evenement_id"] = new_evt.id
+
         return redirect(url_for("main_bp.dashboard"))
 
-    return render_template("evenement_new.html", user=user)
+    evenements = Evenement.query.all()
+    return render_template("evenement_new.html", user=user, evenements=evenements)
+
 
 
 @main_bp.route("/evenement/choisir", methods=["GET", "POST"])

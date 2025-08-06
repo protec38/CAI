@@ -104,3 +104,23 @@ def dashboard():
     fiches = FicheImplique.query.filter_by(evenement_id=evt_id).all()
 
     return render_template("dashboard.html", user=user, evenement=evenement, impliques=fiches)
+
+# Route pour sélectionner un événement existant
+@main_bp.route("/evenement/select", methods=["POST"])
+@login_required
+def select_evenement():
+    user = get_user()
+    evenement_id = request.form.get("evenement_id")
+
+    if evenement_id:
+        from .models import Evenement
+        evenement = Evenement.query.get(int(evenement_id))
+        if evenement:
+            # Lier l'utilisateur à cet événement si ce n'est pas déjà fait
+            user.evenement = evenement
+            db.session.commit()
+            return redirect(url_for("main_bp.dashboard"))
+    
+    flash("Erreur lors de la sélection de l’évènement.", "danger")
+    return redirect(url_for("main_bp.evenement_new"))
+

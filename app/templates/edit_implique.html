@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Modifier fiche impliqué</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="form-container">
+    <h2>Modifier la fiche n°{{ fiche.numero_fiche }}</h2>
+
+    <form method="POST">
+      <label>Nom :</label>
+      <input type="text" name="nom" value="{{ fiche.nom }}" required>
+
+      <label>Prénom :</label>
+      <input type="text" name="prenom" value="{{ fiche.prenom }}" required>
+
+      <label>Date de naissance :</label>
+      <input type="date" name="date_naissance" value="{{ fiche.date_naissance }}">
+
+      <label>Nationalité :</label>
+      <input type="text" name="nationalite" value="{{ fiche.nationalite }}">
+
+      <label>Adresse :</label>
+      <input type="text" name="adresse" value="{{ fiche.adresse }}">
+
+      <label>Téléphone :</label>
+      <input type="text" name="telephone" value="{{ fiche.telephone }}">
+
+      <label>Personne à prévenir :</label>
+      <input type="text" name="personne_a_prevenir" value="{{ fiche.personne_a_prevenir }}">
+
+      <label>Téléphone personne à prévenir :</label>
+      <input type="text" name="tel_personne_a_prevenir" value="{{ fiche.tel_personne_a_prevenir }}">
+
+      <label>Recherche de personne :</label>
+      <input type="text" name="recherche_personne" value="{{ fiche.recherche_personne }}">
+
+      <label>Difficultés :</label>
+      <input type="text" name="difficulte" value="{{ fiche.difficulte }}">
+
+      <label>Compétences :</label>
+      <input type="text" name="competences" value="{{ fiche.competences }}">
+
+      <label>Effets personnels :</label>
+      <input type="text" name="effets_perso" value="{{ fiche.effets_perso }}">
+
+      <button type="submit">Enregistrer</button>
+    </form>
+
+    <a href="{{ url_for('main.dashboard') }}">⬅ Retour</a>
+  </div>
+</body>
+</html>

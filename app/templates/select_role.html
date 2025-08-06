@@ -2,24 +2,31 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Choix du rôle</title>
+  <title>Sélection du rôle</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="role-container">
-    <h2>Sélectionnez votre rôle</h2>
-    <form action="/dashboard" method="GET">
-      <select name="role" required>
-        <option value="">-- Choisissez un rôle --</option>
-        <option value="entree_sortie">Entrée / Sortie</option>
-        <option value="responsable">Responsable de centre</option>
-        <option value="codep">CODEP</option>
-        <option value="bagagerie">Bagagerie</option>
-        <option value="secouriste">Secouriste</option>
-        <option value="autorite">Autorités</option>
+  <div class="container">
+    <h2>Bienvenue {{ user.nom }} {{ user.prenom }}</h2>
+    <form method="POST">
+      <label>Choisir un événement :</label>
+      <select name="evenement_id" required>
+        {% for evt in evenements %}
+          <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
+        {% endfor %}
       </select>
-      <button type="submit">Valider</button>
+
+      <label>Choisir votre rôle :</label>
+      <select name="role" required>
+        {% for role in roles %}
+          <option value="{{ role }}">{{ role | capitalize }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit">Continuer</button>
     </form>
+
+    <a href="{{ url_for('main.logout') }}">Déconnexion</a>
   </div>
 </body>
 </html>

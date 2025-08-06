@@ -54,7 +54,6 @@ def evenement_new():
 
     if request.method == "POST":
         if "create_event" in request.form:
-            numero = request.form["numero"]
             nom = request.form["nom"]
             type_evt = request.form["type_evt"]
 

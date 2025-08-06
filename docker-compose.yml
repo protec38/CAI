@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   cai:
     build: .
@@ -10,8 +11,14 @@ services:
       - ENTREE_PASS=test
       - SORTIE_USER=sortie
       - SORTIE_PASS=test
-      - WEBHOOK_URL=https://cai.apc38.app
     volumes:
-      - .:/app
+      - cai_data:/app/cai_data
+    command: >
+      sh -c "mkdir -p cai_data &&
+             [ -f cai_data/cai.db ] || touch cai_data/cai.db &&
+             ln -sf cai_data/cai.db cai.db &&
+             python app.py"
     restart: unless-stopped
 
+volumes:
+  cai_data:

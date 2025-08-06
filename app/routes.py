@@ -36,30 +36,11 @@ def login():
         user = Utilisateur.query.filter_by(nom_utilisateur=username).first()
         if user and user.check_password(password):
             session["user_id"] = user.id
-            return redirect(url_for("main_bp.select_role"))
+            session["evenement_id"] = user.evenement_id
+            session["role"] = user.role
+            return redirect(url_for("main_bp.dashboard"))
         flash("Nom d'utilisateur ou mot de passe incorrect.")
     return render_template("login.html")
-
-
-@main_bp.route("/select_role", methods=["GET", "POST"])
-def select_role():
-    user = Utilisateur.query.get(session.get("user_id"))
-    if not user:
-        return redirect(url_for("main_bp.login"))
-
-    # Montrer seulement les événements associés sauf si admin/codep
-    evenements = []
-    if user.evenement:
-        evenements.append(user.evenement)
-    elif user.is_admin or user.role == "codep":
-        evenements = Evenement.query.all()
-
-    if request.method == "POST":
-        session["role"] = request.form["role"]
-        session["evenement_id"] = int(request.form["evenement_id"])
-        return redirect(url_for("main_bp.dashboard"))
-
-    return render_template("select_role.html", user=user, evenements=evenements)
 
 
 @main_bp.route("/dashboard")
@@ -67,7 +48,7 @@ def dashboard():
     user = Utilisateur.query.get(session.get("user_id"))
     if not user:
         return redirect(url_for("main_bp.login"))
-    evenement = Evenement.query.get(session.get("evenement_id"))
+    evenement = Evenement.query.get(user.evenement_id)
     impliques = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
     return render_template("dashboard.html", user=user, evenement=evenement, impliques=impliques)
 
@@ -77,7 +58,7 @@ def evenement_new():
     user = Utilisateur.query.get(session.get("user_id"))
     if not user or not (user.role == "codep" or user.is_admin):
         flash("Accès refusé. Seul un administrateur ou un CODEP peut créer un événement.", "danger")
-        return redirect(url_for("main_bp.select_role"))
+        return redirect(url_for("main_bp.dashboard"))
 
     if request.method == "POST":
         nom = request.form["nom"]
@@ -89,7 +70,7 @@ def evenement_new():
         db.session.commit()
 
         flash(f"Événement créé avec succès : {numero}", "success")
-        return redirect(url_for("main_bp.select_role"))
+        return redirect(url_for("main_bp.dashboard"))
 
     return render_template("evenement_new.html")
 
@@ -97,7 +78,7 @@ def evenement_new():
 @main_bp.route("/fiche/new", methods=["GET", "POST"])
 def fiche_new():
     user = Utilisateur.query.get(session.get("user_id"))
-    evenement = Evenement.query.get(session.get("evenement_id"))
+    evenement = Evenement.query.get(user.evenement_id)
     if request.method == "POST":
         data = request.form
         try:

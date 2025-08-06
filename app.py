@@ -5,6 +5,7 @@ from datetime import datetime
 import csv
 from io import StringIO
 import os
+import requests
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
@@ -13,7 +14,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# --- MODELE ---
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
+
+def send_webhook(payload):
+    if WEBHOOK_URL:
+        try:
+            requests.post(WEBHOOK_URL, json=payload, timeout=5)
+        except Exception as e:
+            print(f"[Webhook] Erreur d’envoi : {e}")
+
 class Implique(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(100))
@@ -28,7 +37,6 @@ class Implique(db.Model):
     date_entree = db.Column(db.DateTime, default=datetime.utcnow)
     date_sortie = db.Column(db.DateTime, nullable=True)
 
-# --- AUTHENTIFICATION ---
 USERS = {
     os.environ.get("ENTREE_USER", "entree"): os.environ.get("ENTREE_PASS", "entreepass"),
     os.environ.get("SORTIE_USER", "sortie"): os.environ.get("SORTIE_PASS", "sortiepass"),
@@ -42,7 +50,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- ROUTES ---
 @app.route('/')
 def index():
     return redirect(url_for('dashboard'))
@@ -88,6 +95,17 @@ def entree():
         )
         db.session.add(new)
         db.session.commit()
+
+        send_webhook({
+            "event": "entree",
+            "nom": new.nom,
+            "prenom": new.prenom,
+            "heure": new.date_entree.strftime("%Y-%m-%d %H:%M"),
+            "blesse": new.blesse,
+            "reloges": new.reloges,
+            "animaux": new.animaux
+        })
+
         flash("Entrée enregistrée")
         return redirect(url_for('dashboard'))
     return render_template('entree.html')
@@ -100,6 +118,15 @@ def sortie(id):
     implique = Implique.query.get_or_404(id)
     implique.date_sortie = datetime.utcnow()
     db.session.commit()
+
+    send_webhook({
+        "event": "sortie",
+        "id": implique.id,
+        "nom": implique.nom,
+        "prenom": implique.prenom,
+        "heure_sortie": implique.date_sortie.strftime("%Y-%m-%d %H:%M")
+    })
+
     flash("Sortie enregistrée")
     return redirect(url_for('dashboard'))
 
@@ -120,7 +147,6 @@ def export():
     output.seek(0)
     return send_file(output, mimetype='text/csv', download_name='impliques.csv', as_attachment=True)
 
-# --- INIT DB ---
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

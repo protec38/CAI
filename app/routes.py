@@ -137,4 +137,13 @@ def fiche_new():
 
     return render_template("fiche_new.html", user=user)
 
+def generate_numero_fiche(evenement_id):
+    from .models import FicheImplique, Evenement
+    evt = Evenement.query.get(evenement_id)
+    prefix = evt.numero  # ex: "038250801"
+    last = FicheImplique.query.filter_by(evenement_id=evenement_id).order_by(FicheImplique.id.desc()).first()
+    count = 1 if not last else int(last.numero_fiche[-3:]) + 1
+    return f"{prefix}{str(count).zfill(3)}"
+
+
 

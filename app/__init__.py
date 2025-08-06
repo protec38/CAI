@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from .models import Utilisateur
 
 db = SQLAlchemy()
 
@@ -15,8 +14,9 @@ def create_app():
     from .routes import main_bp
     app.register_blueprint(main_bp)
 
-    # Créer la base + compte admin par défaut
+    # On importe ici pour éviter les circular imports
     with app.app_context():
+        from .models import Utilisateur
         db.create_all()
         if Utilisateur.query.first() is None:
             user = Utilisateur(

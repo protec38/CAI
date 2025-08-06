@@ -1,3 +1,4 @@
+
 from flask import Flask, request, render_template, redirect, url_for, session, flash, send_file
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
@@ -5,7 +6,6 @@ from datetime import datetime
 import csv
 from io import StringIO
 import os
-import requests
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
@@ -13,15 +13,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cai.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
-
-def send_webhook(payload):
-    if WEBHOOK_URL:
-        try:
-            requests.post(WEBHOOK_URL, json=payload, timeout=5)
-        except Exception as e:
-            print(f"[Webhook] Erreur d’envoi : {e}")
 
 class Implique(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -74,7 +65,9 @@ def logout():
 @login_required
 def dashboard():
     impliques = Implique.query.order_by(Implique.date_entree.desc()).all()
-    return render_template('dashboard.html', impliques=impliques)
+    total = len(impliques)
+    restants = len([i for i in impliques if i.date_sortie is None])
+    return render_template('dashboard.html', impliques=impliques, total=total, restants=restants)
 
 @app.route('/entree', methods=['GET', 'POST'])
 @login_required
@@ -95,17 +88,6 @@ def entree():
         )
         db.session.add(new)
         db.session.commit()
-
-        send_webhook({
-            "event": "entree",
-            "nom": new.nom,
-            "prenom": new.prenom,
-            "heure": new.date_entree.strftime("%Y-%m-%d %H:%M"),
-            "blesse": new.blesse,
-            "reloges": new.reloges,
-            "animaux": new.animaux
-        })
-
         flash("Entrée enregistrée")
         return redirect(url_for('dashboard'))
     return render_template('entree.html')
@@ -118,15 +100,6 @@ def sortie(id):
     implique = Implique.query.get_or_404(id)
     implique.date_sortie = datetime.utcnow()
     db.session.commit()
-
-    send_webhook({
-        "event": "sortie",
-        "id": implique.id,
-        "nom": implique.nom,
-        "prenom": implique.prenom,
-        "heure_sortie": implique.date_sortie.strftime("%Y-%m-%d %H:%M")
-    })
-
     flash("Sortie enregistrée")
     return redirect(url_for('dashboard'))
 

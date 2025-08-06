@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from .models import db, Utilisateur, Evenement
-from werkzeug.security import check_password_hash
+from .models import db, Utilisateur, Evenement, FicheImplique
+from datetime import datetime
 
 main_bp = Blueprint("main", __name__)
 
+# Authentification
 @main_bp.route("/")
 def index():
     if "user_id" not in session:
@@ -28,8 +29,64 @@ def logout():
     session.clear()
     return redirect(url_for("main.login"))
 
-@main_bp.route("/select-role")
+# Sélection du rôle (page statique pour le moment)
+@main_bp.route("/select-role", methods=["GET"])
 def select_role():
     if "user_id" not in session:
         return redirect(url_for("main.login"))
     return render_template("select_role.html")
+
+# Tableau de bord
+@main_bp.route("/dashboard")
+def dashboard():
+    if "user_id" not in session:
+        return redirect(url_for("main.login"))
+
+    impliques = FicheImplique.query.order_by(FicheImplique.date_entree.desc()).all()
+    total = len(impliques)
+    humains = sum(1 for i in impliques if i.humain)
+    animaux = total - humains
+    sortis = sum(1 for i in impliques if i.date_sortie)
+
+    return render_template("dashboard.html",
+                           impliques=impliques,
+                           total=total,
+                           humains=humains,
+                           animaux=animaux,
+                           sortis=sortis)
+
+# Création de fiche impliqué
+@main_bp.route("/fiche/new", methods=["GET", "POST"])
+def create_implique():
+    if "user_id" not in session:
+        return redirect(url_for("main.login"))
+
+    if request.method == "POST":
+        numero_fiche = f"038{datetime.now().strftime('%y%m%d')}{str(FicheImplique.query.count() + 1).zfill(3)}"
+
+        fiche = FicheImplique(
+            numero_fiche=numero_fiche,
+            humain=bool(int(request.form.get("humain", 1))),
+            nom=request.form.get("nom"),
+            prenom=request.form.get("prenom"),
+            date_naissance=request.form.get("date_naissance"),
+            nationalite=request.form.get("nationalite"),
+            adresse=request.form.get("adresse"),
+            telephone=request.form.get("telephone"),
+            personne_a_prevenir=request.form.get("personne_a_prevenir"),
+            tel_personne_a_prevenir=request.form.get("tel_personne_a_prevenir"),
+            recherche_personne=request.form.get("recherche_personne"),
+            difficulte=request.form.get("difficulte"),
+            competences=request.form.get("competences"),
+            effets_perso=request.form.get("effets_perso"),
+            nom_createur="Auto",
+            prenom_createur="System"
+        )
+
+        db.session.add(fiche)
+        db.session.commit()
+
+        flash("Fiche créée avec succès")
+        return redirect(url_for("main.dashboard"))
+
+    return render_template("formulaire_implique.html")

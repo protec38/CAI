@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from .models import Utilisateur
 
 db = SQLAlchemy()
 
@@ -13,5 +14,22 @@ def create_app():
 
     from .routes import main_bp
     app.register_blueprint(main_bp)
+
+    # Créer la base + compte admin par défaut
+    with app.app_context():
+        db.create_all()
+        if Utilisateur.query.first() is None:
+            user = Utilisateur(
+                nom_utilisateur="admin",
+                type_utilisateur="interne",
+                niveau="encadrant",
+                role="responsable",
+                nom="Durand",
+                prenom="Jean"
+            )
+            user.set_password("admin123")
+            db.session.add(user)
+            db.session.commit()
+            print("✅ Utilisateur par défaut créé : admin / admin123")
 
     return app

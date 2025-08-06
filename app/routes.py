@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 
 main_bp = Blueprint('main_bp', __name__)
 
-# Génération automatique d’un numéro d’événement
+
 def generer_numero_evenement():
     now = datetime.now()
     prefix = "038"
@@ -38,8 +38,14 @@ def login():
             session["user_id"] = user.id
             session["evenement_id"] = user.evenement_id
             session["role"] = user.role
-            return redirect(url_for("main_bp.dashboard"))
-        flash("Nom d'utilisateur ou mot de passe incorrect.")
+
+            # 🔁 Redirection selon rôle
+            if user.is_admin or user.role == "codep":
+                return redirect(url_for("main_bp.evenement_new"))
+            else:
+                return redirect(url_for("main_bp.dashboard"))
+
+        flash("Nom d'utilisateur ou mot de passe incorrect.", "danger")
     return render_template("login.html")
 
 
@@ -48,15 +54,17 @@ def dashboard():
     user = Utilisateur.query.get(session.get("user_id"))
     if not user:
         return redirect(url_for("main_bp.login"))
+
     evenement = Evenement.query.get(user.evenement_id)
     impliques = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
+
     return render_template("dashboard.html", user=user, evenement=evenement, impliques=impliques)
 
 
 @main_bp.route("/evenement/new", methods=["GET", "POST"])
 def evenement_new():
     user = Utilisateur.query.get(session.get("user_id"))
-    if not user or not (user.role == "codep" or user.is_admin):
+    if not user or not (user.is_admin or user.role == "codep"):
         flash("Accès refusé. Seul un administrateur ou un CODEP peut créer un événement.", "danger")
         return redirect(url_for("main_bp.dashboard"))
 
@@ -108,5 +116,7 @@ def fiche_new():
         )
         db.session.add(fiche)
         db.session.commit()
+        flash("Fiche impliqué créée avec succès.", "success")
         return redirect(url_for("main_bp.dashboard"))
+
     return render_template("fiche_new.html", user=user)

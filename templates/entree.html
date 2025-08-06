@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Enregistrement d'un impliqué</title>
+  <title>Entrée impliqué</title>
   <style>
     body { font-family: Arial, sans-serif; background: #eef5fb; padding: 30px; color: #333; }
     h2 { text-align: center; color: #004b9b; }
@@ -18,43 +18,34 @@
   <form method="POST">
     <label>Nom</label>
     <input type="text" name="nom" required>
-
     <label>Prénom</label>
     <input type="text" name="prenom" required>
-
     <label>Nationalité</label>
     <input type="text" name="nationalite">
-
     <label>Date de naissance</label>
     <input type="date" name="date_naissance">
-
     <label>Blessé</label>
     <select name="blesse">
       <option value="">-- Sélectionner --</option>
       <option>Oui</option>
       <option>Non</option>
     </select>
-
     <label>Relogés</label>
     <select name="reloges">
       <option value="">-- Sélectionner --</option>
       <option>Oui</option>
       <option>Non</option>
     </select>
-
     <label>Animaux</label>
     <select name="animaux">
       <option value="">-- Sélectionner --</option>
       <option>Oui</option>
       <option>Non</option>
     </select>
-
     <label>Effets personnels</label>
     <input type="text" name="effets_perso">
-
     <label>Autres informations</label>
     <textarea name="autres_infos" rows="3"></textarea>
-
     <button type="submit">Enregistrer</button>
   </form>
 </body>

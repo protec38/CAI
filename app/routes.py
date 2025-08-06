@@ -116,19 +116,25 @@ def fiche_new():
         return redirect(url_for("main_bp.evenement_new"))
 
     if request.method == "POST":
-        # Exemple de récupération de données du formulaire
         nom = request.form.get("nom")
         prenom = request.form.get("prenom")
+        humain = request.form.get("humain") == "on"
+        numero = generate_numero_fiche(user.evenement_id)
 
-        from .models import FicheImplique
-        new_fiche = FicheImplique(
+        fiche = FicheImplique(
+            numero_fiche=numero,
             nom=nom,
             prenom=prenom,
-            numero_fiche="AUTO"  # Génère correctement ton numéro ici
+            humain=humain,
+            nom_createur=user.nom,
+            prenom_createur=user.prenom,
+            createur_id=user.id,
+            evenement_id=user.evenement_id
         )
-        db.session.add(new_fiche)
+        db.session.add(fiche)
         db.session.commit()
         return redirect(url_for("main_bp.dashboard"))
 
     return render_template("fiche_new.html", user=user)
+
 

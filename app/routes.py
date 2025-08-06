@@ -66,18 +66,25 @@ def dashboard():
 
 @main_bp.route("/evenement/new", methods=["GET", "POST"])
 def evenement_new():
+    user = Utilisateur.query.get(session.get("user_id"))
+    if not user or not (user.role == "codep" or user.is_admin):
+        flash("Accès refusé. Seul un administrateur ou un CODEP peut créer un événement.", "danger")
+        return redirect(url_for("main_bp.select_role"))
+
     if request.method == "POST":
         nom = request.form["nom"]
-        type_event = request.form.get("type", "CHU")  # CHU ou CAI
+        type_event = request.form.get("type", "CHU")
         numero = generer_numero_evenement()
 
         evenement = Evenement(nom=nom, numero=numero, type=type_event)
         db.session.add(evenement)
         db.session.commit()
 
-        flash(f"Événement créé avec le numéro : {numero}", "success")
+        flash(f"Événement créé avec succès : {numero}", "success")
         return redirect(url_for("main_bp.select_role"))
+
     return render_template("evenement_new.html")
+
 
 
 @main_bp.route("/fiche/new", methods=["GET", "POST"])

@@ -122,3 +122,37 @@ def signaler_sortie(fiche_id):
 
     return render_template("sortie.html", fiche=fiche)
 
+@main_bp.route("/fiche/<int:fiche_id>/edit", methods=["GET", "POST"])
+def edit_implique(fiche_id):
+    if "user_id" not in session:
+        return redirect(url_for("main.login"))
+
+    fiche = FicheImplique.query.get_or_404(fiche_id)
+
+    if request.method == "POST":
+        try:
+            fiche.nom = request.form.get("nom")
+            fiche.prenom = request.form.get("prenom")
+            date_naissance_str = request.form.get("date_naissance")
+            fiche.date_naissance = datetime.strptime(date_naissance_str, "%Y-%m-%d").date() if date_naissance_str else None
+            fiche.nationalite = request.form.get("nationalite")
+            fiche.adresse = request.form.get("adresse")
+            fiche.telephone = request.form.get("telephone")
+            fiche.personne_a_prevenir = request.form.get("personne_a_prevenir")
+            fiche.tel_personne_a_prevenir = request.form.get("tel_personne_a_prevenir")
+            fiche.recherche_personne = request.form.get("recherche_personne")
+            fiche.difficulte = request.form.get("difficulte")
+            fiche.competences = request.form.get("competences")
+            fiche.effets_perso = request.form.get("effets_perso")
+
+            db.session.commit()
+            flash("Fiche modifiée avec succès.")
+            return redirect(url_for("main.dashboard"))
+
+        except Exception as e:
+            print("❌ Erreur lors de la modification :", e)
+            flash("Erreur lors de la mise à jour de la fiche.")
+            return redirect(url_for("main.dashboard"))
+
+    return render_template("edit_implique.html", fiche=fiche)
+

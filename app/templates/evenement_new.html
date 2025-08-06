@@ -1,112 +1,44 @@
+<!-- 📄 app/templates/evenement_new.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Créer ou Rejoindre un Événement</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to right, #00477e, #ff7e00);
-            color: white;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-
-        input, select, button {
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            margin-top: 5px;
-            font-size: 16px;
-        }
-
-        button {
-            margin-top: 25px;
-            background-color: #ff7e00;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #e46d00;
-        }
-
-        .note {
-            font-size: 0.9em;
-            margin-top: 10px;
-            color: #ddd;
-        }
-
-        .divider {
-            height: 2px;
-            background: #ffffff33;
-            margin: 30px 0;
-        }
-    </style>
+    <title>Créer ou sélectionner un évènement</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="container">
-    <h1>Gestion des Événements</h1>
+    <div class="container">
+        <h1>Centre d'Accueil d'Urgence - Gestion des Événements</h1>
 
-    {% if user.is_admin or user.role == 'codep' %}
-    <form method="POST" action="{{ url_for('main_bp.evenement_new') }}">
-        <h2>Créer un Nouvel Événement</h2>
-        <label for="nom">Nom de l’événement :</label>
-        <input type="text" id="nom" name="nom" required>
+        {% if user and (user.is_admin or user.role == 'codep') %}
+            <h2>Créer un nouvel évènement</h2>
+            <form method="POST">
+                <label for="nom">Nom de l’évènement</label>
+                <input type="text" name="nom" required>
 
-        <label for="type_evt">Type :</label>
-        <select id="type_evt" name="type_evt" required>
-            <option value="CAI">CAI</option>
-            <option value="CHU">CHU</option>
-            <option value="PRV">PRV</option>
-        </select>
+                <label for="type_evt">Type (CAI / CHU)</label>
+                <select name="type_evt" required>
+                    <option value="CAI">CAI</option>
+                    <option value="CHU">CHU</option>
+                </select>
 
-        <button type="submit">Créer l'événement</button>
-    </form>
-    {% endif %}
+                <button type="submit">Créer l’évènement</button>
+            </form>
+            <hr>
+        {% endif %}
 
-    <div class="divider"></div>
-
-    <form method="POST" action="{{ url_for('main_bp.evenement_select') }}">
-        <h2>Rejoindre un Événement existant</h2>
-
-        <label for="evenement_id">Événement :</label>
-        <select name="evenement_id" id="evenement_id" required>
-            {% for evt in evenements %}
-                {% if user.is_admin or user.role == 'codep' or evt in user.evenement %}
+        <h2>Choisir un évènement existant</h2>
+        <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
+            <label for="evenement_id">Évènement</label>
+            <select name="evenement_id" required>
+                {% for evt in evenements %}
                     <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
-                {% endif %}
-            {% endfor %}
-        </select>
+                {% endfor %}
+            </select>
+            <button type="submit">Accéder</button>
+        </form>
 
-        <button type="submit">Rejoindre</button>
-    </form>
-
-    <p class="note">Vous devez être rattaché à un événement pour accéder au tableau de bord.</p>
-</div>
+        <p><a href="{{ url_for('main_bp.logout') }}">Déconnexion</a></p>
+    </div>
 </body>
 </html>

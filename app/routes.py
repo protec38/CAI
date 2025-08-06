@@ -113,90 +113,78 @@ from datetime import datetime
 @login_required
 def fiche_new():
     user = get_current_user()
-    evenement = user.evenement_selectionne
+
+    # Récupérer l'événement sélectionné depuis la session
+    evenement_id = session.get("evenement_id")
+    evenement = Evenement.query.get(evenement_id)
 
     if not evenement:
         flash("Aucun événement sélectionné.", "danger")
         return redirect(url_for("main_bp.evenement_new"))
 
     if request.method == "POST":
-        try:
-            # Numéro de fiche auto-incrémenté
-            dernier = FicheImplique.query.order_by(FicheImplique.id.desc()).first()
-            numero_fiche = f"{(dernier.id + 1) if dernier else 1:04d}"
+        numero_fiche = request.form["numero_fiche"]
+        humain = request.form["humain"] == "True"
+        nom = request.form["nom"]
+        prenom = request.form.get("prenom")
+        date_naissance = request.form.get("date_naissance")
+        nationalite = request.form.get("nationalite")
+        adresse = request.form.get("adresse")
+        telephone = request.form.get("telephone")
+        personne_a_prevenir = request.form.get("personne_a_prevenir")
+        tel_personne_a_prevenir = request.form.get("tel_personne_a_prevenir")
+        recherche_personne = request.form.get("recherche_personne")
+        difficulte = request.form.get("difficulte")
+        competences = request.form.get("competences")
+        effets_perso = request.form.get("effets_perso")
+        date_entree_str = request.form.get("date_entree")
 
-            # Champs
-            humain = request.form.get("humain") == "True"
-            nom = request.form.get("nom")
-            prenom = request.form.get("prenom")
-            date_naissance_str = request.form.get("date_naissance")
-            date_naissance = datetime.strptime(date_naissance_str, "%Y-%m-%d") if date_naissance_str else None
+        # Convertir date_entree
+        date_entree = datetime.strptime(date_entree_str, "%Y-%m-%dT%H:%M") if date_entree_str else datetime.utcnow()
 
-            nationalite = request.form.get("nationalite")
-            adresse = request.form.get("adresse")
-            telephone = request.form.get("telephone")
-            personne_a_prevenir = request.form.get("personne_a_prevenir")
-            tel_personne_a_prevenir = request.form.get("tel_personne_a_prevenir")
-            recherche_personne = request.form.get("recherche_personne")
-            difficulte = request.form.get("difficulte")
-            competences = request.form.get("competences")
-            effets_perso = request.form.get("effets_perso")
-            destination = request.form.get("destination")
-            moyen_transport = request.form.get("moyen_transport")
+        # Convertir date_naissance
+        date_naissance_obj = datetime.strptime(date_naissance, "%Y-%m-%d").date() if date_naissance else None
 
-            # Heure d’arrivée (datetime-local)
-            date_entree_str = request.form.get("date_entree")
-            date_entree = datetime.strptime(date_entree_str, "%Y-%m-%dT%H:%M") if date_entree_str else datetime.now()
+        fiche = FicheImplique(
+            numero_fiche=numero_fiche,
+            humain=humain,
+            nom=nom,
+            prenom=prenom,
+            date_naissance=date_naissance_obj,
+            nationalite=nationalite,
+            adresse=adresse,
+            telephone=telephone,
+            personne_a_prevenir=personne_a_prevenir,
+            tel_personne_a_prevenir=tel_personne_a_prevenir,
+            recherche_personne=recherche_personne,
+            difficulte=difficulte,
+            competences=competences,
+            effets_perso=effets_perso,
+            nom_createur=user.nom,
+            prenom_createur=user.prenom,
+            createur_id=user.id,
+            evenement_id=evenement.id,
+            date_entree=date_entree
+        )
 
-            # Créateur
-            nom_createur = user.nom
-            prenom_createur = user.prenom
+        db.session.add(fiche)
+        db.session.commit()
 
-            fiche = FicheImplique(
-                numero_fiche=numero_fiche,
-                humain=humain,
-                nom=nom,
-                prenom=prenom,
-                date_naissance=date_naissance,
-                nationalite=nationalite,
-                adresse=adresse,
-                telephone=telephone,
-                personne_a_prevenir=personne_a_prevenir,
-                tel_personne_a_prevenir=tel_personne_a_prevenir,
-                recherche_personne=recherche_personne,
-                difficulte=difficulte,
-                competences=competences,
-                effets_perso=effets_perso,
-                nom_createur=nom_createur,
-                prenom_createur=prenom_createur,
-                date_entree=date_entree,
-                destination=destination,
-                moyen_transport=moyen_transport,
-                createur_id=user.id,
-                evenement_id=evenement.id
-            )
+        flash("Fiche impliqué créée avec succès.", "success")
+        return redirect(url_for("main_bp.dashboard"))
 
-            db.session.add(fiche)
-            db.session.commit()
-            flash("Fiche impliqué créée avec succès.", "success")
-            return redirect(url_for("main_bp.dashboard"))
+    # Numérotation automatique (calcul du prochain numéro de fiche)
+    last_fiche = FicheImplique.query.filter_by(evenement_id=evenement.id).order_by(FicheImplique.id.desc()).first()
+    if last_fiche:
+        last_number = int(last_fiche.numero_fiche)
+        numero_fiche = f"{last_number + 1:04d}"
+    else:
+        numero_fiche = "0001"
 
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Erreur lors de la création de la fiche : {str(e)}", "danger")
-            return redirect(url_for("main_bp.fiche_new"))
-
-    # Numéro de fiche estimé (à afficher)
-    dernier = FicheImplique.query.order_by(FicheImplique.id.desc()).first()
-    numero_fiche = f"{(dernier.id + 1) if dernier else 1:04d}"
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M")
 
-    return render_template(
-        "fiche_new.html",
-        user=user,
-        numero_fiche=numero_fiche,
-        current_time=current_time
-    )
+    return render_template("fiche_new.html", user=user, numero_fiche=numero_fiche, current_time=current_time)
+
 
 
 

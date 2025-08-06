@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Choix du rôle</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="role-container">
+    <h2>Sélectionnez votre rôle</h2>
+    <form action="/dashboard" method="GET">
+      <select name="role" required>
+        <option value="">-- Choisissez un rôle --</option>
+        <option value="entree_sortie">Entrée / Sortie</option>
+        <option value="responsable">Responsable de centre</option>
+        <option value="codep">CODEP</option>
+        <option value="bagagerie">Bagagerie</option>
+        <option value="secouriste">Secouriste</option>
+        <option value="autorite">Autorités</option>
+      </select>
+      <button type="submit">Valider</button>
+    </form>
+  </div>
+</body>
+</html>

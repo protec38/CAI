@@ -2,25 +2,87 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Tableau de bord - CAI</title>
+  <title>Dashboard CAI</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f6fb; padding: 20px; }
-    h2 { color: #004b9b; text-align: center; }
-    .topbar { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .topbar a { padding: 10px 15px; text-decoration: none; background-color: #004b9b; color: white; border-radius: 5px; }
-    .topbar a:hover { background-color: #003570; }
-    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    th, td { padding: 8px; border: 1px solid #ccc; text-align: center; font-size: 14px; }
-    th { background-color: #004b9b; color: white; }
-    .present { background-color: #e6f0ff; }
-    .sorti { background-color: #d4edda; }
-    form { display: inline; }
-    button { background-color: #f26522; border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-    button:hover { background-color: #d9531e; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #333;
+      padding: 30px;
+    }
+    h2 {
+      color: #004b9b;
+      text-align: center;
+    }
+    .summary {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    .summary div {
+      background: white;
+      border-left: 5px solid #f26522;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    th {
+      background-color: #004b9b;
+      color: white;
+    }
+    tr.present {
+      background-color: #e6f0ff;
+    }
+    tr.sorti {
+      background-color: #d4edda;
+    }
+    form {
+      display: inline;
+    }
+    button {
+      background-color: #f26522;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #d9531e;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .topbar a {
+      text-decoration: none;
+      padding: 10px 15px;
+      background: #004b9b;
+      color: white;
+      border-radius: 6px;
+    }
+    .topbar a:hover {
+      background: #003570;
+    }
   </style>
 </head>
 <body>
-  <h2>Tableau de bord - Centre d’Accueil des Impliqués</h2>
+
   <div class="topbar">
     <div>
       {% if session.user == 'entree' %}
@@ -32,6 +94,14 @@
       <a href="/logout">🔒 Déconnexion</a>
     </div>
   </div>
+
+  <h2>Centre d’Accueil des Impliqués</h2>
+
+  <div class="summary">
+    <div><strong>Total enregistrés :</strong> {{ total }}</div>
+    <div><strong>Encore présents :</strong> {{ restants }}</div>
+  </div>
+
   <table>
     <thead>
       <tr>
@@ -80,5 +150,6 @@
       {% endfor %}
     </tbody>
   </table>
+
 </body>
 </html>

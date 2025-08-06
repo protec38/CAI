@@ -24,7 +24,7 @@
         <form method="POST">
             <select name="selected_event" required>
                 {% for evt in evenements %}
-                    <option value="{{ evt.id }}">{{ evt.numero }} - {{ evt.nom }}</option>
+                    <option value="{{ evt.id }}">#{{ evt.numero }} - {{ evt.nom }}</option>
                 {% endfor %}
             </select>
             <button type="submit">Accéder à l’événement</button>

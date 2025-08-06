@@ -6,20 +6,29 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <div class="form-container">
+  <div class="container">
     <h2>Créer un nouvel événement</h2>
 
     <form method="POST">
-      <label for="nom">Nom de l’événement</label>
+      <label>Nom de l'événement :</label>
       <input type="text" name="nom" required>
 
-      <label for="description">Description</label>
-      <textarea name="description" rows="4"></textarea>
+      <label>Description :</label>
+      <textarea name="description" rows="4" required></textarea>
 
-      <button type="submit">Créer</button>
+      <button type="submit">Créer l'événement</button>
+      <a href="{{ url_for('main.dashboard') }}">Retour</a>
     </form>
 
-    <a href="{{ url_for('main.dashboard') }}">⬅ Retour</a>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for msg in messages %}
+            <p>{{ msg }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
   </div>
 </body>
 </html>

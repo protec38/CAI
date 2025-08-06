@@ -46,7 +46,12 @@ def select_role():
     user = Utilisateur.query.get(session.get("user_id"))
     if not user:
         return redirect(url_for("main_bp.login"))
+    evenements = []
+if user.evenement:
+    evenements.append(user.evenement)
+elif user.is_admin or user.role == "codep":
     evenements = Evenement.query.all()
+
     if request.method == "POST":
         session["role"] = request.form["role"]
         session["evenement_id"] = int(request.form["evenement_id"])

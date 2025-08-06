@@ -80,9 +80,9 @@
         <h1>Créer une Fiche Impliqué</h1>
         <form method="POST">
             <div class="form-group">
-                <label for="numero_fiche">Numéro Fiche</label>
-                <input type="text" name="numero_fiche" required>
-            </div>
+    <label for="numero_fiche">Numéro de fiche</label>
+    <input type="text" class="form-control" id="numero_fiche" name="numero_fiche" value="{{ numero_fiche }}" readonly>
+</div>
 
             <div class="form-group">
                 <label for="humain">Type</label>

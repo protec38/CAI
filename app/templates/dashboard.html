@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord - CAI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="dashboard-container">
+    <h1>Tableau de bord</h1>
+
+    <div class="counters">
+      <p>Total impliqués : {{ total }}</p>
+      <p>Humains : {{ humains }}</p>
+      <p>Animaux : {{ animaux }}</p>
+      <p>Sortis : {{ sortis }}</p>
+    </div>
+
+    <div class="actions">
+      <a href="{{ url_for('main.create_implique') }}">Créer une fiche impliqué</a>
+      <a href="{{ url_for('main.logout') }}">Déconnexion</a>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Nationalité</th>
+          <th>Entrée</th>
+          <th>Sortie</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in impliques %}
+        <tr>
+          <td>{{ f.numero_fiche }}</td>
+          <td>{{ f.nom }}</td>
+          <td>{{ f.prenom }}</td>
+          <td>{{ f.nationalite }}</td>
+          <td>{{ f.date_entree.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            {% if f.date_sortie %}
+              {{ f.date_sortie.strftime('%Y-%m-%d %H:%M') }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

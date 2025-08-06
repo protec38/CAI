@@ -7,17 +7,22 @@
 </head>
 <body>
   <div class="login-container">
-    <h2>Connexion CAI / CHU</h2>
+    <h2>Connexion à la plateforme CAI</h2>
     <form method="POST">
-      <input type="text" name="username" placeholder="Nom d'utilisateur" required>
-      <input type="password" name="password" placeholder="Mot de passe" required>
+      <label for="username">Identifiant :</label>
+      <input type="text" name="username" required>
+
+      <label for="password">Mot de passe :</label>
+      <input type="password" name="password" required>
+
       <button type="submit">Se connecter</button>
     </form>
+
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <div class="error">
-          {% for message in messages %}
-            <p>{{ message }}</p>
+        <div class="flash">
+          {% for msg in messages %}
+            <p>{{ msg }}</p>
           {% endfor %}
         </div>
       {% endif %}

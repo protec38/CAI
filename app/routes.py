@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from app.models import db, Utilisateur, Evenement, FicheImplique
 from datetime import datetime, date
-
+from functools import wraps
 main_bp = Blueprint("main_bp", __name__)
 
 def login_required(f):
+    @wraps(f)  # ⬅️ ajoute ce décorateur ici
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for("main_bp.login"))

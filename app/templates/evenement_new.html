@@ -2,92 +2,61 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Créer un Événement</title>
+    <title>Créer un événement</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             background: linear-gradient(to right, #002f6c, #ff6f00);
             color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            padding: 20px;
         }
 
         .container {
-            background-color: rgba(0, 0, 0, 0.3);
-            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            color: black;
+            padding: 20px;
             border-radius: 10px;
-            width: 400px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #002f6c;
+            color: white;
+            border: none;
+            font-weight: bold;
         }
 
         h2 {
             text-align: center;
-            margin-bottom: 20px;
-            color: #ffcc00;
-        }
-
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: none;
-            border-radius: 5px;
-        }
-
-        button {
-            margin-top: 25px;
-            width: 100%;
-            padding: 10px;
-            background-color: #ffcc00;
-            color: #000;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #ffaa00;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .back-link a {
-            color: #ffffff;
-            text-decoration: underline;
+            color: #002f6c;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Créer un Événement</h2>
+        <h2>Créer un événement</h2>
         <form method="POST">
-            <label for="nom">Nom de l'événement :</label>
-            <input type="text" id="nom" name="nom" required placeholder="ex: CAI Gymnase Paris">
+            <label>Nom de l’événement :</label>
+            <input type="text" name="nom" required>
 
-            <label for="type">Type :</label>
-            <select id="type" name="type">
-                <option value="CAI">CAI</option>
+            <label>Type :</label>
+            <select name="type">
                 <option value="CHU">CHU</option>
+                <option value="CAI">CAI</option>
+                <option value="PRV">PRV</option>
             </select>
 
-            <button type="submit">Créer l'événement</button>
+            <button type="submit">Créer</button>
         </form>
-
-        <div class="back-link">
-            <a href="{{ url_for('main_bp.select_role') }}">← Retour</a>
-        </div>
     </div>
 </body>
 </html>

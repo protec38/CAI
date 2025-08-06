@@ -6,11 +6,12 @@ services:
       - "5001:5000"
     environment:
       - SECRET_KEY=fvszfgggzepgkôgz
-      - ENTREE_USER=lucas
+      - ENTREE_USER=entree
       - ENTREE_PASS=test
-      - SORTIE_USER=nico
+      - SORTIE_USER=sortit
       - SORTIE_PASS=test
     volumes:
       - .:/app
     restart: unless-stopped
+
 

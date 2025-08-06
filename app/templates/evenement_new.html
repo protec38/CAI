@@ -3,97 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Gestion des Événements</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f6f8fa;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 700px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-        form {
-            margin-bottom: 30px;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #555;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-        button {
-            margin-top: 25px;
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            border: none;
-            color: white;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .separator {
-            margin: 40px 0;
-            border-top: 1px solid #ddd;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<div class="container">
-    <h1>Gestion des Événements</h1>
+    <div class="login-container">
+        <div class="login-box">
+            <h1>Gestion des Événements</h1>
 
-    <!-- Formulaire de création d'événement -->
-    {% if user.is_admin or user.role == 'codep' %}
-    <form method="POST" action="{{ url_for('main_bp.evenement_new') }}">
-        <label for="nom">Nom de l'événement</label>
-        <input type="text" name="nom" required>
+            <!-- Formulaire de création d'événement -->
+            {% if user.is_admin or user.role == 'codep' %}
+            <form method="POST" action="{{ url_for('main_bp.evenement_new') }}">
+                <label for="nom">Nom de l'événement</label>
+                <input type="text" name="nom" placeholder="Ex: CAI - Incendie 2025" required>
 
-        <label for="type_evt">Type d'événement</label>
-        <select name="type_evt" required>
-            <option value="CAI">CAI</option>
-            <option value="CHU">CHU</option>
-            <option value="PRV">PRV</option>
-        </select>
+                <label for="type_evt">Type d'événement</label>
+                <select name="type_evt" required>
+                    <option value="CAI">CAI</option>
+                    <option value="CHU">CHU</option>
+                    <option value="PRV">PRV</option>
+                </select>
 
-        <button type="submit" name="action" value="create">Créer un nouvel événement</button>
-    </form>
-    {% endif %}
+                <button type="submit" name="action" value="create">Créer un événement</button>
+            </form>
+            {% endif %}
 
-    <!-- Sélection d'événement existant -->
-    {% if evenements %}
-    <div class="separator"></div>
-    <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
-        <label for="evenement_id">Sélectionner un événement existant</label>
-        <select name="evenement_id" required>
-            {% for evt in evenements %}
-                <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
-            {% endfor %}
-        </select>
+            {% if evenements %}
+            <hr>
+            <!-- Sélection d'un événement existant -->
+            <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
+                <label for="evenement_id">Sélectionner un événement</label>
+                <select name="evenement_id" required>
+                    {% for evt in evenements %}
+                        <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
+                    {% endfor %}
+                </select>
 
-        <button type="submit" name="action" value="select">Accéder à l'événement</button>
-    </form>
-    {% endif %}
-</div>
+                <button type="submit" name="action" value="select">Accéder à l'événement</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>

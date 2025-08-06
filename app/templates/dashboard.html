@@ -19,6 +19,9 @@
     <div class="actions">
       <a class="button" href="{{ url_for('main.create_implique') }}">➕ Créer une fiche impliqué</a>
       <a class="button" href="{{ url_for('main.logout') }}">🔒 Déconnexion</a>
+      {% if user and user.role == "codep" %}
+        <a class="button" href="{{ url_for('main.create_evenement') }}">📋 Créer un événement</a>
+      {% endif %}
     </div>
 
     <table>

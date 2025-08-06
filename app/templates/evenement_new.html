@@ -1,44 +1,82 @@
-<!-- 📄 app/templates/evenement_new.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Créer ou sélectionner un évènement</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Gestion des événements - CAI/CHU</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef2f7;
+            padding: 40px;
+        }
+        h2 {
+            color: #2c3e50;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select, button {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+        }
+        .section {
+            max-width: 500px;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Centre d'Accueil d'Urgence - Gestion des Événements</h1>
 
-        {% if user and (user.is_admin or user.role == 'codep') %}
-            <h2>Créer un nouvel évènement</h2>
-            <form method="POST">
-                <label for="nom">Nom de l’évènement</label>
-                <input type="text" name="nom" required>
+<div class="section">
 
-                <label for="type_evt">Type (CAI / CHU)</label>
-                <select name="type_evt" required>
-                    <option value="CAI">CAI</option>
-                    <option value="CHU">CHU</option>
-                </select>
+    <h2>Créer un nouvel événement</h2>
 
-                <button type="submit">Créer l’évènement</button>
-            </form>
-            <hr>
-        {% endif %}
+    {% if user.is_admin or user.role == 'codep' %}
+    <form method="POST">
+        <label for="nom">Nom de l’événement :</label>
+        <input type="text" name="nom" required>
 
-        <h2>Choisir un évènement existant</h2>
-        <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
-            <label for="evenement_id">Évènement</label>
-            <select name="evenement_id" required>
-                {% for evt in evenements %}
-                    <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Accéder</button>
-        </form>
+        <label for="type_evt">Type d’événement :</label>
+        <select name="type_evt" required>
+            <option value="CAI">CAI</option>
+            <option value="CHU">CHU</option>
+            <option value="PRV">PRV</option>
+        </select>
 
-        <p><a href="{{ url_for('main_bp.logout') }}">Déconnexion</a></p>
-    </div>
+        <button type="submit">Créer</button>
+    </form>
+    {% endif %}
+
+    <h2>Sélectionner un événement existant</h2>
+
+    <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
+        <label for="evenement_id">Événement :</label>
+        <select name="evenement_id" required>
+            {% for evt in evenements %}
+                <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Entrer</button>
+    </form>
+
+</div>
+
 </body>
 </html>

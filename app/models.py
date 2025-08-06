@@ -1,6 +1,7 @@
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from datetime import datetime, date
 
 class Evenement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,12 +34,12 @@ class Utilisateur(db.Model):
 
 class FicheImplique(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    numero_fiche = db.Column(db.String(20), unique=True, nullable=False)
+    numero_fiche = db.Column(db.String(10), nullable=False, unique=True)
     humain = db.Column(db.Boolean, default=True)
-    nom = db.Column(db.String(50))
+    nom = db.Column(db.String(50), nullable=False)
     prenom = db.Column(db.String(50))
     date_naissance = db.Column(db.Date)
-    nationalite = db.Column(db.String(50))
+    nationalite = db.Column(db.String(100))
     adresse = db.Column(db.String(150))
     telephone = db.Column(db.String(20))
     personne_a_prevenir = db.Column(db.String(50))
@@ -46,13 +47,14 @@ class FicheImplique(db.Model):
     recherche_personne = db.Column(db.String(300))
     difficulte = db.Column(db.String(300))
     competences = db.Column(db.String(300))
-    effets_perso = db.Column(db.String(150))
-    nom_createur = db.Column(db.String(100))
-    prenom_createur = db.Column(db.String(100))
+    effets_perso = db.Column(db.String(300))
+    nom_createur = db.Column(db.String(50))
+    prenom_createur = db.Column(db.String(50))
     date_entree = db.Column(db.DateTime, default=datetime.utcnow)
     date_sortie = db.Column(db.DateTime, nullable=True)
-    destination = db.Column(db.String(100))
-    moyen_transport = db.Column(db.String(100))
-    createur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'))
-    evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'))
-    evenement = db.relationship("Evenement", back_populates="impliques")
+    destination = db.Column(db.String(100), nullable=True)
+    moyen_transport = db.Column(db.String(100), nullable=True)
+    
+    # Clés étrangères
+    createur_id = db.Column(db.Integer, db.ForeignKey("utilisateur.id"))
+    evenement_id = db.Column(db.Integer, db.ForeignKey("evenement.id"))

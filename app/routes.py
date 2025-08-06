@@ -70,7 +70,8 @@ def evenement_new():
         session["evenement_id"] = new_evt.id
         return redirect(url_for("main_bp.dashboard"))
 
-    return render_template("evenement_new.html")
+    return render_template("evenement_new.html", user=user)
+
 
 @main_bp.route("/evenement/choisir", methods=["GET", "POST"])
 def evenement_choix():

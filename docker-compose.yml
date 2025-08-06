@@ -7,10 +7,11 @@ services:
     environment:
       - SECRET_KEY=supersecret
       - ENTREE_USER=entree
-      - ENTREE_PASS=entreepass
+      - ENTREE_PASS=test
       - SORTIE_USER=sortie
-      - SORTIE_PASS=sortiepass
+      - SORTIE_PASS=test
       - WEBHOOK_URL=https://cai.apc38.app
     volumes:
       - .:/app
     restart: unless-stopped
+

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord - CAI</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f6fb; padding: 20px; }
+    h2 { color: #004b9b; text-align: center; }
+    .topbar { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .topbar a { padding: 10px 15px; text-decoration: none; background-color: #004b9b; color: white; border-radius: 5px; }
+    .topbar a:hover { background-color: #003570; }
+    table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    th, td { padding: 8px; border: 1px solid #ccc; text-align: center; font-size: 14px; }
+    th { background-color: #004b9b; color: white; }
+    .present { background-color: #e6f0ff; }
+    .sorti { background-color: #d4edda; }
+    form { display: inline; }
+    button { background-color: #f26522; border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #d9531e; }
+  </style>
+</head>
+<body>
+  <h2>Tableau de bord - Centre d’Accueil des Impliqués</h2>
+
+  <div class="topbar">
+    <div>
+      {% if session.user == 'entree' %}
+        <a href="/entree">➕ Ajouter une entrée</a>
+      {% endif %}
+      <a href="/export">📁 Export CSV</a>
+    </div>
+    <div>
+      <a href="/logout">🔒 Déconnexion</a>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Nationalité</th>
+        <th>Naissance</th>
+        <th>Blessé</th>
+        <th>Relogés</th>
+        <th>Animaux</th>
+        <th>Effets perso</th>
+        <th>Autres</th>
+        <th>Heure d'entrée</th>
+        <th>Heure de sortie</th>
+        <th>Statut</th>
+        {% if session.user == 'sortie' %}<th>Action</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in impliques %}
+      <tr class="{{ 'sorti' if v.date_sortie else 'present' }}">
+        <td>{{ v.id }}</td>
+        <td>{{ v.nom }}</td>
+        <td>{{ v.prenom }}</td>
+        <td>{{ v.nationalite }}</td>
+        <td>{{ v.date_naissance }}</td>
+        <td>{{ v.blesse }}</td>
+        <td>{{ v.reloges }}</td>
+        <td>{{ v.animaux }}</td>
+        <td>{{ v.effets_perso }}</td>
+        <td>{{ v.autres_infos }}</td>
+        <td>{{ v.date_entree.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{% if v.date_sortie %}{{ v.date_sortie.strftime('%Y-%m-%d %H:%M') }}{% else %}-{% endif %}</td>
+        <td>{{ 'Sorti' if v.date_sortie else 'Présent' }}</td>
+        {% if session.user == 'sortie' and not v.date_sortie %}
+        <td>
+          <form method="POST" action="/sortie/{{ v.id }}" onsubmit="return confirm('Valider la sortie ?');">
+            <button type="submit">✅ Sortie</button>
+          </form>
+        </td>
+        {% elif session.user == 'sortie' %}
+        <td></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

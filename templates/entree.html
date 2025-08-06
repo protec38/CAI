@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Enregistrement d'un impliqué</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #eef5fb; padding: 30px; color: #333; }
+    h2 { text-align: center; color: #004b9b; }
+    form { background: white; padding: 20px; border-radius: 10px; max-width: 700px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-left: 5px solid #f26522; }
+    label { display: block; margin: 15px 0 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    button { margin-top: 20px; background-color: #004b9b; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #003570; }
+  </style>
+</head>
+<body>
+  <h2>Nouvel Impliqué - Centre d’Accueil</h2>
+  <form method="POST">
+    <label>Nom</label>
+    <input type="text" name="nom" required>
+
+    <label>Prénom</label>
+    <input type="text" name="prenom" required>
+
+    <label>Nationalité</label>
+    <input type="text" name="nationalite">
+
+    <label>Date de naissance</label>
+    <input type="date" name="date_naissance">
+
+    <label>Blessé</label>
+    <select name="blesse">
+      <option value="">-- Sélectionner --</option>
+      <option>Oui</option>
+      <option>Non</option>
+    </select>
+
+    <label>Relogés</label>
+    <select name="reloges">
+      <option value="">-- Sélectionner --</option>
+      <option>Oui</option>
+      <option>Non</option>
+    </select>
+
+    <label>Animaux</label>
+    <select name="animaux">
+      <option value="">-- Sélectionner --</option>
+      <option>Oui</option>
+      <option>Non</option>
+    </select>
+
+    <label>Effets personnels</label>
+    <input type="text" name="effets_perso">
+
+    <label>Autres informations</label>
+    <textarea name="autres_infos" rows="3"></textarea>
+
+    <button type="submit">Enregistrer</button>
+  </form>
+</body>
+</html>

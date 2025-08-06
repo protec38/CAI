@@ -3,6 +3,8 @@ from .models import db, Utilisateur, Evenement, FicheImplique
 from werkzeug.security import check_password_hash
 from datetime import datetime
 from functools import wraps
+from flask import session
+from .models import Utilisateur
 
 main_bp = Blueprint("main_bp", __name__)
 
@@ -14,6 +16,11 @@ def login_required(f):
             return redirect(url_for("main_bp.login"))
         return f(*args, **kwargs)
     return decorated_function
+
+def get_current_user():
+    if "user_id" in session:
+        return Utilisateur.query.get(session["user_id"])
+    return None
 
 # Récupération de l'utilisateur connecté
 def get_user():

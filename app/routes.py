@@ -116,12 +116,12 @@ def fiche_new():
         flash("Aucun événement sélectionné.", "error")
         return redirect(url_for("main_bp.evenement_new"))
 
-    if request.method == "POST":
-        # ✅ Génération automatique du numero_fiche
-        last_fiche = FicheImplique.query.order_by(FicheImplique.id.desc()).first()
-        next_id = 1 if not last_fiche else last_fiche.id + 1
-        numero_fiche = f"{next_id:04d}"  # format 0001, 0002, etc.
+    # ✅ Calculer le numéro à afficher
+    last_fiche = FicheImplique.query.order_by(FicheImplique.id.desc()).first()
+    next_id = 1 if not last_fiche else last_fiche.id + 1
+    numero_fiche = f"{next_id:04d}"
 
+    if request.method == "POST":
         fiche = FicheImplique(
             numero_fiche=numero_fiche,
             humain=request.form.get("humain") == "on",
@@ -151,4 +151,6 @@ def fiche_new():
         flash("Fiche impliqué créée avec succès.", "success")
         return redirect(url_for("main_bp.dashboard"))
 
-    return render_template("fiche_new.html", user=user)
+    # 👉 Affiche le formulaire avec le champ prérempli
+    return render_template("fiche_new.html", user=user, numero_fiche=numero_fiche)
+

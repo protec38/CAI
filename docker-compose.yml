@@ -4,7 +4,7 @@ services:
   cai:
     build: .
     ports:
-      - "5002:5000"
+      - "5001:5000"
     environment:
       - SECRET_KEY=supersecret
       - ENTREE_USER=entree
@@ -22,3 +22,4 @@ services:
 
 volumes:
   cai_data:
+

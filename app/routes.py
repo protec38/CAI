@@ -153,3 +153,39 @@ def signaler_sortie(fiche_id):
         return redirect(url_for("main.dashboard"))
 
     return render_template("fiche_sortie.html", fiche=fiche)
+
+@main_bp.route("/select_role", methods=["GET", "POST"])
+def select_role():
+    if "user_id" not in session:
+        return redirect(url_for("main.login"))
+
+    user = Utilisateur.query.get(session["user_id"])
+    evenements = Evenement.query.order_by(Evenement.date_creation.desc()).all()
+
+    # Détermination des rôles disponibles selon le profil
+    roles = []
+    if user.type_utilisateur == "interne":
+        if user.niveau == "technicien":
+            roles = ["entree_sortie", "bagagerie", "secouriste"]
+        elif user.niveau == "encadrant":
+            roles = ["entree_sortie", "bagagerie", "secouriste", "responsable", "codep"]
+    else:
+        roles = ["autorite", "entree_sortie", "bagagerie"]
+
+    if request.method == "POST":
+        selected_role = request.form.get("role")
+        selected_evt_id = request.form.get("evenement_id")
+        evenement = Evenement.query.get(int(selected_evt_id))
+
+        if not evenement:
+            flash("Événement invalide.")
+            return redirect(url_for("main.select_role"))
+
+        user.role = selected_role
+        user.evenement = evenement
+        db.session.commit()
+
+        flash(f"Rôle {selected_role} sélectionné pour l'événement {evenement.nom}.")
+        return redirect(url_for("main.dashboard"))
+
+    return render_template("select_role.html", user=user, evenements=evenements, roles=roles)

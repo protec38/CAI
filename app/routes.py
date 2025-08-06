@@ -6,11 +6,11 @@ from werkzeug.security import check_password_hash
 
 main_bp = Blueprint('main_bp', __name__)
 
-# 🔁 Génération auto du numéro d’événement
+# Génération automatique d’un numéro d’événement
 def generer_numero_evenement():
     now = datetime.now()
-    prefix = "038"  # Numéro du département
-    date_part = now.strftime("%y%m")  # YYMM
+    prefix = "038"
+    date_part = now.strftime("%y%m")
     base_code = f"{prefix}{date_part}"
 
     dernier = (
@@ -46,16 +46,19 @@ def select_role():
     user = Utilisateur.query.get(session.get("user_id"))
     if not user:
         return redirect(url_for("main_bp.login"))
+
+    # Montrer seulement les événements associés sauf si admin/codep
     evenements = []
-if user.evenement:
-    evenements.append(user.evenement)
-elif user.is_admin or user.role == "codep":
-    evenements = Evenement.query.all()
+    if user.evenement:
+        evenements.append(user.evenement)
+    elif user.is_admin or user.role == "codep":
+        evenements = Evenement.query.all()
 
     if request.method == "POST":
         session["role"] = request.form["role"]
         session["evenement_id"] = int(request.form["evenement_id"])
         return redirect(url_for("main_bp.dashboard"))
+
     return render_template("select_role.html", user=user, evenements=evenements)
 
 
@@ -89,7 +92,6 @@ def evenement_new():
         return redirect(url_for("main_bp.select_role"))
 
     return render_template("evenement_new.html")
-
 
 
 @main_bp.route("/fiche/new", methods=["GET", "POST"])

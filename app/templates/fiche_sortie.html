@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sortie impliqué</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Sortie de l'impliqué n°{{ fiche.numero_fiche }}</h2>
+
+    <form method="POST">
+      <label>Destination :</label>
+      <input type="text" name="destination" required>
+
+      <label>Moyen de transport :</label>
+      <input type="text" name="transport" required>
+
+      <button type="submit">Enregistrer la sortie</button>
+      <a href="{{ url_for('main.dashboard') }}">Annuler</a>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for msg in messages %}
+            <p>{{ msg }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+</body>
+</html>

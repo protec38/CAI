@@ -62,31 +62,42 @@ def create_implique():
         return redirect(url_for("main.login"))
 
     if request.method == "POST":
-        numero_fiche = f"038{datetime.now().strftime('%y%m%d')}{str(FicheImplique.query.count() + 1).zfill(3)}"
+        try:
+            numero_fiche = f"038{datetime.now().strftime('%y%m%d')}{str(FicheImplique.query.count() + 1).zfill(3)}"
 
-        fiche = FicheImplique(
-            numero_fiche=numero_fiche,
-            humain=bool(int(request.form.get("humain", 1))),
-            nom=request.form.get("nom"),
-            prenom=request.form.get("prenom"),
-            date_naissance=request.form.get("date_naissance"),
-            nationalite=request.form.get("nationalite"),
-            adresse=request.form.get("adresse"),
-            telephone=request.form.get("telephone"),
-            personne_a_prevenir=request.form.get("personne_a_prevenir"),
-            tel_personne_a_prevenir=request.form.get("tel_personne_a_prevenir"),
-            recherche_personne=request.form.get("recherche_personne"),
-            difficulte=request.form.get("difficulte"),
-            competences=request.form.get("competences"),
-            effets_perso=request.form.get("effets_perso"),
-            nom_createur="Auto",
-            prenom_createur="System"
-        )
+            # Conversion de la date de naissance (si présente)
+            date_naissance_str = request.form.get("date_naissance")
+            date_naissance = datetime.strptime(date_naissance_str, "%Y-%m-%d").date() if date_naissance_str else None
 
-        db.session.add(fiche)
-        db.session.commit()
+            fiche = FicheImplique(
+                numero_fiche=numero_fiche,
+                humain=bool(int(request.form.get("humain", 1))),
+                nom=request.form.get("nom"),
+                prenom=request.form.get("prenom"),
+                date_naissance=date_naissance,
+                nationalite=request.form.get("nationalite"),
+                adresse=request.form.get("adresse"),
+                telephone=request.form.get("telephone"),
+                personne_a_prevenir=request.form.get("personne_a_prevenir"),
+                tel_personne_a_prevenir=request.form.get("tel_personne_a_prevenir"),
+                recherche_personne=request.form.get("recherche_personne"),
+                difficulte=request.form.get("difficulte"),
+                competences=request.form.get("competences"),
+                effets_perso=request.form.get("effets_perso"),
+                nom_createur="Auto",
+                prenom_createur="System"
+            )
 
-        flash("Fiche créée avec succès")
-        return redirect(url_for("main.dashboard"))
+            db.session.add(fiche)
+            db.session.commit()
+
+            flash("Fiche créée avec succès")
+            return redirect(url_for("main.dashboard"))
+
+        except Exception as e:
+            print("❌ Erreur lors de la création de fiche :", e)
+            flash("Erreur lors de la création de la fiche")
+            return redirect(url_for("main.create_implique"))
 
     return render_template("formulaire_implique.html")
+

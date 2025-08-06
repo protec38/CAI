@@ -2,117 +2,111 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Choisir ou Créer un Événement</title>
+    <title>Créer ou Rejoindre un Événement</title>
     <style>
         body {
-            background: linear-gradient(to right, #002f6c, #ff6f00);
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #00477e, #ff7e00);
             color: white;
             margin: 0;
             padding: 0;
         }
 
         .container {
-            max-width: 700px;
-            margin: 60px auto;
-            background: white;
-            color: black;
-            border-radius: 10px;
+            max-width: 600px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.05);
             padding: 30px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
         }
 
-        h2 {
+        h1 {
             text-align: center;
-            color: #002f6c;
+            margin-bottom: 25px;
         }
 
         form {
-            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
         label {
-            font-weight: bold;
-            display: block;
             margin-top: 15px;
+            font-weight: bold;
         }
 
         input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 5px;
             font-size: 16px;
         }
 
         button {
-            background-color: #002f6c;
+            margin-top: 25px;
+            background-color: #ff7e00;
             color: white;
-            font-weight: bold;
-            margin-top: 20px;
             cursor: pointer;
         }
 
         button:hover {
-            background-color: #001f4c;
+            background-color: #e46d00;
         }
 
-        .section {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ccc;
-        }
-
-        .flash {
-            color: red;
-            font-weight: bold;
+        .note {
+            font-size: 0.9em;
             margin-top: 10px;
+            color: #ddd;
+        }
+
+        .divider {
+            height: 2px;
+            background: #ffffff33;
+            margin: 30px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Rejoindre un Événement</h2>
+<div class="container">
+    <h1>Gestion des Événements</h1>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="flash">{{ message }}</div>
+    {% if user.is_admin or user.role == 'codep' %}
+    <form method="POST" action="{{ url_for('main_bp.evenement_new') }}">
+        <h2>Créer un Nouvel Événement</h2>
+        <label for="nom">Nom de l’événement :</label>
+        <input type="text" id="nom" name="nom" required>
+
+        <label for="type_evt">Type :</label>
+        <select id="type_evt" name="type_evt" required>
+            <option value="CAI">CAI</option>
+            <option value="CHU">CHU</option>
+            <option value="PRV">PRV</option>
+        </select>
+
+        <button type="submit">Créer l'événement</button>
+    </form>
+    {% endif %}
+
+    <div class="divider"></div>
+
+    <form method="POST" action="{{ url_for('main_bp.evenement_select') }}">
+        <h2>Rejoindre un Événement existant</h2>
+
+        <label for="evenement_id">Événement :</label>
+        <select name="evenement_id" id="evenement_id" required>
+            {% for evt in evenements %}
+                {% if user.is_admin or user.role == 'codep' or evt in user.evenement %}
+                    <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
+                {% endif %}
             {% endfor %}
-          {% endif %}
-        {% endwith %}
+        </select>
 
-        <form method="POST">
-            <label for="evenement_id">Sélectionnez un événement existant :</label>
-            <select name="evenement_id" id="evenement_id" required>
-                <option value="" disabled selected>-- Choisissez --</option>
-                {% for evt in evenements %}
-                    <option value="{{ evt.id }}">{{ evt.numero }} - {{ evt.nom }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Entrer dans l’événement</button>
-        </form>
+        <button type="submit">Rejoindre</button>
+    </form>
 
-        {% if user.is_admin or user.role == 'codep' %}
-        <div class="section">
-            <h2>Créer un nouvel Événement</h2>
-            <form method="POST">
-                <label for="nom">Nom de l’événement :</label>
-                <input type="text" name="nom" required>
-
-                <label for="type">Type :</label>
-                <select name="type">
-                    <option value="CAI">CAI</option>
-                    <option value="CHU">CHU</option>
-                    <option value="PRV">PRV</option>
-                </select>
-
-                <input type="hidden" name="create_evt" value="1">
-                <button type="submit">Créer l’événement</button>
-            </form>
-        </div>
-        {% endif %}
-    </div>
+    <p class="note">Vous devez être rattaché à un événement pour accéder au tableau de bord.</p>
+</div>
 </body>
 </html>

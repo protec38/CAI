@@ -100,4 +100,25 @@ def create_implique():
             return redirect(url_for("main.create_implique"))
 
     return render_template("formulaire_implique.html")
+@main_bp.route("/fiche/<int:fiche_id>/sortie", methods=["GET", "POST"])
+def signaler_sortie(fiche_id):
+    if "user_id" not in session:
+        return redirect(url_for("main.login"))
+
+    fiche = FicheImplique.query.get_or_404(fiche_id)
+
+    if request.method == "POST":
+        try:
+            fiche.date_sortie = datetime.now()
+            fiche.destination = request.form.get("destination")
+            fiche.moyen_transport = request.form.get("moyen_transport")
+            db.session.commit()
+            flash("Sortie enregistrée avec succès.")
+            return redirect(url_for("main.dashboard"))
+        except Exception as e:
+            print("❌ Erreur lors de la sortie :", e)
+            flash("Erreur lors de l'enregistrement de la sortie.")
+            return redirect(url_for("main.dashboard"))
+
+    return render_template("sortie.html", fiche=fiche)
 

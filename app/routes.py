@@ -1,123 +1,123 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
-from .models import db, Utilisateur, Evenement, FicheImplique
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from .models import Utilisateur, Evenement, FicheImplique
+from . import db
+from werkzeug.security import check_password_hash
+from functools import wraps
 from datetime import datetime
 
 main_bp = Blueprint("main_bp", __name__)
 
-# 🔐 Déco : vérifie que l'utilisateur est connecté
+# 🔒 Décorateur pour vérifier l’authentification
 def login_required(f):
-    from functools import wraps
-
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "user_id" not in session:
             return redirect(url_for("main_bp.login"))
         return f(*args, **kwargs)
-
     return decorated_function
 
-# 🔐 Récupère l'utilisateur connecté
+# 🔧 Fonction utilitaire
 def get_current_user():
-    user_id = session.get("user_id")
-    if user_id:
-        return Utilisateur.query.get(user_id)
-    return None
+    return Utilisateur.query.get(session["user_id"])
 
-# 🟢 Page de login
+# 🔐 Page de connexion
 @main_bp.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        nom_utilisateur = request.form["username"]
+        mot_de_passe = request.form["password"]
+        user = Utilisateur.query.filter_by(nom_utilisateur=nom_utilisateur).first()
 
-        user = Utilisateur.query.filter_by(nom_utilisateur=username).first()
-        if user and user.check_password(password):
+        if user and user.check_password(mot_de_passe):
             session["user_id"] = user.id
             return redirect(url_for("main_bp.evenement_new"))
+        else:
+            flash("Nom d'utilisateur ou mot de passe invalide.", "danger")
 
     return render_template("login.html")
 
-# 🔴 Déconnexion
+# 🔓 Déconnexion
 @main_bp.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("main_bp.login"))
 
-# ✅ Création ou sélection d’un événement
+# 📋 Création + sélection d’un événement
 @main_bp.route("/evenement/new", methods=["GET", "POST"])
 @login_required
 def evenement_new():
     user = get_current_user()
 
-    if not user.is_admin and user.role != "codep":
-        return redirect(url_for("main_bp.dashboard"))
-
     if request.method == "POST":
-        if "create_event" in request.form:
-            nom = request.form["nom"]
-            type_evt = request.form["type_evt"]
+        # Création d’un événement
+        nom_evt = request.form["nom_evt"]
+        type_evt = request.form["type_evt"]
 
+        last_evt = Evenement.query.order_by(Evenement.id.desc()).first()
+        next_id = last_evt.id + 1 if last_evt else 1
+        numero_evt = str(next_id).zfill(8)
 
-    # ➕ Génération automatique du numéro
-    last_evt = Evenement.query.order_by(Evenement.id.desc()).first()
-    if last_evt and last_evt.numero and last_evt.numero.isdigit():
-        last_num = int(last_evt.numero)
-    else:
-        last_num = 0
-    new_numero = str(last_num + 1).zfill(5)  # Format 00001, 00002, etc.
+        nouvel_evt = Evenement(
+            numero=numero_evt,
+            nom=nom_evt,
+            type=type_evt,
+            date_creation=datetime.utcnow(),
+        )
+        db.session.add(nouvel_evt)
+        db.session.commit()
 
-    nouvel_evt = Evenement(nom=nom, type=type_evt, numero=new_numero)
-    db.session.add(nouvel_evt)
-    db.session.commit()
-
-            # Associe tous les admin et codep à ce nouvel événement
-            users = Utilisateur.query.filter(
-                (Utilisateur.is_admin == True) | (Utilisateur.role == "codep")
-            ).all()
-            for u in users:
-                u.evenement_id = nouvel_evt.id
+        # Lier automatiquement l'utilisateur admin/codep à l'événement
+        if user.is_admin or user.role == "codep":
+            user.evenement_id = nouvel_evt.id
             db.session.commit()
 
-            session["evenement_id"] = nouvel_evt.id
-            return redirect(url_for("main_bp.dashboard"))
+        flash("Événement créé avec succès !", "success")
+        return redirect(url_for("main_bp.dashboard"))
 
-        elif "selected_event" in request.form:
-            selected_event_id = request.form["selected_event"]
-            session["evenement_id"] = selected_event_id
-            return redirect(url_for("main_bp.dashboard"))
-
-    evenements = Evenement.query.order_by(Evenement.date_creation.desc()).all()
+    evenements = Evenement.query.all()
     return render_template("evenement_new.html", user=user, evenements=evenements)
 
-# 📋 Tableau de bord de l'événement actif
+# 🔁 Sélection d’un événement existant
+@main_bp.route("/evenement/select", methods=["POST"])
+@login_required
+def select_evenement():
+    user = get_current_user()
+    evt_id = request.form.get("evenement_id")
+
+    if evt_id:
+        user.evenement_id = int(evt_id)
+        db.session.commit()
+        return redirect(url_for("main_bp.dashboard"))
+    else:
+        flash("Veuillez sélectionner un événement.", "warning")
+        return redirect(url_for("main_bp.evenement_new"))
+
+# 🏠 Tableau de bord
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
     user = get_current_user()
-    evenement_id = session.get("evenement_id")
-
-    if not evenement_id:
+    if not user.evenement_id:
+        flash("Aucun événement sélectionné.", "warning")
         return redirect(url_for("main_bp.evenement_new"))
 
-    evenement = Evenement.query.get(evenement_id)
-    fiches = FicheImplique.query.filter_by(evenement_id=evenement_id).all()
+    evenement = Evenement.query.get(user.evenement_id)
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
 
     return render_template("dashboard.html", user=user, evenement=evenement, impliques=fiches)
 
-# ➕ Nouvelle fiche impliqué
+# ➕ Création fiche impliqué
 @main_bp.route("/fiche/new", methods=["GET", "POST"])
 @login_required
 def fiche_new():
     user = get_current_user()
-    evenement_id = session.get("evenement_id")
-
-    if not evenement_id:
-        return redirect(url_for("main_bp.evenement_new"))
+    evenement = Evenement.query.get(user.evenement_id)
 
     if request.method == "POST":
+        numero_fiche = str(FicheImplique.query.count() + 1).zfill(8)
         fiche = FicheImplique(
-            numero_fiche=request.form["numero_fiche"],
-            humain=request.form.get("humain") == "on",
+            numero_fiche=numero_fiche,
+            humain=True,
             nom=request.form["nom"],
             prenom=request.form["prenom"],
             date_naissance=datetime.strptime(request.form["date_naissance"], "%Y-%m-%d") if request.form["date_naissance"] else None,
@@ -132,13 +132,15 @@ def fiche_new():
             effets_perso=request.form["effets_perso"],
             nom_createur=user.nom,
             prenom_createur=user.prenom,
+            date_sortie=datetime.strptime(request.form["date_sortie"], "%Y-%m-%d") if request.form["date_sortie"] else None,
             destination=request.form["destination"],
             moyen_transport=request.form["moyen_transport"],
-            evenement_id=evenement_id,
             createur_id=user.id,
+            evenement_id=evenement.id,
         )
         db.session.add(fiche)
         db.session.commit()
+        flash("Fiche impliqué créée avec succès.", "success")
         return redirect(url_for("main_bp.dashboard"))
 
-    return render_template("fiche_new.html", user=user)
+    return render_template("fiche_new.html", user=user, evenement=evenement)

@@ -1,45 +1,42 @@
-from . import db
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date
 
-class Evenement(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    numero = db.Column(db.String(10), unique=True)  # généré automatiquement
-    nom = db.Column(db.String(100), nullable=False)
-    type = db.Column(db.String(10), default="CAI")
-    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
-    utilisateurs = db.relationship("Utilisateur", back_populates="evenement", lazy=True)
-    impliques = db.relationship("FicheImplique", back_populates="evenement", lazy=True)
+db = SQLAlchemy()
 
 class Utilisateur(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nom_utilisateur = db.Column(db.String(50), unique=True, nullable=False)
-    mot_de_passe_hash = db.Column(db.String(128), nullable=False)
-    type_utilisateur = db.Column(db.String(20), nullable=False)
-    niveau = db.Column(db.String(20))
-    role = db.Column(db.String(30))
+    nom_utilisateur = db.Column(db.String(150), unique=True, nullable=False)
+    mot_de_passe = db.Column(db.String(200), nullable=False)
     nom = db.Column(db.String(100))
     prenom = db.Column(db.String(100))
-    evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'))
-    evenement = db.relationship("Evenement", back_populates="utilisateurs")
-    is_admin = db.Column(db.Boolean, default=False)
-    actif = db.Column(db.Boolean, default=True)
+    role = db.Column(db.String(50))
+    evenement_selectionne_id = db.Column(db.Integer, db.ForeignKey('evenement.id'))
 
-    def set_password(self, mot_de_passe):
-        self.mot_de_passe_hash = generate_password_hash(mot_de_passe)
+    evenement_selectionne = db.relationship('Evenement', foreign_keys=[evenement_selectionne_id], post_update=True)
 
-    def check_password(self, mot_de_passe):
-        return check_password_hash(self.mot_de_passe_hash, mot_de_passe)
+    def __repr__(self):
+        return f"<Utilisateur {self.nom_utilisateur}>"
+
+class Evenement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nom_evt = db.Column(db.String(150), nullable=False)
+    type_evt = db.Column(db.String(50))
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
+    utilisateurs_associes = db.relationship('Utilisateur', backref='evenement', lazy=True, foreign_keys=[Utilisateur.evenement_selectionne_id])
+    fiches = db.relationship('FicheImplique', backref='evenement', lazy=True)
+
+    def __repr__(self):
+        return f"<Evenement {self.nom_evt}>"
 
 class FicheImplique(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    numero_fiche = db.Column(db.String(10), nullable=False, unique=True)
+    numero_fiche = db.Column(db.String(10), nullable=False)
     humain = db.Column(db.Boolean, default=True)
-    nom = db.Column(db.String(50), nullable=False)
+    nom = db.Column(db.String(50))
     prenom = db.Column(db.String(50))
     date_naissance = db.Column(db.Date)
-    nationalite = db.Column(db.String(100))
+    nationalite = db.Column(db.String(50))
     adresse = db.Column(db.String(150))
     telephone = db.Column(db.String(20))
     personne_a_prevenir = db.Column(db.String(50))
@@ -48,13 +45,15 @@ class FicheImplique(db.Model):
     difficulte = db.Column(db.String(300))
     competences = db.Column(db.String(300))
     effets_perso = db.Column(db.String(300))
-    nom_createur = db.Column(db.String(50))
-    prenom_createur = db.Column(db.String(50))
+    nom_createur = db.Column(db.String(100))
+    prenom_createur = db.Column(db.String(100))
     date_entree = db.Column(db.DateTime, default=datetime.utcnow)
     date_sortie = db.Column(db.DateTime, nullable=True)
-    destination = db.Column(db.String(100), nullable=True)
-    moyen_transport = db.Column(db.String(100), nullable=True)
+    destination = db.Column(db.String(150))
+    moyen_transport = db.Column(db.String(100))
     
-    # Clés étrangères
-    createur_id = db.Column(db.Integer, db.ForeignKey("utilisateur.id"))
-    evenement_id = db.Column(db.Integer, db.ForeignKey("evenement.id"))
+    createur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'))
+    evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'))
+
+    def __repr__(self):
+        return f"<FicheImplique {self.numero_fiche}>"

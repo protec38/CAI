@@ -118,4 +118,29 @@
         <button type="submit" class="btn btn-primary w-100">Enregistrer la fiche</button>
     </form>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const birthInput = document.getElementById("date_naissance");
+
+        birthInput.addEventListener("change", function () {
+            const birthDate = new Date(this.value);
+            const today = new Date();
+
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            const ageField = document.getElementById("age_calculated");
+
+            if (!isNaN(age)) {
+                ageField.innerText = `Âge estimé : ${age} ans`;
+            } else {
+                ageField.innerText = "";
+            }
+        });
+    });
+</script>
 {% endblock %}

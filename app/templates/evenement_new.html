@@ -1,34 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Créer ou Sélectionner un Événement</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Création Événement</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <div class="login-container">
-        <h2>Créer un nouvel événement</h2>
-        <form method="POST">
-            <input type="hidden" name="create_event" value="1">
-            <input type="text" name="nom" placeholder="Nom de l'événement" required>
-            <select name="type_evt" required>
-                <option value="">-- Type --</option>
-                <option value="CAI">CAI</option>
-                <option value="CHU">CHU</option>
-            </select>
-            <button type="submit">Créer l’événement</button>
-        </form>
+<body class="login-body">
+  <div class="login-container">
+    <h2>Gestion des Événements</h2>
 
-        <hr>
+    <!-- ✅ Formulaire création événement -->
+    {% if user.is_admin or user.role == 'codep' %}
+    <form method="POST" action="{{ url_for('main_bp.evenement_new') }}">
+      <div class="form-group">
+        <label for="nom_evt">Nom de l’événement :</label>
+        <input type="text" name="nom_evt" id="nom_evt" required />
+      </div>
 
-        <h2>Ou accéder à un événement existant</h2>
-        <form method="POST">
-            <select name="selected_event" required>
-                {% for evt in evenements %}
-                    <option value="{{ evt.id }}">#{{ evt.numero }} - {{ evt.nom }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Accéder à l’événement</button>
-        </form>
-    </div>
+      <div class="form-group">
+        <label for="type_evt">Type :</label>
+        <select name="type_evt" id="type_evt" required>
+          <option value="CAI">CAI</option>
+          <option value="CHU">CHU</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn">Créer l’événement</button>
+    </form>
+    {% endif %}
+
+    <hr>
+
+    <!-- 📋 Sélection d’un événement existant -->
+    <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
+      <div class="form-group">
+        <label for="evenement_id">Accéder à un événement existant :</label>
+        <select name="evenement_id" id="evenement_id" required>
+          <option value="">-- Sélectionner --</option>
+          {% for evt in evenements %}
+            <option value="{{ evt.id }}">{{ evt.numero }} - {{ evt.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn">Accéder à l’événement</button>
+    </form>
+  </div>
 </body>
 </html>

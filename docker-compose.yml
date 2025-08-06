@@ -1,26 +1,11 @@
-version: '3'
+version: "3"
 
 services:
   cai:
     build: .
     ports:
       - "5002:5000"
+    volumes:
+      - ./db:/app/db
     environment:
       - SECRET_KEY=supersecret
-      - ENTREE_USER=entree
-      - ENTREE_PASS=test
-      - SORTIE_USER=sortie
-      - SORTIE_PASS=test
-    volumes:
-      - cai_data:/app/cai_data
-    command: >
-      sh -c "mkdir -p cai_data &&
-             [ -f cai_data/cai.db ] || touch cai_data/cai.db &&
-             ln -sf cai_data/cai.db cai.db &&
-             python app.py"
-    restart: unless-stopped
-
-volumes:
-  cai_data:
-
-

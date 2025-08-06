@@ -1,5 +1,3 @@
-# app/routes.py
-
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from . import db
 from .models import Utilisateur, Evenement, FicheImplique
@@ -7,6 +5,28 @@ from datetime import datetime
 from werkzeug.security import check_password_hash
 
 main_bp = Blueprint('main_bp', __name__)
+
+# 🔁 Génération auto du numéro d’événement
+def generer_numero_evenement():
+    now = datetime.now()
+    prefix = "038"  # Numéro du département
+    date_part = now.strftime("%y%m")  # YYMM
+    base_code = f"{prefix}{date_part}"
+
+    dernier = (
+        Evenement.query
+        .filter(Evenement.numero.like(f"{base_code}%"))
+        .order_by(Evenement.numero.desc())
+        .first()
+    )
+
+    if dernier and dernier.numero[-2:].isdigit():
+        chrono = int(dernier.numero[-2:]) + 1
+    else:
+        chrono = 1
+
+    return f"{base_code}{chrono:02}"
+
 
 @main_bp.route("/", methods=["GET", "POST"])
 def login():
@@ -20,6 +40,7 @@ def login():
         flash("Nom d'utilisateur ou mot de passe incorrect.")
     return render_template("login.html")
 
+
 @main_bp.route("/select_role", methods=["GET", "POST"])
 def select_role():
     user = Utilisateur.query.get(session.get("user_id"))
@@ -32,6 +53,7 @@ def select_role():
         return redirect(url_for("main_bp.dashboard"))
     return render_template("select_role.html", user=user, evenements=evenements)
 
+
 @main_bp.route("/dashboard")
 def dashboard():
     user = Utilisateur.query.get(session.get("user_id"))
@@ -41,16 +63,22 @@ def dashboard():
     impliques = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
     return render_template("dashboard.html", user=user, evenement=evenement, impliques=impliques)
 
+
 @main_bp.route("/evenement/new", methods=["GET", "POST"])
 def evenement_new():
     if request.method == "POST":
         nom = request.form["nom"]
-        numero = request.form["numero"]
-        evenement = Evenement(nom=nom, numero=numero)
+        type_event = request.form.get("type", "CHU")  # CHU ou CAI
+        numero = generer_numero_evenement()
+
+        evenement = Evenement(nom=nom, numero=numero, type=type_event)
         db.session.add(evenement)
         db.session.commit()
+
+        flash(f"Événement créé avec le numéro : {numero}", "success")
         return redirect(url_for("main_bp.select_role"))
     return render_template("evenement_new.html")
+
 
 @main_bp.route("/fiche/new", methods=["GET", "POST"])
 def fiche_new():

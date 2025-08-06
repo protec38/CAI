@@ -30,7 +30,7 @@
             {% if evenements %}
             <hr>
             <!-- Sélection d'un événement existant -->
-            <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
+            <form method="POST" action="{{ url_for('main_bp.evenement_new') }}">
                 <label for="evenement_id">Sélectionner un événement</label>
                 <select name="evenement_id" required>
                     {% for evt in evenements %}

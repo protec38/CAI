@@ -448,6 +448,8 @@ def fiche_edit(id):
     return render_template("fiche_edit.html", fiche=fiche, user=user)
 
 
+########################################################################
+
 @main_bp.route("/fiche/delete/<int:id>", methods=["POST"])
 @login_required
 def fiche_delete(id):
@@ -463,6 +465,13 @@ def fiche_delete(id):
     db.session.commit()
     flash("🗑️ Fiche supprimée avec succès.", "info")
     return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement.id))
+
+
+
+################################################################################
+
+
+
 @main_bp.route("/fiche/<int:id>/sortie", methods=["GET", "POST"])
 @login_required
 def fiche_sortie(id):
@@ -475,10 +484,17 @@ def fiche_sortie(id):
 
     # Marquer la fiche comme "sortie"
     fiche.statut = "sorti"
+    fiche.heure_sortie = datetime.utcnow()  # ⬅️ Ajout de l'heure de sortie
     db.session.commit()
 
     flash(f"🚪 La fiche de {fiche.nom} a été marquée comme sortie.", "info")
     return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
+
+
+
+###############################################################
+
+
 
 @main_bp.route("/evenement/<int:evenement_id>/update_statut", methods=["POST"])
 @login_required

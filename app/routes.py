@@ -152,26 +152,24 @@ def fiche_new():
         difficulte = request.form.get("difficulte")
         telephone = request.form.get("telephone")
 
+        # 🔢 Génération du numéro de fiche local à l'évènement
         last_fiche_evt = (
-    FicheImplique.query
-    .filter_by(evenement_id=evenement.id)
-    .order_by(FicheImplique.id.desc())
-    .first()
-)
+            FicheImplique.query
+            .filter_by(evenement_id=evenement.id)
+            .order_by(FicheImplique.id.desc())
+            .first()
+        )
 
-# Incrément local à l'évènement
-next_local = 1
-if last_fiche_evt and last_fiche_evt.numero:
-    try:
-        # On suppose le format '001-0001'
-        last_parts = last_fiche_evt.numero.split("-")
-        if len(last_parts) == 2:
-            next_local = int(last_parts[1]) + 1
-    except ValueError:
-        pass
+        next_local = 1
+        if last_fiche_evt and last_fiche_evt.numero:
+            try:
+                last_parts = last_fiche_evt.numero.split("-")
+                if len(last_parts) == 2:
+                    next_local = int(last_parts[1]) + 1
+            except ValueError:
+                pass
 
-# Numéro au format : "ID_EVENEMENT-ZZZZ"
-numero = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
+        numero = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
 
         fiche = FicheImplique(
             numero=numero,
@@ -188,10 +186,28 @@ numero = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
         db.session.add(fiche)
         db.session.commit()
 
-        flash("✅ Fiche impliqué créée pour l’évènement en cours.", "success")
+        flash(f"✅ Fiche n°{numero} créée pour l’évènement en cours.", "success")
         return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
 
-    return render_template("fiche_new.html", user=user)
+    # 🧾 Prévisualisation du numéro pour l'afficher en lecture seule
+    last_fiche_evt = (
+        FicheImplique.query
+        .filter_by(evenement_id=evenement.id)
+        .order_by(FicheImplique.id.desc())
+        .first()
+    )
+    next_local = 1
+    if last_fiche_evt and last_fiche_evt.numero:
+        try:
+            last_parts = last_fiche_evt.numero.split("-")
+            if len(last_parts) == 2:
+                next_local = int(last_parts[1]) + 1
+        except ValueError:
+            pass
+    numero_prevu = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
+
+    return render_template("fiche_new.html", user=user, numero_prevu=numero_prevu)
+
 
 
 ########################################################

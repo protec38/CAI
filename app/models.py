@@ -18,9 +18,9 @@ class Utilisateur(db.Model):
     nom = db.Column(db.String(100), nullable=True)
     prenom = db.Column(db.String(100), nullable=True)
 
-    role = db.Column(db.String(50), nullable=False)  # Ex: entree, bagages, secouriste...
-    type_utilisateur = db.Column(db.String(20), nullable=False)  # permanent / provisoire
-    niveau = db.Column(db.String(20), nullable=True)  # encadrant / technicien (optionnel)
+    role = db.Column(db.String(50), nullable=False)
+    type_utilisateur = db.Column(db.String(20), nullable=False)
+    niveau = db.Column(db.String(20), nullable=True)
     fiches = db.relationship('FicheImplique', backref='createur', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
     actif = db.Column(db.Boolean, default=True)
@@ -40,6 +40,7 @@ class Utilisateur(db.Model):
     def __repr__(self):
         return f'<Utilisateur {self.nom_utilisateur}>'
 
+
 # Évènement
 class Evenement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,7 +51,6 @@ class Evenement(db.Model):
     type_evt = db.Column(db.String(50), nullable=True)
     date_ouverture = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # 🆕 Champ pour identifier le créateur/responsable
     createur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=True)
     createur = db.relationship('Utilisateur', backref='evenements_crees', foreign_keys=[createur_id])
 
@@ -60,32 +60,44 @@ class Evenement(db.Model):
     def __repr__(self):
         return f'<Evenement {self.nom}>'
 
+
 # Fiche Impliqué
 class FicheImplique(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero = db.Column(db.String(20), unique=True, nullable=False)
-    nom = db.Column(db.String(50), nullable=False)
-    prenom = db.Column(db.String(50), nullable=True)
+
+    nom = db.Column(db.String(100))
+    prenom = db.Column(db.String(100))
     date_naissance = db.Column(db.Date, nullable=True)
     nationalite = db.Column(db.String(50), nullable=True)
-    adresse = db.Column(db.String(150), nullable=True)
+    adresse = db.Column(db.String(200), nullable=True)
     telephone = db.Column(db.String(20), nullable=True)
-    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=False)
-    statut = db.Column(db.String(20), nullable=False, default="présent")  # présent / sorti / supprimé
-    heure_arrivee = db.Column(db.DateTime, default=datetime.utcnow)
-    difficulte = db.Column(db.String(200), nullable=True)
+
+    personne_a_prevenir = db.Column(db.String(255))
+    tel_personne_a_prevenir = db.Column(db.String(50))
+    recherche_personne = db.Column(db.Text)
+
     difficultes = db.Column(db.Text)
-    competence = db.Column(db.String(200), nullable=True)
-    destination = db.Column(db.String(255))
-    est_animal = db.Column(db.Boolean, default=False)
-    recherche_personne = db.Column(db.String(300), nullable=True)
-    numero_recherche = db.Column(db.String(20), nullable=True)
     competences = db.Column(db.Text)
 
+    effets_perso = db.Column(db.String(255))
+    destination = db.Column(db.String(255))
+    moyen_transport = db.Column(db.String(255))
+
+    est_animal = db.Column(db.Boolean, default=False)
+    humain = db.Column(db.Boolean, default=True)
+
+    numero_recherche = db.Column(db.String(20), nullable=True)
+
+    statut = db.Column(db.String(20), nullable=False, default="présent")
+    heure_arrivee = db.Column(db.DateTime, default=datetime.utcnow)
+
     evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'), nullable=False)
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=False)
 
     def __repr__(self):
         return f"<FicheImplique {self.nom} {self.prenom}>"
+
 
 # Ticket logistique
 class Ticket(db.Model):
@@ -97,7 +109,7 @@ class Ticket(db.Model):
     nature = db.Column(db.String(200), nullable=True)
     degre_urgence = db.Column(db.String(20), nullable=True)
 
-    statut = db.Column(db.String(20), nullable=False, default='nouveau')  # nouveau / pris en compte / clôturé / supprimé
+    statut = db.Column(db.String(20), nullable=False, default='nouveau')
 
     commentaire_prise_en_compte = db.Column(db.Text, nullable=True)
     date_prise_en_compte = db.Column(db.DateTime, nullable=True)
@@ -110,7 +122,8 @@ class Ticket(db.Model):
     def __repr__(self):
         return f"<Ticket {self.numero}>"
 
-# Animal (lié à une fiche impliqué si nécessaire)
+
+# Animal
 class Animal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     espece = db.Column(db.String(50), nullable=True)

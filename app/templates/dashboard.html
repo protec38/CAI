@@ -44,6 +44,17 @@
             margin-bottom: 30px;
         }
 
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge.present { background: limegreen; color: white; }
+        .badge.sorti { background: #e67e22; color: white; }
+        .badge.supprime { background: #c0392b; color: white; }
+
         table {
             width: 100%;
             margin-top: 30px;
@@ -86,15 +97,13 @@
             text-decoration: underline;
         }
 
-        .statut-cell {
-            cursor: pointer;
+        select[name="statut_evt"] {
+            padding: 5px;
             font-weight: bold;
-            color: #002f6c;
-        }
-
-        .counters {
-            margin-top: 20px;
-            font-size: 1.2em;
+            background-color: white;
+            color: black;
+            border-radius: 5px;
+            border: none;
         }
     </style>
 </head>
@@ -102,7 +111,6 @@
     <div class="header">
         <h1>Tableau de bord</h1>
         <div>
-            <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn">Gestion des utilisateurs</a>
             <a href="{{ url_for('main_bp.evenement_new') }}" class="btn">Gestion des évènements</a>
             <a href="{{ url_for('main_bp.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
             <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
@@ -115,28 +123,20 @@
             <i class="fas fa-calendar-alt" style="color: #ffcc00;"></i> {{ evenement.nom }}
         </h2>
         <p><strong>📍 Adresse :</strong> {{ evenement.adresse }}</p>
-        <p>
-            <strong>✅ Statut :</strong>
-            {% if evenement.statut == "En cours de gréement" %}
-                <i class="fas fa-tools" style="color: gray;"></i> {{ evenement.statut }}
-            {% elif evenement.statut == "Ouvert" %}
-                <i class="fas fa-door-open" style="color: limegreen;"></i> {{ evenement.statut }}
-            {% elif evenement.statut == "Effectif dépassé" %}
-                <i class="fas fa-users-slash" style="color: darkorange;"></i> {{ evenement.statut }}
-            {% elif evenement.statut == "Complet" %}
-                <i class="fas fa-ban" style="color: red;"></i> {{ evenement.statut }}
-            {% elif evenement.statut == "Fermé" %}
-                <i class="fas fa-door-closed" style="color: navy;"></i> {{ evenement.statut }}
-            {% else %}
-                {{ evenement.statut }}
-            {% endif %}
-        </p>
+
+        <form method="POST" action="{{ url_for('main_bp.update_evenement_statut', evenement_id=evenement.id) }}">
+            <label><strong>✅ Statut de l’évènement :</strong></label>
+            <select name="statut_evt" onchange="this.form.submit()">
+                {% for option in ['En cours de gréement', 'Ouvert', 'Effectif dépassé', 'Complet', 'Fermé'] %}
+                    <option value="{{ option }}" {% if evenement.statut == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
     {% endif %}
 
     <div class="counters">
-        👥 <strong>Présents :</strong> {{ nb_present }} / {{ nb_total }} |
-        ⏳ <strong>Restants :</strong> {{ nb_restant }}
+        👥 <strong>Présents :</strong> {{ nb_present }} / {{ nb_total }}
     </div>
 
     {% if fiches %}
@@ -160,7 +160,17 @@
                 <td>{{ fiche.numero }}</td>
                 <td>{{ fiche.nom }}</td>
                 <td>{{ fiche.prenom }}</td>
-                <td class="statut-cell" data-id="{{ fiche.id }}">{{ fiche.statut }}</td>
+                <td>
+                    {% if fiche.statut == 'présent' %}
+                        <span class="badge present"><i class="fas fa-check-circle"></i> Présent</span>
+                    {% elif fiche.statut == 'sorti' %}
+                        <span class="badge sorti"><i class="fas fa-sign-out-alt"></i> Sorti</span>
+                    {% elif fiche.statut == 'supprimé' %}
+                        <span class="badge supprime"><i class="fas fa-trash-alt"></i> Supprimé</span>
+                    {% else %}
+                        {{ fiche.statut }}
+                    {% endif %}
+                </td>
                 <td>{{ fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee else '—' }}</td>
                 <td>{{ fiche.destination or '—' }}</td>
                 <td>{{ fiche.difficultes or '—' }}</td>
@@ -180,26 +190,5 @@
     {% else %}
     <p>Aucune fiche impliquée pour cet évènement.</p>
     {% endif %}
-
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const statutCells = document.querySelectorAll(".statut-cell");
-        statutCells.forEach(cell => {
-            cell.addEventListener("click", () => {
-                const ficheId = cell.dataset.id;
-                fetch(`/fiche/${ficheId}/changer_statut`, {
-                    method: "POST"
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.statut) {
-                        cell.textContent = data.statut;
-                        location.reload(); // met à jour les compteurs
-                    }
-                });
-            });
-        });
-    });
-    </script>
 </body>
 </html>

@@ -90,6 +90,23 @@ def evenement_new():
 
 
 
+@main_bp.route("/evenement/<int:evenement_id>/dashboard")
+@login_required
+def dashboard(evenement_id):
+    session["evenement_id"] = evenement_id  # 🧠 Sauvegarde de l'évènement actif
+    user = get_current_user()
+
+    evenement = Evenement.query.get(evenement_id)
+    if not evenement or evenement not in user.evenements:
+        flash("⛔ Vous n’avez pas accès à cet évènement.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
+
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
+    return render_template("dashboard.html", user=user, evenement=evenement, fiches=fiches)
+
+
+
+
 # 🔁 Sélection d’un événement existant
 @main_bp.route("/evenement/select", methods=["POST"])
 @login_required

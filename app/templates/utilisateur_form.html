@@ -92,6 +92,14 @@
                 <option value="autorite" {% if utilisateur and utilisateur.role == 'autorite' %}selected{% endif %}>Autorité</option>
             </select>
 
+            <label for="type_utilisateur">Type d'utilisateur</label>
+            <select id="type_utilisateur" name="type_utilisateur" required>
+                <option value="">-- Choisir un type --</option>
+                <option value="permanent" {% if utilisateur and utilisateur.type_utilisateur == 'permanent' %}selected{% endif %}>Permanent</option>
+                <option value="provisoire" {% if utilisateur and utilisateur.type_utilisateur == 'provisoire' %}selected{% endif %}>Provisoire</option>
+            </select>
+
+            
             <label for="password">Mot de passe</label>
             <input type="password" id="password" name="password" {% if mode == 'create' %}required{% endif %}>
 

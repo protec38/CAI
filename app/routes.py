@@ -519,34 +519,33 @@ def update_evenement_statut(evenement_id):
 @main_bp.route("/evenement/<int:evenement_id>/fiches_json")
 @login_required
 def fiches_json(evenement_id):
-    user = get_current_user()
-    evenement = Evenement.query.get_or_404(evenement_id)
-
-    if evenement not in user.evenements and not user.is_admin and user.role not in ["codep", "responsable"]:
-        return jsonify({"error": "Accès refusé."}), 403
-
     fiches = FicheImplique.query.filter_by(evenement_id=evenement_id).all()
-    nb_total = len(fiches)
-    nb_present = sum(1 for fiche in fiches if fiche.statut == "présent")
 
-    fiches_data = [ {
-        "id": fiche.id,
-        "numero": fiche.numero,
-        "nom": fiche.nom,
-        "prenom": fiche.prenom,
-        "statut": fiche.statut,
-        "heure_arrivee": heure_locale.strftime('%d/%m/%Y %H:%M') if heure_locale else "-",  # ✅ FORMAT CORRECT
-        "destination": getattr(fiche, "destination", "") or "—",
-        "difficultes": getattr(fiche, "difficulte", "") or "—",
-        "competences": getattr(fiche, "competence", "") or "—"
-    } for fiche in fiches]
+    fiches_data = []
+    for fiche in fiches:
+        heure_locale = fiche.heure_arrivee_locale  # ✅ ici on la définit
+        heure_sortie_locale = fiche.heure_sortie_locale  # (si tu veux aussi l'ajouter)
+
+        fiches_data.append({
+            "id": fiche.id,
+            "numero": fiche.numero,
+            "nom": fiche.nom,
+            "prenom": fiche.prenom,
+            "statut": fiche.statut,
+            "heure_arrivee": heure_locale.strftime('%d/%m/%Y %H:%M') if heure_locale else "-",
+            "heure_sortie": heure_sortie_locale.strftime('%d/%m/%Y %H:%M') if heure_sortie_locale else "-",  # optionnel
+            "destination": fiche.destination or "",
+            "difficultes": fiche.difficultes or "",
+            "competences": fiche.competences or ""
+        })
 
     return jsonify({
-        "statut_evenement": evenement.statut,
-        "nb_total": nb_total,
-        "nb_present": nb_present,
-        "fiches": fiches_data
+        "fiches": fiches_data,
+        "nb_present": sum(1 for f in fiches if f.statut == "présent"),
+        "nb_total": len(fiches),
+        "statut_evenement": fiches[0].evenement.statut if fiches else ""
     })
+
 
 
 

@@ -12,6 +12,13 @@
                 <label for="prenom">Prénom</label>
                 <input type="text" name="prenom" class="form-control" value="{{ fiche.prenom }}">
 
+                <div class="form-group">
+                <label for="numero">Numéro de fiche</label>
+                <input type="text" class="form-control" id="numero" name="numero" value="{{ fiche.numero }}" disabled>
+                </div>
+
+
+                
                 <label for="statut">Statut</label>
                 <select name="statut" class="form-control" required>
                     <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>Présent</option>

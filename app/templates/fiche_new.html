@@ -175,6 +175,7 @@
     <script>
     document.querySelector("form").addEventListener("submit", function () {
         const now = new Date();
+        now.setHours(now.getHours() + 2);  // Décalage manuel +2h
         const localISO = now.getFullYear() + "-" +
             String(now.getMonth() + 1).padStart(2, '0') + "-" +
             String(now.getDate()).padStart(2, '0') + "T" +
@@ -184,6 +185,7 @@
         document.getElementById("heure_arrivee_js").value = localISO;
     });
 </script>
+
 
 </body>
 </html>

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Tableau de bord</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             background: linear-gradient(to right, #002f6c, #ff6f00);
             color: #fff;
             padding: 20px;
@@ -30,6 +31,15 @@
             margin-right: 10px;
         }
 
+        .event-info {
+            background-color: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-left: 5px solid #ffcc00;
+            border-radius: 5px;
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
+
         table {
             width: 100%;
             margin-top: 30px;
@@ -42,53 +52,41 @@
             padding: 10px;
             border: 1px solid #ccc;
         }
-
-        .top-actions {
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Tableau de bord – Événement : {{ evenement.nom }}</h1>
+        <h1>Tableau de bord</h1>
         <div>
-            {% if user.is_admin or user.role == 'codep' %}
-                <a class="btn" href="{{ url_for('main_bp.evenement_new') }}">Créer un événement</a>
-            {% endif %}
-            <a class="btn" href="{{ url_for('main_bp.fiche_new') }}">Créer une fiche impliqué</a>
-            <a class="btn" href="{{ url_for('main_bp.login') }}">Déconnexion</a>
+            <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
         </div>
     </div>
 
-    <h2>Liste des personnes impliquées</h2>
+    {% if evenement %}
+    <div class="event-info">
+        <p><strong>📍 Adresse :</strong> {{ evenement.adresse }}</p>
+        <p><strong>✅ Statut :</strong> {{ evenement.statut }}</p>
+    </div>
+    {% endif %}
 
+    <!-- Exemple de contenu -->
     <table>
         <thead>
             <tr>
-                <th>Numéro</th>
                 <th>Nom</th>
-                <th>Prénom</th>
-                <th>Date naissance</th>
-                <th>Nationalité</th>
-                <th>Date entrée</th>
-                <th>Sortie</th>
+                <th>Statut</th>
+                <th>Date arrivée</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {% for fiche in impliques %}
+            {% for fiche in fiches %}
             <tr>
-                <td>{{ fiche.numero_fiche }}</td>
-                <td>{{ fiche.nom }}</td>
-                <td>{{ fiche.prenom }}</td>
-                <td>{{ fiche.date_naissance }}</td>
-                <td>{{ fiche.nationalite }}</td>
-                <td>{{ fiche.date_entree }}</td>
+                <td>{{ fiche.nom }} {{ fiche.prenom }}</td>
+                <td>{{ fiche.statut }}</td>
+                <td>{{ fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') }}</td>
                 <td>
-                    {% if fiche.date_sortie %}
-                        Oui ({{ fiche.date_sortie }})
-                    {% else %}
-                        Non
-                    {% endif %}
+                    <a href="{{ url_for('main_bp.fiche_detail', id=fiche.id) }}">Voir</a>
                 </td>
             </tr>
             {% endfor %}

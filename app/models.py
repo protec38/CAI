@@ -21,7 +21,7 @@ class Utilisateur(db.Model):
     role = db.Column(db.String(50), nullable=False)  # Ex: entree, bagages, secouriste...
     type_utilisateur = db.Column(db.String(20), nullable=False)  # permanent / provisoire
     niveau = db.Column(db.String(20), nullable=True)  # encadrant / technicien (optionnel)
-
+    fiches = db.relationship('FicheImplique', backref='createur', lazy=True)
     is_admin = db.Column(db.Boolean, default=False)
     actif = db.Column(db.Boolean, default=True)
 
@@ -67,7 +67,7 @@ class FicheImplique(db.Model):
     nationalite = db.Column(db.String(50), nullable=True)
     adresse = db.Column(db.String(150), nullable=True)
     telephone = db.Column(db.String(20), nullable=True)
-
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=False)
     statut = db.Column(db.String(20), nullable=False, default="présent")  # présent / sorti / supprimé
 
     difficulte = db.Column(db.String(200), nullable=True)

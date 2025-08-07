@@ -60,10 +60,12 @@ def evenement_new():
         adresse = request.form["adresse"]
         statut = request.form["statut"]
 
+        # Génération du numéro d'évènement
         last_evt = Evenement.query.order_by(Evenement.id.desc()).first()
         next_id = last_evt.id + 1 if last_evt else 1
         numero_evt = str(next_id).zfill(8)
 
+        # Création de l'évènement
         nouvel_evt = Evenement(
             numero=numero_evt,
             nom=nom_evt,
@@ -76,17 +78,18 @@ def evenement_new():
         db.session.add(nouvel_evt)
         db.session.commit()
 
-        # Lier l'utilisateur à l'évènement créé
+        # Association du créateur à l'évènement
         if nouvel_evt not in user.evenements:
             user.evenements.append(nouvel_evt)
             db.session.commit()
 
         flash("✅ Évènement créé avec succès.", "success")
-        return redirect(url_for("main_bp.dashboard"))
+        return redirect(url_for("main_bp.dashboard", evenement_id=nouvel_evt.id))
 
-    # GET
+    # 🔁 Méthode GET
     evenements = Evenement.query.all() if user.is_admin or user.role == "codep" else user.evenements
     return render_template("evenement_new.html", user=user, evenements=evenements)
+
 
 
 

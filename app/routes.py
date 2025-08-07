@@ -359,5 +359,21 @@ def fiche_delete(id):
     db.session.commit()
     flash("🗑️ Fiche supprimée avec succès.", "info")
     return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement.id))
+@main_bp.route("/fiche/<int:id>/sortie", methods=["GET", "POST"])
+@login_required
+def fiche_sortie(id):
+    fiche = FicheImplique.query.get_or_404(id)
+
+    user = get_current_user()
+    if fiche.evenement not in user.evenements:
+        flash("⛔ Vous n’avez pas accès à cette fiche.", "danger")
+        return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
+
+    # Marquer la fiche comme "sortie"
+    fiche.statut = "sorti"
+    db.session.commit()
+
+    flash(f"🚪 La fiche de {fiche.nom} a été marquée comme sortie.", "info")
+    return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
 
 

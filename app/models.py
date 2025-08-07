@@ -80,6 +80,7 @@ class FicheImplique(db.Model):
     est_animal = db.Column(db.Boolean, default=False)
     recherche_personne = db.Column(db.String(300), nullable=True)
     numero_recherche = db.Column(db.String(20), nullable=True)
+    competences = db.Column(db.Text)
 
     evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'), nullable=False)
 

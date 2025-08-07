@@ -466,16 +466,16 @@ def fiches_json(evenement_id):
     nb_total = len(fiches)
     nb_present = sum(1 for fiche in fiches if fiche.statut == "présent")
 
-    fiches_data = [{
+    fiches_data = [ {
         "id": fiche.id,
         "numero": fiche.numero,
         "nom": fiche.nom,
         "prenom": fiche.prenom,
         "statut": fiche.statut,
         "heure_arrivee": fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee else "—",
-        "destination": fiche.destination or "—",
-        "difficultes": fiche.difficultes or "—",
-        "competences": fiche.competences or "—"
+        "destination": getattr(fiche, "destination", "") or "—",
+        "difficultes": getattr(fiche, "difficulte", "") or "—",
+        "competences": getattr(fiche, "competence", "") or "—"
     } for fiche in fiches]
 
     return jsonify({

@@ -1,70 +1,153 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="container mt-4">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier une fiche impliqué</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #002f6c, #ff6f00);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #ffcc00;
+        }
+
+        form {
+            background-color: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            color: #000;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .form-check {
+            margin-top: 10px;
+        }
+
+        .form-check-label {
+            margin-left: 5px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .col-md-6 {
+            flex: 1 1 45%;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin-top: 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: #ffcc00;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background-color: #ccc;
+            color: #000;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
     <h2>✏️ Modifier une fiche impliqué</h2>
 
     <form method="POST">
         <div class="row">
             <div class="col-md-6">
                 <label for="nom">Nom</label>
-                <input type="text" name="nom" class="form-control" value="{{ fiche.nom }}" required>
+                <input type="text" name="nom" value="{{ fiche.nom }}" required>
 
                 <label for="prenom">Prénom</label>
-                <input type="text" name="prenom" class="form-control" value="{{ fiche.prenom }}">
+                <input type="text" name="prenom" value="{{ fiche.prenom }}">
 
-                <div class="form-group">
                 <label for="numero">Numéro de fiche</label>
-                <input type="text" class="form-control" id="numero" name="numero" value="{{ fiche.numero }}" disabled>
-                </div>
+                <input type="text" name="numero" value="{{ fiche.numero }}" disabled>
 
-
-                
                 <label for="statut">Statut</label>
-                <select name="statut" class="form-control" required>
+                <select name="statut" required>
                     <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>Présent</option>
                     <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>Sorti</option>
                     <option value="supprimé" {% if fiche.statut == "supprimé" %}selected{% endif %}>Supprimé</option>
                 </select>
 
                 <label for="telephone">Téléphone</label>
-                <input type="text" name="telephone" class="form-control" value="{{ fiche.telephone }}">
+                <input type="text" name="telephone" value="{{ fiche.telephone }}">
 
                 <label for="nationalite">Nationalité</label>
-                <input type="text" name="nationalite" class="form-control" value="{{ fiche.nationalite }}">
+                <input type="text" name="nationalite" value="{{ fiche.nationalite }}">
             </div>
 
             <div class="col-md-6">
                 <label for="difficulte">Difficulté</label>
-                <textarea name="difficulte" class="form-control">{{ fiche.difficulte }}</textarea>
+                <textarea name="difficulte">{{ fiche.difficulte }}</textarea>
 
                 <label for="competence">Compétences</label>
-                <textarea name="competence" class="form-control">{{ fiche.competence }}</textarea>
+                <textarea name="competence">{{ fiche.competence }}</textarea>
 
                 <label for="adresse">Adresse</label>
-                <input type="text" name="adresse" class="form-control" value="{{ fiche.adresse }}">
+                <input type="text" name="adresse" value="{{ fiche.adresse }}">
 
                 <label for="date_naissance">Date de naissance</label>
-                <input type="date" name="date_naissance" class="form-control"
-                       value="{{ fiche.date_naissance.strftime('%Y-%m-%d') if fiche.date_naissance }}">
+                <input type="date" name="date_naissance" value="{{ fiche.date_naissance.strftime('%Y-%m-%d') if fiche.date_naissance }}">
 
-                <div class="form-check mt-2">
-                    <input type="checkbox" class="form-check-input" name="est_animal" id="est_animal"
-                           {% if fiche.est_animal %}checked{% endif %}>
+                <div class="form-check">
+                    <input type="checkbox" name="est_animal" id="est_animal" {% if fiche.est_animal %}checked{% endif %}>
                     <label class="form-check-label" for="est_animal">Est un animal</label>
                 </div>
 
                 <label for="recherche_personne">Recherche personne</label>
-                <input type="text" name="recherche_personne" class="form-control" value="{{ fiche.recherche_personne }}">
+                <input type="text" name="recherche_personne" value="{{ fiche.recherche_personne }}">
 
                 <label for="numero_recherche">N° recherche</label>
-                <input type="text" name="numero_recherche" class="form-control" value="{{ fiche.numero_recherche }}">
+                <input type="text" name="numero_recherche" value="{{ fiche.numero_recherche }}">
             </div>
         </div>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary">💾 Sauvegarder</button>
-            <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn btn-secondary">Retour</a>
-        </div>
+        <button type="submit" class="btn btn-primary">💾 Sauvegarder</button>
+        <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn btn-secondary">Retour</a>
     </form>
-</div>
-{% endblock %}
+</body>
+</html>

@@ -86,7 +86,7 @@ class FicheImplique(db.Model):
 
     est_animal = db.Column(db.Boolean, default=False)
     humain = db.Column(db.Boolean, default=True)
-
+    heure_sortie = db.Column(db.DateTime, nullable=True)
     numero_recherche = db.Column(db.String(20), nullable=True)
 
     statut = db.Column(db.String(20), nullable=False, default="présent")

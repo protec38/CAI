@@ -310,3 +310,37 @@ def fiche_detail(id):
 
     return render_template("fiche_detail.html", fiche=fiche, user=user)
 
+
+# ✏️ Modification d’une fiche impliqué
+@main_bp.route("/fiche/edit/<int:id>", methods=["GET", "POST"])
+@login_required
+def fiche_edit(id):
+    user = get_current_user()
+
+    fiche = FicheImplique.query.get_or_404(id)
+
+    if fiche.evenement not in user.evenements:
+        flash("⛔ Vous n’avez pas accès à cet évènement.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
+
+    if request.method == "POST":
+        fiche.nom = request.form["nom"]
+        fiche.prenom = request.form["prenom"]
+        fiche.statut = request.form["statut"]
+        fiche.nationalite = request.form["nationalite"]
+        fiche.difficulte = request.form["difficulte"]
+        fiche.telephone = request.form["telephone"]
+        fiche.competence = request.form.get("competence")
+        fiche.adresse = request.form.get("adresse")
+        fiche.date_naissance = request.form.get("date_naissance")
+        fiche.est_animal = bool(request.form.get("est_animal"))
+        fiche.recherche_personne = request.form.get("recherche_personne")
+        fiche.numero_recherche = request.form.get("numero_recherche")
+
+        db.session.commit()
+        flash("✅ Fiche mise à jour avec succès.", "success")
+        return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement.id))
+
+    return render_template("fiche_edit.html", fiche=fiche, user=user)
+
+

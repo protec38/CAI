@@ -535,7 +535,7 @@ def fiches_json(evenement_id):
         "nom": fiche.nom,
         "prenom": fiche.prenom,
         "statut": fiche.statut,
-        "heure_arrivee": fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee else "—",
+        "heure_arrivee": heure_locale.strftime('%d/%m/%Y %H:%M') if heure_locale else "-",  # ✅ FORMAT CORRECT
         "destination": getattr(fiche, "destination", "") or "—",
         "difficultes": getattr(fiche, "difficulte", "") or "—",
         "competences": getattr(fiche, "competence", "") or "—"

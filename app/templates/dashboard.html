@@ -39,6 +39,16 @@
             margin-top: 10px;
             margin-bottom: 30px;
         }
+
+        .badge-competence {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+        }
         .badge {
             padding: 5px 10px;
             border-radius: 20px;
@@ -182,7 +192,8 @@ function refreshFiches() {
                         <td>${fiche.heure_arrivee}</td>
                         <td>${fiche.destination}</td>
                         <td>${fiche.difficultes}</td>
-                        <td>${fiche.competences}</td>
+                        <td>${renderCompetenceBadges(fiche.competences)}</td>
+
                         <td class="actions">
                             <a href="/fiche/${fiche.id}">Voir</a>
                             <a href="/fiche/edit/${fiche.id}">Modifier</a>
@@ -214,6 +225,32 @@ function refreshFiches() {
         });
 }
 
+function renderCompetenceBadges(raw) {
+    if (!raw) return "<em>Aucune</em>";
+
+    const colorMap = {
+        "Médecin": "#e74c3c",
+        "Infirmier": "#3498db",
+        "Sapeur-pompier": "#e67e22",
+        "SST": "#1abc9c",
+        "Psychologue": "#9b59b6",
+        "Bénévole": "#34495e",
+        "Artisan": "#f39c12",
+        "Interprète": "#2ecc71",
+        "Logisticien": "#16a085",
+        "Conducteur": "#d35400",
+        "Agent sécurité": "#2c3e50",
+        "Autre": "#7f8c8d"
+    };
+
+    return raw.split(',').map(c => {
+        const comp = c.trim();
+        const color = colorMap[comp] || "#999";
+        return `<span class="badge-competence" style="background:${color}">${comp}</span>`;
+    }).join(" ");
+}
+
+    
 setInterval(refreshFiches, 3000);
 window.onload = refreshFiches;
 </script>

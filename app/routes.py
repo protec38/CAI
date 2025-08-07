@@ -157,6 +157,8 @@ def fiche_new():
 
     return render_template("fiche_new.html", user=user, evenement=evenement)
 
+########################################################
+
 @main_bp.route("/admin/utilisateurs")
 @login_required
 def admin_utilisateurs():
@@ -172,6 +174,9 @@ def admin_utilisateurs():
 
     return render_template("admin_utilisateurs.html", user=user, utilisateurs=utilisateurs)
 
+################################################################
+
+
 @main_bp.route("/admin/utilisateur/create", methods=["GET", "POST"])
 @login_required
 def utilisateur_create():
@@ -183,7 +188,6 @@ def utilisateur_create():
     if request.method == "POST":
         nom = request.form["nom"]
         nom_utilisateur = request.form["nom_utilisateur"]
-        email = request.form["email"]
         role = request.form["role"]
         password = request.form["password"]
 
@@ -196,7 +200,6 @@ def utilisateur_create():
         new_user = Utilisateur(
             nom=nom,
             nom_utilisateur=nom_utilisateur,
-            email=email,
             role=role,
             evenement_id=user.evenement_id
         )
@@ -208,6 +211,9 @@ def utilisateur_create():
         return redirect(url_for("main_bp.admin_utilisateurs"))
 
     return render_template("utilisateur_form.html", utilisateur=None, mode="create")
+
+###########################################
+
     
 @main_bp.route("/admin/utilisateur/edit/<int:id>", methods=["GET", "POST"])
 @login_required
@@ -222,7 +228,6 @@ def utilisateur_edit(id):
     if request.method == "POST":
         utilisateur.nom = request.form["nom"]
         utilisateur.nom_utilisateur = request.form["nom_utilisateur"]
-        utilisateur.email = request.form["email"]
         utilisateur.role = request.form["role"]
         password = request.form["password"]
 

@@ -124,7 +124,8 @@ def dashboard(evenement_id):
         fiches=fiches,
         nb_present=nb_present,
         nb_total=nb_total,
-        peut_modifier_statut=peut_modifier_statut
+        peut_modifier_statut=peut_modifier_statut,
+        competence_colors=COMPETENCE_COLORS
     )
 
 
@@ -589,4 +590,17 @@ def fiches_json(evenement_id):
 
 #####################################################################
 
-
+COMPETENCE_COLORS = {
+    "Médecin": "#e74c3c",
+    "Infirmier": "#3498db",
+    "Sapeur-pompier": "#e67e22",
+    "SST": "#1abc9c",
+    "Psychologue": "#9b59b6",
+    "Bénévole": "#34495e",
+    "Artisan": "#f39c12",
+    "Interprète": "#2ecc71",
+    "Logisticien": "#16a085",
+    "Conducteur": "#d35400",
+    "Agent sécurité": "#2c3e50",
+    "Autre": "#7f8c8d"
+}

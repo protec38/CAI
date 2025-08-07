@@ -344,3 +344,20 @@ def fiche_edit(id):
     return render_template("fiche_edit.html", fiche=fiche, user=user)
 
 
+@main_bp.route("/fiche/delete/<int:id>", methods=["POST"])
+@login_required
+def fiche_delete(id):
+    user = get_current_user()
+    fiche = FicheImplique.query.get_or_404(id)
+
+    # Vérification que l'utilisateur a accès à l'évènement
+    if fiche.evenement not in user.evenements:
+        flash("⛔ Vous n’avez pas l’autorisation de supprimer cette fiche.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
+
+    db.session.delete(fiche)
+    db.session.commit()
+    flash("🗑️ Fiche supprimée avec succès.", "info")
+    return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement.id))
+
+

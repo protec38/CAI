@@ -92,7 +92,23 @@
                 <input type="text" id="nom_evt" name="nom_evt" required>
 
                 <label for="type_evt">Type d'évènement</label>
-                <input type="text" id="type_evt" name="type_evt" required>
+                <select id="type_evt" name="type_evt" required>
+                    <option value="CAI">CAI</option>
+                    <option value="CHU">CHU</option>
+                    <option value="PRV">PRV</option>
+                </select>
+
+                <label for="adresse">Adresse</label>
+                <input type="text" id="adresse" name="adresse" required>
+
+                <label for="statut">Statut</label>
+                <select id="statut" name="statut" required>
+                    <option value="En cours de gréement">En cours de gréement</option>
+                    <option value="Ouvert">Ouvert</option>
+                    <option value="Effectif dépassé">Effectif dépassé</option>
+                    <option value="Complet">Complet</option>
+                    <option value="Fermé">Fermé</option>
+                </select>
 
                 <button type="submit">Créer l'évènement</button>
             </form>

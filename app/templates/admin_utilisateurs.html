@@ -56,12 +56,6 @@
         .actions a:hover {
             text-decoration: underline;
         }
-
-        .role-label {
-            font-size: 13px;
-            font-weight: bold;
-            color: #555;
-        }
     </style>
 </head>
 <body>
@@ -78,6 +72,7 @@
         <thead>
             <tr>
                 <th>Nom</th>
+                <th>Nom d'utilisateur</th>
                 <th>Email</th>
                 <th>Rôle</th>
                 <th>Évènement</th>
@@ -88,6 +83,7 @@
             {% for u in utilisateurs %}
             <tr>
                 <td>{{ u.nom }}</td>
+                <td>{{ u.nom_utilisateur }}</td>
                 <td>{{ u.email }}</td>
                 <td>{{ u.role | capitalize }}</td>
                 <td>{{ u.evenement.nom if u.evenement else "—" }}</td>
@@ -100,7 +96,7 @@
         </tbody>
     </table>
     {% else %}
-    <p>Aucun utilisateur n’a encore été enregistré pour cet évènement.</p>
+    <p>Aucun utilisateur enregistré pour cet évènement.</p>
     {% endif %}
 </body>
 </html>

@@ -188,6 +188,7 @@ def utilisateur_create():
     if request.method == "POST":
         nom = request.form["nom"]
         nom_utilisateur = request.form["nom_utilisateur"]
+        type_utilisateur = request.form["type_utilisateur"]
         role = request.form["role"]
         password = request.form["password"]
 
@@ -200,6 +201,7 @@ def utilisateur_create():
         new_user = Utilisateur(
             nom=nom,
             nom_utilisateur=nom_utilisateur,
+            type_utilisateur=type_utilisateur,
             role=role,
             evenement_id=user.evenement_id
         )

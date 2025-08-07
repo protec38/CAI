@@ -85,12 +85,24 @@
         .actions form button:hover {
             text-decoration: underline;
         }
+
+        .statut-cell {
+            cursor: pointer;
+            font-weight: bold;
+            color: #002f6c;
+        }
+
+        .counters {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Tableau de bord</h1>
         <div>
+            <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn">Gestion des utilisateurs</a>
             <a href="{{ url_for('main_bp.evenement_new') }}" class="btn">Gestion des évènements</a>
             <a href="{{ url_for('main_bp.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
             <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
@@ -122,11 +134,16 @@
     </div>
     {% endif %}
 
+    <div class="counters">
+        👥 <strong>Présents :</strong> {{ nb_present }} / {{ nb_total }} |
+        ⏳ <strong>Restants :</strong> {{ nb_restant }}
+    </div>
+
     {% if fiches %}
     <table>
         <thead>
             <tr>
-                <th>N°</th>
+                <th>Numéro</th>
                 <th>Nom</th>
                 <th>Prénom</th>
                 <th>Statut</th>
@@ -143,17 +160,7 @@
                 <td>{{ fiche.numero }}</td>
                 <td>{{ fiche.nom }}</td>
                 <td>{{ fiche.prenom }}</td>
-                <td>
-                    {% if fiche.statut == "présent" %}
-                        <span style="color: green;"><i class="fas fa-user-check"></i> Présent</span>
-                    {% elif fiche.statut == "sorti" %}
-                        <span style="color: orange;"><i class="fas fa-sign-out-alt"></i> Sorti</span>
-                    {% elif fiche.statut == "supprimé" %}
-                        <span style="color: red;"><i class="fas fa-user-slash"></i> Supprimé</span>
-                    {% else %}
-                        {{ fiche.statut }}
-                    {% endif %}
-                </td>
+                <td class="statut-cell" data-id="{{ fiche.id }}">{{ fiche.statut }}</td>
                 <td>{{ fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee else '—' }}</td>
                 <td>{{ fiche.destination or '—' }}</td>
                 <td>{{ fiche.difficultes or '—' }}</td>
@@ -173,5 +180,26 @@
     {% else %}
     <p>Aucune fiche impliquée pour cet évènement.</p>
     {% endif %}
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const statutCells = document.querySelectorAll(".statut-cell");
+        statutCells.forEach(cell => {
+            cell.addEventListener("click", () => {
+                const ficheId = cell.dataset.id;
+                fetch(`/fiche/${ficheId}/changer_statut`, {
+                    method: "POST"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.statut) {
+                        cell.textContent = data.statut;
+                        location.reload(); // met à jour les compteurs
+                    }
+                });
+            });
+        });
+    });
+    </script>
 </body>
 </html>

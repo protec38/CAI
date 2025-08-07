@@ -152,9 +152,26 @@ def fiche_new():
         difficulte = request.form.get("difficulte")
         telephone = request.form.get("telephone")
 
-        last_fiche = FicheImplique.query.order_by(FicheImplique.id.desc()).first()
-        next_id = last_fiche.id + 1 if last_fiche else 1
-        numero = str(next_id).zfill(6)
+        last_fiche_evt = (
+    FicheImplique.query
+    .filter_by(evenement_id=evenement.id)
+    .order_by(FicheImplique.id.desc())
+    .first()
+)
+
+# Incrément local à l'évènement
+next_local = 1
+if last_fiche_evt and last_fiche_evt.numero:
+    try:
+        # On suppose le format '001-0001'
+        last_parts = last_fiche_evt.numero.split("-")
+        if len(last_parts) == 2:
+            next_local = int(last_parts[1]) + 1
+    except ValueError:
+        pass
+
+# Numéro au format : "ID_EVENEMENT-ZZZZ"
+numero = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
 
         fiche = FicheImplique(
             numero=numero,

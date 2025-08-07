@@ -160,7 +160,7 @@
 
         <div class="form-group">
             <label for="competences"><i class="fas fa-tools"></i> Compétences</label>
-            <select name="competences" multiple size="6" class="form-control">
+            <select name="competences" multiple size="6" class="form-control" onchange="limitCompetenceSelection(this)">
                 {% for c in competences_list %}
                     <option value="{{ c }}" {% if c in fiche.competences.split(',') %}selected{% endif %}>{{ c }}</option>
                 {% endfor %}
@@ -198,6 +198,16 @@
         </div>
     </form>
 </div>
+<script>
+function limitCompetenceSelection(select) {
+    const selected = Array.from(select.selectedOptions);
+    if (selected.length > 4) {
+        alert("⛔ Vous ne pouvez sélectionner que 4 compétences maximum.");
+        selected[selected.length - 1].selected = false;
+    }
+}
+</script>
 
+    
 </body>
 </html>

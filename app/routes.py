@@ -166,18 +166,18 @@ def fiche_new():
 def admin_utilisateurs():
     user = get_current_user()
 
-    # Vérification des droits d'accès
+    # 🔒 Autorisé uniquement aux admin ou codep
     if not user.is_admin and user.role != "codep":
-        flash("⛔ Accès refusé : vous n'avez pas les droits pour accéder à cette page.", "danger")
+        flash("⛔ Accès refusé : cette section est réservée aux administrateurs ou CODEP.", "danger")
         return render_template(
             "admin_utilisateurs.html",
-            utilisateurs=[],  # Liste vide si non autorisé
+            utilisateurs=[],  # Pas de données pour les non-autorisés
             user=user
         )
 
-    # Admins et codep accèdent à tous les utilisateurs
     utilisateurs = Utilisateur.query.all()
     return render_template("admin_utilisateurs.html", utilisateurs=utilisateurs, user=user)
+
 
 
 

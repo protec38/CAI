@@ -231,6 +231,7 @@ def utilisateur_edit(id):
         utilisateur.nom = request.form["nom"]
         utilisateur.nom_utilisateur = request.form["nom_utilisateur"]
         utilisateur.role = request.form["role"]
+        utilisateur.type_utilisateur = request.form["type_utilisateur"]
         password = request.form["password"]
 
         if password:

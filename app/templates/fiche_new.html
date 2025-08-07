@@ -162,8 +162,8 @@
                 <input type="text" name="moyen_transport">
             </div>
 
-            <!-- 🕒 Champ caché pour heure locale -->
-            <input type="hidden" name="heure_arrivee_js" id="heure_arrivee_js">
+            <!-- 🕒 Champ caché pour heure d’arrivée client -->
+            <input type="hidden" name="heure_arrivee" id="heure_arrivee">
 
             <div class="form-group-full">
                 <button type="submit">Enregistrer la fiche</button>
@@ -171,11 +171,11 @@
         </form>
     </div>
 
-    <!-- Script pour insérer l'heure locale du client -->
+    <!-- 🕒 Script pour enregistrer l’heure locale du client -->
     <script>
         document.querySelector("form").addEventListener("submit", function () {
             const now = new Date();
-            document.getElementById("heure_arrivee_js").value = now.toISOString();
+            document.getElementById("heure_arrivee").value = now.toISOString();
         });
     </script>
 </body>

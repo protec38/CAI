@@ -108,14 +108,18 @@ def dashboard(evenement_id):
     nb_present = FicheImplique.query.filter_by(evenement_id=evenement.id, statut="présent").count()
     nb_total = len(fiches)
 
+    peut_modifier_statut = user.is_admin or user.role == "codep" or evenement.createur_id == user.id
+
     return render_template(
         "dashboard.html",
         user=user,
         evenement=evenement,
         fiches=fiches,
         nb_present=nb_present,
-        nb_total=nb_total
+        nb_total=nb_total,
+        peut_modifier_statut=peut_modifier_statut
     )
+
 
 
 

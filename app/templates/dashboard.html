@@ -142,7 +142,17 @@
             <tr>
                 <td>{{ fiche.nom }}</td>
                 <td>{{ fiche.prenom }}</td>
-                <td>{{ fiche.statut }}</td>
+                <td>
+                    {% if fiche.statut == "présent" %}
+                        <span style="color: green;"><i class="fas fa-user-check"></i> Présent</span>
+                    {% elif fiche.statut == "sorti" %}
+                        <span style="color: orange;"><i class="fas fa-sign-out-alt"></i> Sorti</span>
+                    {% elif fiche.statut == "supprimé" %}
+                        <span style="color: red;"><i class="fas fa-user-slash"></i> Supprimé</span>
+                    {% else %}
+                        {{ fiche.statut }}
+                    {% endif %}
+                </td>
                 <td>{{ fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee else '—' }}</td>
                 <td>{{ fiche.destination or '—' }}</td>
                 <td>{{ fiche.difficultes or '—' }}</td>

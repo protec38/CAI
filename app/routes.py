@@ -148,39 +148,49 @@ def dashboard():
 @login_required
 def fiche_new():
     user = get_current_user()
-    evenement = Evenement.query.get(user.evenement_id)
+
+    evenement_id = session.get("evenement_id")
+    if not evenement_id:
+        flash("⛔ Aucun évènement actif. Veuillez d'abord accéder à un évènement.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
+
+    evenement = Evenement.query.get(evenement_id)
+    if not evenement or evenement not in user.evenements:
+        flash("⛔ Vous n’avez pas accès à cet évènement.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
 
     if request.method == "POST":
-        numero_fiche = str(FicheImplique.query.count() + 1).zfill(8)
+        nom = request.form.get("nom")
+        prenom = request.form.get("prenom")
+        statut = request.form.get("statut")
+        nationalite = request.form.get("nationalite")
+        difficulte = request.form.get("difficulte")
+        telephone = request.form.get("telephone")
+
+        last_fiche = FicheImplique.query.order_by(FicheImplique.id.desc()).first()
+        next_id = last_fiche.id + 1 if last_fiche else 1
+        numero = str(next_id).zfill(6)
+
         fiche = FicheImplique(
-            numero_fiche=numero_fiche,
-            humain=True,
-            nom=request.form["nom"],
-            prenom=request.form["prenom"],
-            date_naissance=datetime.strptime(request.form["date_naissance"], "%Y-%m-%d") if request.form["date_naissance"] else None,
-            nationalite=request.form["nationalite"],
-            adresse=request.form["adresse"],
-            telephone=request.form["telephone"],
-            personne_a_prevenir=request.form["personne_a_prevenir"],
-            tel_personne_a_prevenir=request.form["tel_personne_a_prevenir"],
-            recherche_personne=request.form["recherche_personne"],
-            difficulte=request.form["difficulte"],
-            competences=request.form["competences"],
-            effets_perso=request.form["effets_perso"],
-            nom_createur=user.nom,
-            prenom_createur=user.prenom,
-            date_sortie=datetime.strptime(request.form["date_sortie"], "%Y-%m-%d") if request.form["date_sortie"] else None,
-            destination=request.form["destination"],
-            moyen_transport=request.form["moyen_transport"],
-            createur_id=user.id,
+            numero=numero,
+            nom=nom,
+            prenom=prenom,
+            statut=statut,
+            nationalite=nationalite,
+            difficulte=difficulte,
+            telephone=telephone,
             evenement_id=evenement.id,
+            utilisateur_id=user.id
         )
+
         db.session.add(fiche)
         db.session.commit()
-        flash("Fiche impliqué créée avec succès.", "success")
-        return redirect(url_for("main_bp.dashboard"))
 
-    return render_template("fiche_new.html", user=user, evenement=evenement)
+        flash("✅ Fiche impliqué créée pour l’évènement en cours.", "success")
+        return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
+
+    return render_template("fiche_new.html", user=user)
+
 
 ########################################################
 

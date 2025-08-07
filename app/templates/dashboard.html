@@ -12,7 +12,6 @@
             color: #fff;
             padding: 20px;
         }
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -20,11 +19,9 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
         h1 {
             color: #ffcc00;
         }
-
         .btn {
             background-color: #ffcc00;
             color: #000;
@@ -34,7 +31,6 @@
             margin-right: 10px;
             display: inline-block;
         }
-
         .event-info {
             background-color: rgba(255,255,255,0.1);
             padding: 15px;
@@ -43,14 +39,12 @@
             margin-top: 10px;
             margin-bottom: 30px;
         }
-
         .badge {
             padding: 5px 10px;
             border-radius: 20px;
             font-weight: bold;
             display: inline-block;
         }
-
         .badge.present { background: limegreen; color: white; }
         .badge.sorti { background: #e67e22; color: white; }
         .badge.supprime { background: #c0392b; color: white; }
@@ -62,29 +56,24 @@
             background: white;
             color: black;
         }
-
         table th, table td {
             padding: 10px;
             border: 1px solid #ccc;
             text-align: left;
         }
-
         .actions a,
         .actions form {
             margin-right: 8px;
             display: inline-block;
         }
-
         .actions a {
             color: #003b71;
             font-weight: bold;
             text-decoration: none;
         }
-
         .actions a:hover {
             text-decoration: underline;
         }
-
         .actions form button {
             background: none;
             border: none;
@@ -92,11 +81,9 @@
             font-weight: bold;
             cursor: pointer;
         }
-
         .actions form button:hover {
             text-decoration: underline;
         }
-
         select[name="statut_evt"] {
             padding: 5px;
             font-weight: bold;
@@ -131,12 +118,20 @@
             </select>
         </form>
         {% else %}
-            {% if evenement.statut == "En cours de gréement" %}<i class="fas fa-tools" style="color: gray;"></i>
-            {% elif evenement.statut == "Ouvert" %}<i class="fas fa-door-open" style="color: limegreen;"></i>
-            {% elif evenement.statut == "Effectif dépassé" %}<i class="fas fa-users-slash" style="color: darkorange;"></i>
-            {% elif evenement.statut == "Complet" %}<i class="fas fa-ban" style="color: red;"></i>
-            {% elif evenement.statut == "Fermé" %}<i class="fas fa-door-closed" style="color: navy;"></i>
-            {% endif %} {{ evenement.statut }}
+        <span id="statut-lecture-seule">
+            {% if evenement.statut == "En cours de gréement" %}
+                <i class="fas fa-tools" style="color: gray;"></i>
+            {% elif evenement.statut == "Ouvert" %}
+                <i class="fas fa-door-open" style="color: limegreen;"></i>
+            {% elif evenement.statut == "Effectif dépassé" %}
+                <i class="fas fa-users-slash" style="color: darkorange;"></i>
+            {% elif evenement.statut == "Complet" %}
+                <i class="fas fa-ban" style="color: red;"></i>
+            {% elif evenement.statut == "Fermé" %}
+                <i class="fas fa-door-closed" style="color: navy;"></i>
+            {% endif %}
+            {{ evenement.statut }}
+        </span>
         {% endif %}
     </p>
     <p>👥 <strong>Présents :</strong> <span id="nb_present">{{ nb_present }}</span> / <span id="nb_total">{{ nb_total }}</span></p>
@@ -176,10 +171,8 @@ function refreshFiches() {
         .then(data => {
             const tbody = document.getElementById("fiches-table-body");
             tbody.innerHTML = "";
-            let nbPresent = 0;
 
-            data.forEach(fiche => {
-                if (fiche.statut === 'présent') nbPresent++;
+            data.fiches.forEach(fiche => {
                 const row = `
                     <tr>
                         <td>${fiche.numero}</td>
@@ -202,8 +195,22 @@ function refreshFiches() {
                 tbody.innerHTML += row;
             });
 
-            document.getElementById("nb_present").textContent = nbPresent;
-            document.getElementById("nb_total").textContent = data.length;
+            document.getElementById("nb_present").textContent = data.nb_present;
+            document.getElementById("nb_total").textContent = data.nb_total;
+
+            const statutContainer = document.getElementById("statut-lecture-seule");
+            if (statutContainer) {
+                let icon = "";
+                let color = "";
+                switch (data.statut_evenement) {
+                    case "En cours de gréement": icon = "tools"; color = "gray"; break;
+                    case "Ouvert": icon = "door-open"; color = "limegreen"; break;
+                    case "Effectif dépassé": icon = "users-slash"; color = "darkorange"; break;
+                    case "Complet": icon = "ban"; color = "red"; break;
+                    case "Fermé": icon = "door-closed"; color = "navy"; break;
+                }
+                statutContainer.innerHTML = `<i class="fas fa-${icon}" style="color: ${color};"></i> ${data.statut_evenement}`;
+            }
         });
 }
 

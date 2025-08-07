@@ -1,90 +1,164 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des évènements</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
 
-{% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Créer ou sélectionner un événement</h2>
+        .header {
+            background-color: #003b71;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
 
-    <!-- ✅ Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+        .header img {
+            height: 80px;
+            margin-bottom: 10px;
+        }
 
-    <!-- ✅ Création nouvel évènement -->
-    {% if user.is_admin or user.role == "codep" %}
-    <div class="card mb-4">
-        <div class="card-header">Nouvel Évènement</div>
-        <div class="card-body">
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="nom_evt" class="form-label">Nom de l'évènement</label>
-                    <input type="text" class="form-control" id="nom_evt" name="nom_evt" required>
-                </div>
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            border-top: 6px solid #f58220;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-                <div class="mb-3">
-                    <label for="type_evt" class="form-label">Type d'évènement</label>
-                    <select class="form-control" id="type_evt" name="type_evt" required>
-                        <option value="CAI">CAI</option>
-                        <option value="CHU">CHU</option>
-                        <option value="PRV">PRV</option>
-                    </select>
-                </div>
+        h1, h2 {
+            text-align: center;
+            color: #003b71;
+            margin-bottom: 25px;
+        }
 
-                <div class="mb-3">
-                    <label for="adresse" class="form-label">Adresse</label>
-                    <input type="text" class="form-control" id="adresse" name="adresse">
-                </div>
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
 
-                <div class="mb-3">
-                    <label for="statut" class="form-label">Statut</label>
-                    <select class="form-control" id="statut" name="statut" required>
-                        <option value="En cours de gréement">En cours de gréement</option>
-                        <option value="Ouvert">Ouvert</option>
-                        <option value="Effectif dépassé">Effectif dépassé</option>
-                        <option value="Complet">Complet</option>
-                        <option value="Fermé">Fermé</option>
-                    </select>
-                </div>
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
 
-                <button type="submit" class="btn btn-primary">Créer l'évènement</button>
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #f58220;
+            color: white;
+            border: none;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px 0 0;
+        }
+
+        .btn:hover {
+            background-color: #e36d00;
+        }
+
+        .btn-group {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 50px;
+        }
+
+        #statut-selectionne {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #003b71;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='logo-protection-civile.jpg') }}" alt="Logo Protection Civile">
+        <h2>Protection Civile</h2>
+    </div>
+
+    <div class="container">
+
+        <!-- ✅ Boutons d'accès haut -->
+        <div class="btn-group">
+            <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger mb-3">🚪 Déconnexion</a>
+            <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn"><i class="fas fa-users"></i> Gérer les utilisateurs</a>
+        </div>
+
+        <!-- 🔧 Création d’évènement -->
+        <div class="form-section">
+            <h1>Créer un nouvel évènement</h1>
+            <form method="post">
+                <label for="nom_evt">Nom de l'évènement</label>
+                <input type="text" id="nom_evt" name="nom_evt" required>
+
+                <label for="type_evt">Type d'évènement</label>
+                <select id="type_evt" name="type_evt" required>
+                    <option value="CAI">CAI</option>
+                    <option value="CHU">CHU</option>
+                    <option value="PRV">PRV</option>
+                </select>
+
+                <label for="adresse">Adresse</label>
+                <input type="text" id="adresse" name="adresse" required>
+
+                <label for="statut">Statut</label>
+                <select id="statut" name="statut" required>
+                    <option value="En cours de gréement">En cours de gréement</option>
+                    <option value="Ouvert">Ouvert</option>
+                    <option value="Effectif dépassé">Effectif dépassé</option>
+                    <option value="Complet">Complet</option>
+                    <option value="Fermé">Fermé</option>
+                </select>
+
+                <button type="submit" class="btn"><i class="fas fa-plus-circle"></i> Créer l'évènement</button>
+            </form>
+        </div>
+
+        <!-- 🔁 Rejoindre un évènement -->
+        <div class="form-section">
+            <h2>Rejoindre un évènement existant</h2>
+            <form method="post" action="{{ url_for('main_bp.select_evenement') }}">
+                <label for="evenement_id">Sélectionner un évènement</label>
+                <select name="evenement_id" id="evenement_id" required onchange="afficherStatut()">
+                    <option value="" disabled selected>-- Choisir un évènement --</option>
+                    {% for evt in evenements %}
+                        <option value="{{ evt.id }}" data-statut="{{ evt.statut }}">{{ evt.nom }} ({{ evt.numero }})</option>
+                    {% endfor %}
+                </select>
+
+                <p id="statut-selectionne"></p>
+
+                <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Rejoindre</button>
             </form>
         </div>
     </div>
-    {% endif %}
 
-    <!-- ✅ Sélection d’un évènement existant -->
-    <div class="card mb-4">
-        <div class="card-header">Sélectionner un évènement existant</div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('main_bp.select_evenement') }}">
-                <div class="mb-3">
-                    <label for="evenement_id" class="form-label">Choisir un évènement</label>
-                    <select class="form-control" id="evenement_id" name="evenement_id" required>
-                        <option value="">-- Sélectionner --</option>
-                        {% for evt in evenements %}
-                            <option value="{{ evt.id }}">{{ evt.numero }} - {{ evt.nom }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-success">Accéder</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- ✅ Boutons bas de page -->
-    <div class="d-flex justify-content-between">
-        {% if user.is_admin or user.role == "codep" %}
-        <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn btn-warning">
-            Gestion des utilisateurs
-        </a>
-        {% endif %}
-        <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger">Déconnexion</a>
-    </div>
-</div>
-{% endblock %}
+    <!-- 📜 Script statut dynamique -->
+    <script>
+    function afficherStatut() {
+        const select = document.getElementById("evenement_id");
+        const statut = select.options[select.selectedIndex].getAttribute("data-statut");
+        const statutText = statut ? "Statut : " + statut : "";
+        document.getElementById("statut-selectionne").innerText = statutText;
+    }
+    </script>
+</body>
+</html>

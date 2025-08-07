@@ -107,7 +107,6 @@ def dashboard(evenement_id):
     fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
     nb_present = FicheImplique.query.filter_by(evenement_id=evenement.id, statut="présent").count()
     nb_total = len(fiches)
-    nb_restant = nb_total - nb_present
 
     return render_template(
         "dashboard.html",
@@ -115,9 +114,9 @@ def dashboard(evenement_id):
         evenement=evenement,
         fiches=fiches,
         nb_present=nb_present,
-        nb_total=nb_total,
-        nb_restant=nb_restant
+        nb_total=nb_total
     )
+
 
 
 

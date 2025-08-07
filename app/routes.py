@@ -4,6 +4,7 @@ from . import db
 from werkzeug.security import check_password_hash
 from functools import wraps
 from datetime import datetime
+from flask import jsonify
 
 main_bp = Blueprint("main_bp", __name__)
 
@@ -449,6 +450,36 @@ def update_evenement_statut(evenement_id):
         flash("✅ Statut de l’évènement mis à jour.", "success")
 
     return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
+
+#############################################
+
+from flask import jsonify
+
+@main_bp.route("/evenement/<int:evenement_id>/fiches_json")
+@login_required
+def fiches_json(evenement_id):
+    user = get_current_user()
+    evenement = Evenement.query.get_or_404(evenement_id)
+
+    if evenement not in user.evenements and not user.is_admin and user.role != "codep":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
+
+    data = []
+    for fiche in fiches:
+        data.append({
+            "id": fiche.id,
+            "nom": fiche.nom,
+            "prenom": fiche.prenom,
+            "statut": fiche.statut,
+            "heure_arrivee": fiche.heure_arrivee.strftime("%d/%m/%Y %H:%M") if fiche.heure_arrivee else "—",
+            "destination": fiche.destination or "—",
+            "difficultes": fiche.difficultes or "—",
+            "competences": fiche.competences or "—",
+        })
+
+    return jsonify(data)
 
 
 

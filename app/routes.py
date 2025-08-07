@@ -156,3 +156,18 @@ def fiche_new():
         return redirect(url_for("main_bp.dashboard"))
 
     return render_template("fiche_new.html", user=user, evenement=evenement)
+
+@main_bp.route("/admin/utilisateurs")
+@login_required
+def admin_utilisateurs():
+    user = get_current_user()
+
+    # Seuls les responsables de centre ou CODEP peuvent voir cette page
+    if not (user.is_admin or user.role in ["responsable", "codep"]):
+        flash("Accès refusé : vous n'avez pas les droits pour gérer les utilisateurs.", "danger")
+        return redirect(url_for("main_bp.dashboard"))
+
+    # Récupérer les utilisateurs liés à l'évènement actuel
+    utilisateurs = Utilisateur.query.filter_by(evenement_id=user.evenement_id).all()
+
+    return render_template("admin_utilisateurs.html", user=user, utilisateurs=utilisateurs)

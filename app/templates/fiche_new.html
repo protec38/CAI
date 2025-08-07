@@ -173,10 +173,17 @@
 
     <!-- 🕒 Script pour enregistrer l’heure locale du client -->
     <script>
-        document.querySelector("form").addEventListener("submit", function () {
-            const now = new Date();
-            document.getElementById("heure_arrivee").value = now.toISOString();
-        });
-    </script>
+    document.querySelector("form").addEventListener("submit", function () {
+        const now = new Date();
+        const localISO = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, '0') + "-" +
+            String(now.getDate()).padStart(2, '0') + "T" +
+            String(now.getHours()).padStart(2, '0') + ":" +
+            String(now.getMinutes()).padStart(2, '0') + ":" +
+            String(now.getSeconds()).padStart(2, '0');
+        document.getElementById("heure_arrivee_js").value = localISO;
+    });
+</script>
+
 </body>
 </html>

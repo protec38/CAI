@@ -69,30 +69,38 @@
 
     {% if utilisateurs %}
     <table>
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Nom d'utilisateur</th>
-                <th>Rôle</th>
-                <th>Évènement</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for u in utilisateurs %}
-            <tr>
-                <td>{{ u.nom }}</td>
-                <td>{{ u.nom_utilisateur }}</td>
-                <td>{{ u.role | capitalize }}</td>
-                <td>{{ u.evenement.nom if u.evenement else "—" }}</td>
-                <td class="actions">
-                    <a href="{{ url_for('main_bp.utilisateur_edit', id=u.id) }}"><i class="fas fa-edit"></i> Modifier</a>
-                    <a href="{{ url_for('main_bp.utilisateur_delete', id=u.id) }}" onclick="return confirm('Supprimer cet utilisateur ?')"><i class="fas fa-trash"></i> Supprimer</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Nom d'utilisateur</th>
+            <th>Rôle</th>
+            <th>Type</th>
+            <th>Évènements associés</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in utilisateurs %}
+        <tr>
+            <td>{{ u.nom }}</td>
+            <td>{{ u.nom_utilisateur }}</td>
+            <td>{{ u.role | capitalize }}</td>
+            <td>{{ u.type_utilisateur | capitalize }}</td>
+            <td>
+                {% for evt in u.evenements %}
+                    <div>{{ evt.nom }} ({{ evt.numero }})</div>
+                {% else %}
+                    <em>—</em>
+                {% endfor %}
+            </td>
+            <td class="actions">
+                <a href="{{ url_for('main_bp.utilisateur_edit', id=u.id) }}"><i class="fas fa-edit"></i> Modifier</a>
+                <a href="{{ url_for('main_bp.utilisateur_delete', id=u.id) }}" onclick="return confirm('Supprimer cet utilisateur ?')"><i class="fas fa-trash"></i> Supprimer</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
     {% else %}
     <p>Aucun utilisateur enregistré pour cet évènement.</p>
     {% endif %}

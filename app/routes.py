@@ -49,10 +49,12 @@ def evenement_new():
     user = get_current_user()
 
     if request.method == "POST":
-        # Création d’un événement
         nom_evt = request.form["nom_evt"]
         type_evt = request.form["type_evt"]
+        adresse = request.form["adresse"]
+        statut = request.form["statut"]
 
+        # Générer automatiquement le numéro d’évènement
         last_evt = Evenement.query.order_by(Evenement.id.desc()).first()
         next_id = last_evt.id + 1 if last_evt else 1
         numero_evt = str(next_id).zfill(8)
@@ -61,21 +63,25 @@ def evenement_new():
             numero=numero_evt,
             nom=nom_evt,
             type=type_evt,
+            adresse=adresse,
+            statut=statut,
             date_creation=datetime.utcnow(),
         )
+
         db.session.add(nouvel_evt)
         db.session.commit()
 
-        # Lier automatiquement l'utilisateur admin/codep à l'événement
+        # Lier l'utilisateur à l'évènement s'il est admin ou codep
         if user.is_admin or user.role == "codep":
             user.evenement_id = nouvel_evt.id
             db.session.commit()
 
-        flash("Événement créé avec succès !", "success")
+        flash("Évènement créé avec succès !", "success")
         return redirect(url_for("main_bp.dashboard"))
 
     evenements = Evenement.query.all()
     return render_template("evenement_new.html", user=user, evenements=evenements)
+
 
 # 🔁 Sélection d’un événement existant
 @main_bp.route("/evenement/select", methods=["POST"])

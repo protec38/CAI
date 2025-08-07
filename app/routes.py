@@ -48,6 +48,12 @@ def logout():
 def evenement_new():
     user = get_current_user()
 
+    # 🔒 Restriction stricte à admin ou codep
+    if not user.is_admin and user.role != "codep":
+        flash("⛔ Vous n’avez pas l’autorisation de créer un évènement.", "danger")
+        evenements = user.evenements  # on peut quand même lui afficher ceux qu’il voit
+        return render_template("evenement_new.html", user=user, evenements=evenements)
+
     if request.method == "POST":
         nom_evt = request.form["nom_evt"]
         type_evt = request.form["type_evt"]
@@ -61,25 +67,25 @@ def evenement_new():
         nouvel_evt = Evenement(
             numero=numero_evt,
             nom=nom_evt,
-            type_evt=type_evt,  # 🔧 corrige ici
+            type_evt=type_evt,
             adresse=adresse,
             statut=statut,
-            date_ouverture=datetime.utcnow(),  # 🔧 et ici
+            date_ouverture=datetime.utcnow()
         )
 
         db.session.add(nouvel_evt)
         db.session.commit()
 
-        # Associer l'admin/codep à l'évènement
-        if user.is_admin or user.role == "codep":
-            if nouvel_evt not in user.evenements:
-                user.evenements.append(nouvel_evt)
-                db.session.commit()
+        # Lier l'utilisateur à l'évènement créé
+        if nouvel_evt not in user.evenements:
+            user.evenements.append(nouvel_evt)
+            db.session.commit()
 
-        flash("Évènement créé avec succès !", "success")
+        flash("✅ Évènement créé avec succès.", "success")
         return redirect(url_for("main_bp.dashboard"))
 
-    evenements = Evenement.query.all()
+    # GET
+    evenements = Evenement.query.all() if user.is_admin or user.role == "codep" else user.evenements
     return render_template("evenement_new.html", user=user, evenements=evenements)
 
 

@@ -1,6 +1,14 @@
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import pytz  # ✅ Pour conversion UTC → heure locale France
+
+# 🌍 Fonction utilitaire
+def convertir_heure_locale(dt_utc):
+    if not dt_utc:
+        return None
+    paris = pytz.timezone("Europe/Paris")
+    return dt_utc.astimezone(paris)
 
 # Association utilisateur <-> evenement (many-to-many)
 utilisateur_evenement = db.Table(
@@ -94,6 +102,15 @@ class FicheImplique(db.Model):
 
     evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'), nullable=False)
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=False)
+
+    # ✅ Propriétés heure locale
+    @property
+    def heure_arrivee_locale(self):
+        return convertir_heure_locale(self.heure_arrivee)
+
+    @property
+    def heure_sortie_locale(self):
+        return convertir_heure_locale(self.heure_sortie)
 
     def __repr__(self):
         return f"<FicheImplique {self.nom} {self.prenom}>"

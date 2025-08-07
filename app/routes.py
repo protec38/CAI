@@ -182,12 +182,20 @@ def utilisateur_create():
 
     if request.method == "POST":
         nom = request.form["nom"]
+        nom_utilisateur = request.form["nom_utilisateur"]
         email = request.form["email"]
         role = request.form["role"]
         password = request.form["password"]
 
+        # Vérifier si le nom d'utilisateur existe déjà
+        existing = Utilisateur.query.filter_by(nom_utilisateur=nom_utilisateur).first()
+        if existing:
+            flash("Nom d'utilisateur déjà utilisé.", "danger")
+            return redirect(url_for("main_bp.utilisateur_create"))
+
         new_user = Utilisateur(
             nom=nom,
+            nom_utilisateur=nom_utilisateur,
             email=email,
             role=role,
             evenement_id=user.evenement_id
@@ -199,8 +207,8 @@ def utilisateur_create():
         flash("Utilisateur créé avec succès", "success")
         return redirect(url_for("main_bp.admin_utilisateurs"))
 
-    return render_template("utilisateur_form.html", mode="create")
-
+    return render_template("utilisateur_form.html", utilisateur=None, mode="create")
+    
 @main_bp.route("/admin/utilisateur/edit/<int:id>", methods=["GET", "POST"])
 @login_required
 def utilisateur_edit(id):
@@ -213,9 +221,11 @@ def utilisateur_edit(id):
 
     if request.method == "POST":
         utilisateur.nom = request.form["nom"]
+        utilisateur.nom_utilisateur = request.form["nom_utilisateur"]
         utilisateur.email = request.form["email"]
         utilisateur.role = request.form["role"]
         password = request.form["password"]
+
         if password:
             utilisateur.set_password(password)
 
@@ -224,6 +234,7 @@ def utilisateur_edit(id):
         return redirect(url_for("main_bp.admin_utilisateurs"))
 
     return render_template("utilisateur_form.html", utilisateur=utilisateur, mode="edit")
+
 
 
 @main_bp.route("/admin/utilisateur/delete/<int:id>")
@@ -239,4 +250,5 @@ def utilisateur_delete(id):
     db.session.commit()
     flash("Utilisateur supprimé.", "info")
     return redirect(url_for("main_bp.admin_utilisateurs"))
+
 

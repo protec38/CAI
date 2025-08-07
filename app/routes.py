@@ -271,7 +271,7 @@ def fiche_new():
             pass
     numero_prevu = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
 
-    r
+    
 
 
 

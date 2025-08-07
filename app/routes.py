@@ -104,7 +104,8 @@ def select_evenement():
 @login_required
 def dashboard():
     user = get_current_user()
-    evenement = user.evenement if user else None
+    evenement = user.evenements[0] if user and user.evenements else None
+
 
     # Récupérer les fiches liées à l’évènement sélectionné
     fiches = []

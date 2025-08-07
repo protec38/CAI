@@ -157,8 +157,8 @@ def select_evenement():
 @login_required
 def fiche_new():
     user = get_current_user()
-
     evenement_id = session.get("evenement_id")
+
     if not evenement_id:
         flash("⛔ Aucun évènement actif. Veuillez d'abord accéder à un évènement.", "danger")
         return redirect(url_for("main_bp.evenement_new"))
@@ -169,21 +169,22 @@ def fiche_new():
         return redirect(url_for("main_bp.evenement_new"))
 
     if request.method == "POST":
-        nom = request.form.get("nom")
-        prenom = request.form.get("prenom")
-        statut = request.form.get("statut")
-        nationalite = request.form.get("nationalite")
-        difficulte = request.form.get("difficulte")
-        telephone = request.form.get("telephone")
+        # 🧪 Récupération de l’heure du client (UTC)
+        heure_client_str = request.form.get("heure_arrivee_client")
+        heure_arrivee = None
+        if heure_client_str:
+            try:
+                heure_arrivee = datetime.strptime(heure_client_str, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                pass  # fallback: None → prendra UTC du serveur si jamais vide
 
-        # 🔢 Génération du numéro de fiche local à l'évènement
+        # 🔢 Génération du numéro de fiche
         last_fiche_evt = (
             FicheImplique.query
             .filter_by(evenement_id=evenement.id)
             .order_by(FicheImplique.id.desc())
             .first()
         )
-
         next_local = 1
         if last_fiche_evt and last_fiche_evt.numero:
             try:
@@ -197,14 +198,24 @@ def fiche_new():
 
         fiche = FicheImplique(
             numero=numero,
-            nom=nom,
-            prenom=prenom,
-            statut=statut,
-            nationalite=nationalite,
-            difficulte=difficulte,
-            telephone=telephone,
+            nom=request.form.get("nom"),
+            prenom=request.form.get("prenom"),
+            date_naissance=request.form.get("date_naissance") or None,
+            nationalite=request.form.get("nationalite"),
+            adresse=request.form.get("adresse"),
+            telephone=request.form.get("telephone"),
+            statut="présent",
+            utilisateur_id=user.id,
             evenement_id=evenement.id,
-            utilisateur_id=user.id
+            heure_arrivee=heure_arrivee or datetime.utcnow(),  # priorité au client
+            difficultes=request.form.get("difficulte"),
+            competences=request.form.get("competences"),
+            effets_perso=request.form.get("effets_perso"),
+            destination=request.form.get("destination"),
+            moyen_transport=request.form.get("moyen_transport"),
+            recherche_personne=request.form.get("recherche_personne"),
+            personne_a_prevenir=request.form.get("personne_a_prevenir"),
+            tel_personne_a_prevenir=request.form.get("tel_personne_a_prevenir"),
         )
 
         db.session.add(fiche)
@@ -213,7 +224,7 @@ def fiche_new():
         flash(f"✅ Fiche n°{numero} créée pour l’évènement en cours.", "success")
         return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
 
-    # 🧾 Prévisualisation du numéro pour l'afficher en lecture seule
+    # Prévisualisation du numéro
     last_fiche_evt = (
         FicheImplique.query
         .filter_by(evenement_id=evenement.id)
@@ -228,8 +239,8 @@ def fiche_new():
                 next_local = int(last_parts[1]) + 1
         except ValueError:
             pass
-    numero_prevu = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
 
+    numero_prevu = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
     return render_template("fiche_new.html", user=user, numero_prevu=numero_prevu)
 
 

@@ -200,3 +200,43 @@ def utilisateur_create():
         return redirect(url_for("main_bp.admin_utilisateurs"))
 
     return render_template("utilisateur_form.html", mode="create")
+
+@main_bp.route("/admin/utilisateur/edit/<int:id>", methods=["GET", "POST"])
+@login_required
+def utilisateur_edit(id):
+    user = get_current_user()
+    if not (user.is_admin or user.role in ["responsable", "codep"]):
+        flash("Accès refusé.", "danger")
+        return redirect(url_for("main_bp.dashboard"))
+
+    utilisateur = Utilisateur.query.get_or_404(id)
+
+    if request.method == "POST":
+        utilisateur.nom = request.form["nom"]
+        utilisateur.email = request.form["email"]
+        utilisateur.role = request.form["role"]
+        password = request.form["password"]
+        if password:
+            utilisateur.set_password(password)
+
+        db.session.commit()
+        flash("Utilisateur modifié avec succès", "success")
+        return redirect(url_for("main_bp.admin_utilisateurs"))
+
+    return render_template("utilisateur_form.html", utilisateur=utilisateur, mode="edit")
+
+
+@main_bp.route("/admin/utilisateur/delete/<int:id>")
+@login_required
+def utilisateur_delete(id):
+    user = get_current_user()
+    if not (user.is_admin or user.role in ["responsable", "codep"]):
+        flash("Accès refusé.", "danger")
+        return redirect(url_for("main_bp.dashboard"))
+
+    utilisateur = Utilisateur.query.get_or_404(id)
+    db.session.delete(utilisateur)
+    db.session.commit()
+    flash("Utilisateur supprimé.", "info")
+    return redirect(url_for("main_bp.admin_utilisateurs"))
+

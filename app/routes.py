@@ -168,12 +168,16 @@ def fiche_new():
         flash("⛔ Vous n’avez pas accès à cet évènement.", "danger")
         return redirect(url_for("main_bp.evenement_new"))
 
-    # 🔽 Liste fixe des compétences (à passer au template)
+    # ✅ Liste fixe des compétences
     COMPETENCES_CAI = [
         "Médecin", "Infirmier", "Sapeur-pompier", "SST", "Psychologue",
         "Bénévole", "Artisan", "Interprète", "Logisticien", "Conducteur",
         "Agent sécurité", "Autre"
     ]
+
+    # ✅ Liste des pays (France en premier)
+    import pycountry
+    countries = ["France"] + sorted([c.name for c in pycountry.countries if c.name != "France"])
 
     if request.method == "POST":
         from datetime import datetime, timedelta
@@ -193,7 +197,6 @@ def fiche_new():
         else:
             date_naissance = None
 
-        # Tous les champs récupérés
         nom = request.form.get("nom")
         prenom = request.form.get("prenom")
         nationalite = request.form.get("nationalite")
@@ -204,7 +207,7 @@ def fiche_new():
         recherche_personne = request.form.get("recherche_personne")
         difficulte = request.form.get("difficulte")
 
-        # ✅ Compétences multiples → stockées en chaîne séparée par virgules
+        # ✅ Compétences multiples
         competences = ",".join(request.form.getlist("competences"))
 
         effets_perso = request.form.get("effets_perso")
@@ -214,6 +217,7 @@ def fiche_new():
         humain = request.form.get("humain") == "True"
         numero_recherche = request.form.get("numero_recherche")
 
+        # 🔢 Numérotation automatique
         last_fiche_evt = (
             FicheImplique.query
             .filter_by(evenement_id=evenement.id)
@@ -261,7 +265,7 @@ def fiche_new():
         flash(f"✅ Fiche n°{numero} créée pour l’évènement en cours.", "success")
         return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
 
-    # Prévisualisation numéro de fiche
+    # Prévisualisation du prochain numéro
     last_fiche_evt = (
         FicheImplique.query
         .filter_by(evenement_id=evenement.id)
@@ -283,7 +287,8 @@ def fiche_new():
         "fiche_new.html",
         user=user,
         numero_prevu=numero_prevu,
-        competences_options=COMPETENCES_CAI  # 🔁 envoyé au template
+        competences_options=COMPETENCES_CAI,
+        countries=countries
     )
 
 

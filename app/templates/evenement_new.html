@@ -2,8 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Créer ou rejoindre un évènement</title>
+    <title>Gestion des évènements</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -25,7 +26,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 40px auto;
             background: #fff;
             padding: 30px;
@@ -37,44 +38,53 @@
         h1, h2 {
             text-align: center;
             color: #003b71;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         label {
+            font-weight: bold;
             display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #333;
+            margin-top: 15px;
         }
 
-        input[type="text"],
-        input[type="date"],
-        select {
+        input, select {
             width: 100%;
             padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
+            margin-top: 5px;
             border-radius: 6px;
-            font-size: 14px;
+            border: 1px solid #ccc;
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
             background-color: #f58220;
             color: white;
             border: none;
-            font-size: 16px;
+            text-decoration: none;
             border-radius: 6px;
+            font-size: 16px;
             cursor: pointer;
+            margin: 10px 5px 0 0;
         }
 
-        button:hover {
-            background-color: #e57210;
+        .btn:hover {
+            background-color: #e36d00;
+        }
+
+        .btn-group {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         .form-section {
             margin-bottom: 50px;
+        }
+
+        #statut-selectionne {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #003b71;
         }
     </style>
 </head>
@@ -85,6 +95,14 @@
     </div>
 
     <div class="container">
+
+        <!-- ✅ Boutons d'accès haut -->
+        <div class="btn-group">
+            <a href="{{ url_for('main_bp.dashboard') }}" class="btn"><i class="fas fa-arrow-left"></i> Retour Dashboard</a>
+            <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn"><i class="fas fa-users"></i> Gérer les utilisateurs</a>
+        </div>
+
+        <!-- 🔧 Création d’évènement -->
         <div class="form-section">
             <h1>Créer un nouvel évènement</h1>
             <form method="post">
@@ -110,25 +128,37 @@
                     <option value="Fermé">Fermé</option>
                 </select>
 
-                <button type="submit">Créer l'évènement</button>
+                <button type="submit" class="btn"><i class="fas fa-plus-circle"></i> Créer l'évènement</button>
             </form>
         </div>
 
+        <!-- 🔁 Rejoindre un évènement -->
         <div class="form-section">
             <h2>Rejoindre un évènement existant</h2>
             <form method="post" action="{{ url_for('main_bp.select_evenement') }}">
                 <label for="evenement_id">Sélectionner un évènement</label>
-                <select name="evenement_id" id="evenement_id" required>
+                <select name="evenement_id" id="evenement_id" required onchange="afficherStatut()">
                     <option value="" disabled selected>-- Choisir un évènement --</option>
                     {% for evt in evenements %}
-                        <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
+                        <option value="{{ evt.id }}" data-statut="{{ evt.statut }}">{{ evt.nom }} ({{ evt.numero }})</option>
                     {% endfor %}
                 </select>
 
-                <button type="submit">Rejoindre l'évènement</button>
+                <p id="statut-selectionne"></p>
+
+                <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Rejoindre</button>
             </form>
-            <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn">Utilisateurs</a>
         </div>
     </div>
+
+    <!-- 📜 Script statut dynamique -->
+    <script>
+    function afficherStatut() {
+        const select = document.getElementById("evenement_id");
+        const statut = select.options[select.selectedIndex].getAttribute("data-statut");
+        const statutText = statut ? "Statut : " + statut : "";
+        document.getElementById("statut-selectionne").innerText = statutText;
+    }
+    </script>
 </body>
 </html>

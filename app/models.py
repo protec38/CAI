@@ -75,7 +75,7 @@ class FicheImplique(db.Model):
     heure_arrivee = db.Column(db.DateTime, default=datetime.utcnow)
     difficulte = db.Column(db.String(200), nullable=True)
     competence = db.Column(db.String(200), nullable=True)
-
+    destination = db.Column(db.String(255))
     est_animal = db.Column(db.Boolean, default=False)
     recherche_personne = db.Column(db.String(300), nullable=True)
     numero_recherche = db.Column(db.String(20), nullable=True)

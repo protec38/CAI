@@ -546,6 +546,26 @@ def fiches_json(evenement_id):
         "statut_evenement": fiches[0].evenement.statut if fiches else ""
     })
 
+#####################################################################
+
+
+COMPETENCES_CAI = [
+    "Médecin",
+    "Infirmier(ère)",
+    "Secouriste",
+    "Pompier",
+    "Traducteur",
+    "Artisan",
+    "Psychologue",
+    "Logisticien",
+    "Assistant social",
+    "Conducteur VL/PL",
+    "Agent sécurité",
+    "Cuisinier",
+    "Autre"
+]
 
 
 
+
+####################################################################

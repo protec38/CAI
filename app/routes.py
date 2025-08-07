@@ -166,17 +166,13 @@ def fiche_new():
 def admin_utilisateurs():
     user = get_current_user()
 
-    # 🔒 Autorisé uniquement aux admin ou codep
     if not user.is_admin and user.role != "codep":
-        flash("⛔ Accès refusé : cette section est réservée aux administrateurs ou CODEP.", "danger")
-        return render_template(
-            "admin_utilisateurs.html",
-            utilisateurs=[],  # Pas de données pour les non-autorisés
-            user=user
-        )
+        flash("⛔ Accès refusé : vous n’avez pas les droits pour gérer les utilisateurs.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
 
     utilisateurs = Utilisateur.query.all()
     return render_template("admin_utilisateurs.html", utilisateurs=utilisateurs, user=user)
+
 
 
 

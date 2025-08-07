@@ -174,7 +174,7 @@
 
         <div class="form-group">
             <label for="competences"><i class="fas fa-tools"></i> Compétences</label>
-            <select name="competences" id="competences" multiple size="6" class="form-control">
+            <select name="competences" id="competences" multiple size="6" class="form-control" onchange="limitCompetenceSelection(this)>
                 {% for c in competences_list %}
                     <option value="{{ c }}">{{ c }}</option>
                 {% endfor %}
@@ -218,7 +218,18 @@ document.querySelector("form").addEventListener("submit", function () {
         String(now.getSeconds()).padStart(2, '0');
     document.getElementById("heure_arrivee_js").value = formatted;
 });
+
+function limitCompetenceSelection(select) {
+    const selected = Array.from(select.selectedOptions);
+    if (selected.length > 4) {
+        alert("⛔ Vous ne pouvez sélectionner que 4 compétences maximum.");
+        // Deselect the last one selected
+        selected[selected.length - 1].selected = false;
+    }
+}    
 </script>
 
+
+    
 </body>
 </html>

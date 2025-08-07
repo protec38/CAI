@@ -72,7 +72,7 @@ def evenement_new():
             type_evt=type_evt,
             adresse=adresse,
             statut=statut,
-            createur_id=user.id
+            createur_id=user.id,
             date_ouverture=datetime.utcnow()
         )
 

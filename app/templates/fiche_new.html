@@ -64,7 +64,6 @@
         button:hover {
             background-color: #1a242f;
         }
-
         @media (max-width: 768px) {
             .form-group {
                 flex: 1 1 100%;
@@ -76,124 +75,127 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Créer une Fiche Impliqué</h1>
-        <form method="POST">
-            <div class="form-group">
-                <label for="numero">Numéro de fiche</label>
-                <input type="text" class="form-control" id="numero" name="numero" value="{{ numero_prevu }}" readonly>
-            </div>
+<div class="container">
+    <h1>Créer une Fiche Impliqué</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label for="numero">Numéro de fiche</label>
+            <input type="text" class="form-control" id="numero" name="numero" value="{{ numero_prevu }}" readonly>
+        </div>
 
-            <div class="form-group">
-                <label for="humain">Type</label>
-                <select name="humain">
-                    <option value="True">Humain</option>
-                    <option value="False">Matériel</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label for="humain">Type</label>
+            <select name="humain">
+                <option value="True">Humain</option>
+                <option value="False">Matériel</option>
+            </select>
+        </div>
 
-            <div class="form-group">
-                <label for="nom">Nom</label>
-                <input type="text" name="nom">
-            </div>
+        <div class="form-group">
+            <label for="nom">Nom</label>
+            <input type="text" name="nom">
+        </div>
 
-            <div class="form-group">
-                <label for="prenom">Prénom</label>
-                <input type="text" name="prenom">
-            </div>
+        <div class="form-group">
+            <label for="prenom">Prénom</label>
+            <input type="text" name="prenom">
+        </div>
 
-            <div class="form-group">
-                <label for="date_naissance">Date de naissance</label>
-                <input type="date" name="date_naissance">
-            </div>
+        <div class="form-group">
+            <label for="date_naissance">Date de naissance</label>
+            <input type="date" name="date_naissance">
+        </div>
 
-            <div class="form-group">
-                <label for="nationalite">Nationalité</label>
-                <input type="text" name="nationalite">
-            </div>
+        <div class="form-group">
+            <label for="nationalite">Nationalité</label>
+            <select name="nationalite">
+                <option value="France" selected>France</option>
+                {% for country in countries %}
+                    {% if country != 'France' %}
+                        <option value="{{ country }}">{{ country }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
 
-            <div class="form-group-full">
-                <label for="adresse">Adresse</label>
-                <input type="text" name="adresse">
-            </div>
+        <div class="form-group-full">
+            <label for="adresse">Adresse</label>
+            <input type="text" name="adresse">
+        </div>
 
-            <div class="form-group">
-                <label for="telephone">Téléphone</label>
-                <input type="text" name="telephone">
-            </div>
+        <div class="form-group">
+            <label for="telephone">Téléphone</label>
+            <input type="text" name="telephone">
+        </div>
 
-            <div class="form-group">
-                <label for="personne_a_prevenir">Personne à prévenir</label>
-                <input type="text" name="personne_a_prevenir">
-            </div>
+        <div class="form-group">
+            <label for="personne_a_prevenir">Personne à prévenir</label>
+            <input type="text" name="personne_a_prevenir">
+        </div>
 
-            <div class="form-group">
-                <label for="tel_personne_a_prevenir">Téléphone à prévenir</label>
-                <input type="text" name="tel_personne_a_prevenir">
-            </div>
+        <div class="form-group">
+            <label for="tel_personne_a_prevenir">Téléphone à prévenir</label>
+            <input type="text" name="tel_personne_a_prevenir">
+        </div>
 
-            <div class="form-group">
-                <label for="recherche_personne">Recherche de personne</label>
-                <textarea name="recherche_personne" rows="2"></textarea>
-            </div>
+        <div class="form-group">
+            <label for="recherche_personne">Recherche de personne</label>
+            <textarea name="recherche_personne" rows="2"></textarea>
+        </div>
 
-            <div class="form-group">
-                <label for="difficulte">Difficultés</label>
-                <textarea name="difficulte" rows="2"></textarea>
-            </div>
+        <div class="form-group">
+            <label for="difficulte">Difficultés</label>
+            <textarea name="difficulte" rows="2"></textarea>
+        </div>
 
-            <!-- ✅ LISTE DÉROULANTE MULTIPLE POUR COMPÉTENCES -->
-            <div class="form-group">
-                <label for="competences">Compétences</label>
-                <select name="competences" id="competences" multiple class="form-control">
-                    {% for c in competences_list %}
-                        <option value="{{ c }}" {% if fiche and c in fiche.competences.split(',') %}selected{% endif %}>{{ c }}</option>
-                    {% endfor %}
-                </select>
-                <small>Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs compétences.</small>
-            </div>
+        <!-- ✅ COMPÉTENCES MULTICHOIX -->
+        <div class="form-group">
+            <label for="competences">Compétences</label>
+            <select name="competences" id="competences" multiple class="form-control">
+                {% for c in competences_list %}
+                    <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+            </select>
+            <small>Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs compétences.</small>
+        </div>
 
-            <div class="form-group">
-                <label for="effets_perso">Effets personnels</label>
-                <input type="text" name="effets_perso">
-            </div>
+        <div class="form-group">
+            <label for="effets_perso">Effets personnels</label>
+            <input type="text" name="effets_perso">
+        </div>
 
-            <div class="form-group">
-                <label for="destination">Destination</label>
-                <input type="text" name="destination">
-            </div>
+        <div class="form-group">
+            <label for="destination">Destination</label>
+            <input type="text" name="destination">
+        </div>
 
-            <div class="form-group">
-                <label for="moyen_transport">Moyen de transport</label>
-                <input type="text" name="moyen_transport">
-            </div>
+        <div class="form-group">
+            <label for="moyen_transport">Moyen de transport</label>
+            <input type="text" name="moyen_transport">
+        </div>
 
-            <!-- 🕒 Champ caché pour heure d’arrivée client -->
-            <input type="hidden" name="heure_arrivee" id="heure_arrivee_js">
+        <!-- 🕒 Champ caché pour heure d’arrivée -->
+        <input type="hidden" name="heure_arrivee" id="heure_arrivee_js">
 
-            <div class="form-group-full">
-                <button type="submit">Enregistrer la fiche</button>
-            </div>
-        </form>
-    </div>
+        <div class="form-group-full">
+            <button type="submit">Enregistrer la fiche</button>
+        </div>
+    </form>
+</div>
 
-    <!-- 🕒 Script pour enregistrer l’heure locale du client -->
-    <script>
-    document.querySelector("form").addEventListener("submit", function () {
-        const now = new Date();
-
-        // Décalage manuel +2 heures (si besoin)
-        now.setHours(now.getHours() + 2);
-
-        const formatted = now.getFullYear() + '-' +
-            String(now.getMonth() + 1).padStart(2, '0') + '-' +
-            String(now.getDate()).padStart(2, '0') + ' ' +
-            String(now.getHours()).padStart(2, '0') + ':' +
-            String(now.getMinutes()).padStart(2, '0') + ':' +
-            String(now.getSeconds()).padStart(2, '0');
-
-        document.getElementById("heure_arrivee_js").value = formatted;
-    });
-    </script>
+<!-- 🕒 Script pour heure locale -->
+<script>
+document.querySelector("form").addEventListener("submit", function () {
+    const now = new Date();
+    now.setHours(now.getHours() + 2);
+    const formatted = now.getFullYear() + '-' +
+        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+        String(now.getDate()).padStart(2, '0') + ' ' +
+        String(now.getHours()).padStart(2, '0') + ':' +
+        String(now.getMinutes()).padStart(2, '0') + ':' +
+        String(now.getSeconds()).padStart(2, '0');
+    document.getElementById("heure_arrivee_js").value = formatted;
+});
+</script>
 </body>
 </html>

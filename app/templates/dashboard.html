@@ -91,7 +91,6 @@
     <div class="header">
         <h1>Tableau de bord</h1>
         <div>
-            <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn">Gestion des utilisateurs</a>
             <a href="{{ url_for('main_bp.evenement_new') }}" class="btn">Gestion des évènements</a>
             <a href="{{ url_for('main_bp.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
             <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
@@ -127,6 +126,7 @@
     <table>
         <thead>
             <tr>
+                <th>N°</th>
                 <th>Nom</th>
                 <th>Prénom</th>
                 <th>Statut</th>
@@ -140,6 +140,7 @@
         <tbody>
             {% for fiche in fiches %}
             <tr>
+                <td>{{ fiche.numero }}</td>
                 <td>{{ fiche.nom }}</td>
                 <td>{{ fiche.prenom }}</td>
                 <td>

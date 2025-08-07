@@ -122,25 +122,7 @@ def select_evenement():
         flash("Veuillez sélectionner un événement.", "warning")
         return redirect(url_for("main_bp.evenement_new"))
 
-# 🏠 Tableau de bord
-@main_bp.route("/dashboard")
-@login_required
-def dashboard():
-    user = get_current_user()
-    evenement = user.evenements[0] if user and user.evenements else None
 
-
-    # Récupérer les fiches liées à l’évènement sélectionné
-    fiches = []
-    if evenement:
-        fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
-
-    return render_template(
-        "dashboard.html",
-        user=user,
-        evenement=evenement,
-        fiches=fiches
-    )
 
 
 # ➕ Création fiche impliqué

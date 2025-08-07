@@ -20,7 +20,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        h2 {
+        h1 {
             text-align: center;
             margin-bottom: 30px;
             color: #2c3e50;
@@ -45,6 +45,11 @@
         label {
             font-weight: bold;
             margin-bottom: 5px;
+        }
+
+        .required::after {
+            content: " *";
+            color: red;
         }
 
         input, select, textarea {
@@ -75,9 +80,15 @@
             background-color: #1a242f;
         }
 
-        .required::after {
-            content: " *";
-            color: red;
+        .btn-secondary {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 12px 20px;
+            background: #ccc;
+            color: #000;
+            border-radius: 6px;
+            text-align: center;
+            text-decoration: none;
         }
 
         @media (max-width: 768px) {
@@ -89,9 +100,8 @@
 </head>
 <body>
 <div class="container">
-    <h2>✏️ Modifier une fiche impliqué</h2>
+    <h1>✏️ Modifier la fiche impliqué</h1>
     <form method="POST">
-
         <div class="form-group">
             <label class="required" for="nom">Nom</label>
             <input type="text" name="nom" value="{{ fiche.nom }}" maxlength="100" required>
@@ -103,32 +113,13 @@
         </div>
 
         <div class="form-group">
-            <label for="numero">Numéro de fiche</label>
-            <input type="text" name="numero" value="{{ fiche.numero }}" disabled>
-        </div>
-
-        <div class="form-group">
-            <label for="statut">Statut</label>
-            <select name="statut" required>
-                <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>Présent</option>
-                <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>Sorti</option>
-                <option value="supprimé" {% if fiche.statut == "supprimé" %}selected{% endif %}>Supprimé</option>
-            </select>
+            <label class="required" for="date_naissance">Date de naissance</label>
+            <input type="date" name="date_naissance" value="{{ fiche.date_naissance.strftime('%Y-%m-%d') if fiche.date_naissance }}" required>
         </div>
 
         <div class="form-group">
             <label for="telephone">Téléphone</label>
-            <input type="text" name="telephone" maxlength="20">
-        </div>
-
-        <div class="form-group">
-            <label for="nationalite">Nationalité</label>
-            <input type="text" name="nationalite" value="{{ fiche.nationalite }}" maxlength="100">
-        </div>
-
-        <div class="form-group">
-            <label for="date_naissance" class="required">Date de naissance</label>
-            <input type="date" name="date_naissance" value="{{ fiche.date_naissance.strftime('%Y-%m-%d') if fiche.date_naissance }}" required>
+            <input type="tel" name="telephone" value="{{ fiche.telephone }}" maxlength="20" pattern="^(\+?\d{1,3}[- ]?)?\d{6,14}$" placeholder="+33 6 12 34 56 78">
         </div>
 
         <div class="form-group">
@@ -137,13 +128,18 @@
         </div>
 
         <div class="form-group">
-            <label for="recherche_personne">Recherche personne</label>
-            <input type="text" name="recherche_personne" value="{{ fiche.recherche_personne }}" maxlength="200">
+            <label for="nationalite">Nationalité</label>
+            <input type="text" name="nationalite" value="{{ fiche.nationalite }}" maxlength="100">
         </div>
 
         <div class="form-group">
             <label for="numero_recherche">N° recherche</label>
             <input type="text" name="numero_recherche" value="{{ fiche.numero_recherche }}" maxlength="50">
+        </div>
+
+        <div class="form-group">
+            <label for="recherche_personne">Recherche personne</label>
+            <input type="text" name="recherche_personne" value="{{ fiche.recherche_personne }}" maxlength="200">
         </div>
 
         <div class="form-group">
@@ -162,15 +158,17 @@
         </div>
 
         <div class="form-group">
-            <label>
-                <input type="checkbox" name="est_animal" {% if fiche.est_animal %}checked{% endif %}>
-                Est un animal
-            </label>
+            <label for="statut">Statut</label>
+            <select name="statut" required>
+                <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>Présent</option>
+                <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>Sorti</option>
+                <option value="supprimé" {% if fiche.statut == "supprimé" %}selected{% endif %}>Supprimé</option>
+            </select>
         </div>
 
         <div class="form-group-full">
             <button type="submit">💾 Sauvegarder</button>
-            <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn btn-secondary">Retour</a>
+            <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn-secondary">← Retour</a>
         </div>
     </form>
 </div>

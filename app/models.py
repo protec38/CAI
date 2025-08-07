@@ -48,8 +48,11 @@ class Evenement(db.Model):
     adresse = db.Column(db.String(200), nullable=True)
     statut = db.Column(db.String(50), nullable=True)
     type_evt = db.Column(db.String(50), nullable=True)
-
     date_ouverture = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # 🆕 Champ pour identifier le créateur/responsable
+    createur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=True)
+    createur = db.relationship('Utilisateur', backref='evenements_crees', foreign_keys=[createur_id])
 
     impliques = db.relationship('FicheImplique', backref='evenement', lazy=True)
     tickets = db.relationship('Ticket', backref='evenement', lazy=True)

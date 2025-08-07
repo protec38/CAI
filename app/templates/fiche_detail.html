@@ -13,6 +13,22 @@
         <p><strong>Adresse :</strong> {{ fiche.adresse or 'Non renseignée' }}</p>
         <p><strong>Téléphone :</strong> {{ fiche.telephone or 'Non renseigné' }}</p>
 
+        <p><strong>Heure d’arrivée :</strong> 
+            {% if fiche.heure_arrivee %}
+                {{ fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+                Non renseignée
+            {% endif %}
+        </p>
+
+        <p><strong>Heure de sortie :</strong> 
+            {% if fiche.heure_sortie %}
+                {{ fiche.heure_sortie.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+                Non sortie
+            {% endif %}
+        </p>
+
         <hr>
         <h4 class="mt-4">Informations supplémentaires</h4>
         <p><strong>Statut :</strong> {{ fiche.statut }}</p>

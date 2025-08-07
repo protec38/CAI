@@ -142,9 +142,15 @@
                 <textarea name="difficulte" rows="2"></textarea>
             </div>
 
+            <!-- ✅ LISTE DÉROULANTE MULTIPLE POUR COMPÉTENCES -->
             <div class="form-group">
                 <label for="competences">Compétences</label>
-                <textarea name="competences" rows="2"></textarea>
+                <select name="competences" id="competences" multiple class="form-control">
+                    {% for c in competences_list %}
+                        <option value="{{ c }}" {% if fiche and c in fiche.competences.split(',') %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+                <small>Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs compétences.</small>
             </div>
 
             <div class="form-group">
@@ -163,7 +169,7 @@
             </div>
 
             <!-- 🕒 Champ caché pour heure d’arrivée client -->
-            <input type="hidden" name="heure_arrivee" id="heure_arrivee">
+            <input type="hidden" name="heure_arrivee" id="heure_arrivee_js">
 
             <div class="form-group-full">
                 <button type="submit">Enregistrer la fiche</button>
@@ -188,8 +194,6 @@
 
         document.getElementById("heure_arrivee_js").value = formatted;
     });
-</script>
-
-
+    </script>
 </body>
 </html>

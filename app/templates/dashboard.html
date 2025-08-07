@@ -124,14 +124,32 @@
         </h2>
         <p><strong>📍 Adresse :</strong> {{ evenement.adresse }}</p>
 
-        <form method="POST" action="{{ url_for('main_bp.update_evenement_statut', evenement_id=evenement.id) }}">
-            <label><strong>✅ Statut de l’évènement :</strong></label>
-            <select name="statut_evt" onchange="this.form.submit()">
-                {% for option in ['En cours de gréement', 'Ouvert', 'Effectif dépassé', 'Complet', 'Fermé'] %}
-                    <option value="{{ option }}" {% if evenement.statut == option %}selected{% endif %}>{{ option }}</option>
-                {% endfor %}
-            </select>
-        </form>
+        <p><strong>✅ Statut de l’évènement :</strong>
+{% if peut_modifier_statut %}
+    <form method="POST" action="{{ url_for('main_bp.update_evenement_statut', evenement_id=evenement.id) }}" style="display:inline;">
+        <select name="statut_evt" onchange="this.form.submit()">
+            {% for option in ['En cours de gréement', 'Ouvert', 'Effectif dépassé', 'Complet', 'Fermé'] %}
+                <option value="{{ option }}" {% if evenement.statut == option %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+        </select>
+    </form>
+{% else %}
+    {% if evenement.statut == "En cours de gréement" %}
+        <i class="fas fa-tools" style="color: gray;"></i> {{ evenement.statut }}
+    {% elif evenement.statut == "Ouvert" %}
+        <i class="fas fa-door-open" style="color: limegreen;"></i> {{ evenement.statut }}
+    {% elif evenement.statut == "Effectif dépassé" %}
+        <i class="fas fa-users-slash" style="color: darkorange;"></i> {{ evenement.statut }}
+    {% elif evenement.statut == "Complet" %}
+        <i class="fas fa-ban" style="color: red;"></i> {{ evenement.statut }}
+    {% elif evenement.statut == "Fermé" %}
+        <i class="fas fa-door-closed" style="color: navy;"></i> {{ evenement.statut }}
+    {% else %}
+        {{ evenement.statut }}
+    {% endif %}
+{% endif %}
+</p>
+
     </div>
     {% endif %}
 

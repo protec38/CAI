@@ -118,12 +118,12 @@ def select_evenement():
     evt_id = request.form.get("evenement_id")
 
     if evt_id:
-        user.evenement_id = int(evt_id)
-        db.session.commit()
-        return redirect(url_for("main_bp.dashboard"))
+        session["evenement_id"] = int(evt_id)  # 🧠 on stocke dans la session
+        return redirect(url_for("main_bp.dashboard", evenement_id=int(evt_id)))
     else:
         flash("Veuillez sélectionner un événement.", "warning")
         return redirect(url_for("main_bp.evenement_new"))
+
 
 
 

@@ -96,7 +96,7 @@ def evenement_new():
 @main_bp.route("/evenement/<int:evenement_id>/dashboard")
 @login_required
 def dashboard(evenement_id):
-    session["evenement_id"] = evenement_id  # 🧠 Sauvegarde de l'évènement actif
+    session["evenement_id"] = evenement_id
     user = get_current_user()
 
     evenement = Evenement.query.get(evenement_id)
@@ -105,7 +105,20 @@ def dashboard(evenement_id):
         return redirect(url_for("main_bp.evenement_new"))
 
     fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
-    return render_template("dashboard.html", user=user, evenement=evenement, fiches=fiches)
+    nb_present = FicheImplique.query.filter_by(evenement_id=evenement.id, statut="présent").count()
+    nb_total = len(fiches)
+    nb_restant = nb_total - nb_present
+
+    return render_template(
+        "dashboard.html",
+        user=user,
+        evenement=evenement,
+        fiches=fiches,
+        nb_present=nb_present,
+        nb_total=nb_total,
+        nb_restant=nb_restant
+    )
+
 
 
 

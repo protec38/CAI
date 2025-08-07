@@ -6,10 +6,14 @@ class Evenement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     numero = db.Column(db.String(10), unique=True)  # généré automatiquement
     nom = db.Column(db.String(100), nullable=False)
-    type = db.Column(db.String(10), default="CAI")
+    type = db.Column(db.String(20), default="CAI")
+    adresse = db.Column(db.String(200))
+    statut = db.Column(db.String(50), default="En cours de gréement")
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
     utilisateurs = db.relationship("Utilisateur", back_populates="evenement", lazy=True)
     impliques = db.relationship("FicheImplique", back_populates="evenement", lazy=True)
+
 
 class Utilisateur(db.Model):
     id = db.Column(db.Integer, primary_key=True)

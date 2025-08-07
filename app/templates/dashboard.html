@@ -58,8 +58,13 @@
             text-align: left;
         }
 
-        .actions a {
+        .actions a,
+        .actions form {
             margin-right: 8px;
+            display: inline-block;
+        }
+
+        .actions a {
             color: #003b71;
             font-weight: bold;
             text-decoration: none;
@@ -68,12 +73,25 @@
         .actions a:hover {
             text-decoration: underline;
         }
+
+        .actions form button {
+            background: none;
+            border: none;
+            color: crimson;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .actions form button:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Tableau de bord</h1>
         <div>
+            <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn">Gestion des utilisateurs</a>
             <a href="{{ url_for('main_bp.evenement_new') }}" class="btn">Gestion des évènements</a>
             <a href="{{ url_for('main_bp.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
             <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
@@ -83,9 +101,8 @@
     {% if evenement %}
     <div class="event-info">
         <h2 style="margin-top: 0; color: #ffcc00;">
-    <i class="fas fa-calendar-alt" style="color: #ffcc00;"></i> {{ evenement.nom }}
-</h2>
-
+            <i class="fas fa-calendar-alt" style="color: #ffcc00;"></i> {{ evenement.nom }}
+        </h2>
         <p><strong>📍 Adresse :</strong> {{ evenement.adresse }}</p>
         <p>
             <strong>✅ Statut :</strong>
@@ -134,6 +151,9 @@
                     <a href="{{ url_for('main_bp.fiche_detail', id=fiche.id) }}">Voir</a>
                     <a href="{{ url_for('main_bp.fiche_edit', id=fiche.id) }}">Modifier</a>
                     <a href="{{ url_for('main_bp.fiche_sortie', id=fiche.id) }}">Sortie</a>
+                    <form method="POST" action="{{ url_for('main_bp.fiche_delete', id=fiche.id) }}" onsubmit="return confirm('Confirmer la suppression ?');">
+                        <button type="submit">Supprimer</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}

@@ -164,15 +164,13 @@ def fiche_new():
 def admin_utilisateurs():
     user = get_current_user()
 
-    # Seuls les responsables de centre ou CODEP peuvent voir cette page
-    if not (user.is_admin or user.role in ["responsable", "codep"]):
-        flash("Accès refusé : vous n'avez pas les droits pour gérer les utilisateurs.", "danger")
+    if not (user.is_admin or user.role == "codep"):
+        flash("Accès refusé", "danger")
         return redirect(url_for("main_bp.dashboard"))
 
-    # Récupérer les utilisateurs liés à l'évènement actuel
-    utilisateurs = Utilisateur.query.filter_by(evenement_id=user.evenement_id).all()
-
+    utilisateurs = Utilisateur.query.all()
     return render_template("admin_utilisateurs.html", user=user, utilisateurs=utilisateurs)
+
 
 ################################################################
 
@@ -181,18 +179,21 @@ def admin_utilisateurs():
 @login_required
 def utilisateur_create():
     user = get_current_user()
-    if not (user.is_admin or user.role in ["responsable", "codep"]):
-        flash("Accès refusé.", "danger")
+    if not (user.is_admin or user.role == "codep"):
+        flash("Accès refusé", "danger")
         return redirect(url_for("main_bp.dashboard"))
+
+    from app.models import Evenement
+    all_evenements = Evenement.query.all()
 
     if request.method == "POST":
         nom = request.form["nom"]
         nom_utilisateur = request.form["nom_utilisateur"]
-        type_utilisateur = request.form["type_utilisateur"]
         role = request.form["role"]
+        type_utilisateur = request.form["type_utilisateur"]
         password = request.form["password"]
+        evenement_ids = request.form.getlist("evenements")
 
-        # Vérifier si le nom d'utilisateur existe déjà
         existing = Utilisateur.query.filter_by(nom_utilisateur=nom_utilisateur).first()
         if existing:
             flash("Nom d'utilisateur déjà utilisé.", "danger")
@@ -201,18 +202,23 @@ def utilisateur_create():
         new_user = Utilisateur(
             nom=nom,
             nom_utilisateur=nom_utilisateur,
-            type_utilisateur=type_utilisateur,
             role=role,
-            evenement_id=user.evenement_id
+            type_utilisateur=type_utilisateur,
         )
         new_user.set_password(password)
+
+        for evt_id in evenement_ids:
+            evt = Evenement.query.get(int(evt_id))
+            if evt:
+                new_user.evenements.append(evt)
+
         db.session.add(new_user)
         db.session.commit()
-
         flash("Utilisateur créé avec succès", "success")
         return redirect(url_for("main_bp.admin_utilisateurs"))
 
-    return render_template("utilisateur_form.html", utilisateur=None, mode="create")
+    return render_template("utilisateur_form.html", utilisateur=None, all_evenements=all_evenements, mode="create")
+
 
 ###########################################
 
@@ -221,11 +227,13 @@ def utilisateur_create():
 @login_required
 def utilisateur_edit(id):
     user = get_current_user()
-    if not (user.is_admin or user.role in ["responsable", "codep"]):
-        flash("Accès refusé.", "danger")
+    if not (user.is_admin or user.role == "codep"):
+        flash("Accès refusé", "danger")
         return redirect(url_for("main_bp.dashboard"))
 
     utilisateur = Utilisateur.query.get_or_404(id)
+    from app.models import Evenement
+    all_evenements = Evenement.query.all()
 
     if request.method == "POST":
         utilisateur.nom = request.form["nom"]
@@ -237,11 +245,18 @@ def utilisateur_edit(id):
         if password:
             utilisateur.set_password(password)
 
+        utilisateur.evenements = []
+        for evt_id in request.form.getlist("evenements"):
+            evt = Evenement.query.get(int(evt_id))
+            if evt:
+                utilisateur.evenements.append(evt)
+
         db.session.commit()
-        flash("Utilisateur modifié avec succès", "success")
+        flash("Utilisateur mis à jour.", "success")
         return redirect(url_for("main_bp.admin_utilisateurs"))
 
-    return render_template("utilisateur_form.html", utilisateur=utilisateur, mode="edit")
+    return render_template("utilisateur_form.html", utilisateur=utilisateur, all_evenements=all_evenements, mode="edit")
+
 
 
 

@@ -4,42 +4,56 @@
     <meta charset="UTF-8">
     <title>Nouvelle Fiche Impliqué</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Roboto + FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
-            background-color: #f4f7f9;
+            background: linear-gradient(to right, #002f6c, #ff6f00);
+            color: #333;
         }
+
         .container {
             max-width: 1000px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 40px auto;
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
+
         h1 {
             text-align: center;
+            color: #002f6c;
             margin-bottom: 30px;
-            color: #2c3e50;
         }
+
         form {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
         }
+
         .form-group {
             flex: 1 1 45%;
             display: flex;
             flex-direction: column;
         }
+
         .form-group-full {
             flex: 1 1 100%;
         }
+
         label {
             font-weight: bold;
             margin-bottom: 5px;
+            color: #002f6c;
         }
+
         input, select, textarea {
             padding: 10px;
             font-size: 15px;
@@ -47,44 +61,54 @@
             border-radius: 6px;
             box-sizing: border-box;
         }
+
+        select[multiple] {
+            min-height: 150px;
+        }
+
+        small {
+            font-size: 13px;
+            color: #777;
+        }
+
         textarea {
             resize: vertical;
         }
+
         button {
-            background-color: #2c3e50;
+            background-color: #ff6f00;
             color: white;
             padding: 14px 25px;
             font-size: 16px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            margin-top: 30px;
             width: 100%;
         }
+
         button:hover {
-            background-color: #1a242f;
+            background-color: #e65c00;
         }
+
         @media (max-width: 768px) {
             .form-group {
                 flex: 1 1 100%;
-            }
-            button {
-                font-size: 18px;
             }
         }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>Créer une Fiche Impliqué</h1>
+    <h1><i class="fas fa-user-plus"></i> Nouvelle fiche impliqué</h1>
     <form method="POST">
         <div class="form-group">
-            <label for="numero">Numéro de fiche</label>
-            <input type="text" class="form-control" id="numero" name="numero" value="{{ numero_prevu }}" readonly>
+            <label for="numero"><i class="fas fa-hashtag"></i> Numéro de fiche</label>
+            <input type="text" id="numero" name="numero" value="{{ numero_prevu }}" readonly>
         </div>
 
         <div class="form-group">
-            <label for="humain">Type</label>
+            <label for="humain"><i class="fas fa-user-tag"></i> Type</label>
             <select name="humain">
                 <option value="True">Humain</option>
                 <option value="False">Matériel</option>
@@ -92,22 +116,22 @@
         </div>
 
         <div class="form-group">
-            <label for="nom">Nom</label>
+            <label for="nom"><i class="fas fa-user"></i> Nom</label>
             <input type="text" name="nom">
         </div>
 
         <div class="form-group">
-            <label for="prenom">Prénom</label>
+            <label for="prenom"><i class="fas fa-user"></i> Prénom</label>
             <input type="text" name="prenom">
         </div>
 
         <div class="form-group">
-            <label for="date_naissance">Date de naissance</label>
+            <label for="date_naissance"><i class="fas fa-calendar"></i> Date de naissance</label>
             <input type="date" name="date_naissance">
         </div>
 
         <div class="form-group">
-            <label for="nationalite">Nationalité</label>
+            <label for="nationalite"><i class="fas fa-flag"></i> Nationalité</label>
             <select name="nationalite">
                 <option value="France" selected>France</option>
                 {% for country in countries %}
@@ -119,38 +143,37 @@
         </div>
 
         <div class="form-group-full">
-            <label for="adresse">Adresse</label>
+            <label for="adresse"><i class="fas fa-home"></i> Adresse</label>
             <input type="text" name="adresse">
         </div>
 
         <div class="form-group">
-            <label for="telephone">Téléphone</label>
+            <label for="telephone"><i class="fas fa-phone"></i> Téléphone</label>
             <input type="text" name="telephone">
         </div>
 
         <div class="form-group">
-            <label for="personne_a_prevenir">Personne à prévenir</label>
+            <label for="personne_a_prevenir"><i class="fas fa-user-friends"></i> Personne à prévenir</label>
             <input type="text" name="personne_a_prevenir">
         </div>
 
         <div class="form-group">
-            <label for="tel_personne_a_prevenir">Téléphone à prévenir</label>
+            <label for="tel_personne_a_prevenir"><i class="fas fa-phone-volume"></i> Téléphone à prévenir</label>
             <input type="text" name="tel_personne_a_prevenir">
         </div>
 
         <div class="form-group">
-            <label for="recherche_personne">Recherche de personne</label>
+            <label for="recherche_personne"><i class="fas fa-search"></i> Recherche de personne</label>
             <textarea name="recherche_personne" rows="2"></textarea>
         </div>
 
         <div class="form-group">
-            <label for="difficulte">Difficultés</label>
+            <label for="difficulte"><i class="fas fa-exclamation-circle"></i> Difficultés</label>
             <textarea name="difficulte" rows="2"></textarea>
         </div>
 
-        <!-- ✅ COMPÉTENCES MULTICHOIX -->
         <div class="form-group">
-            <label for="competences">Compétences</label>
+            <label for="competences"><i class="fas fa-tools"></i> Compétences</label>
             <select name="competences" id="competences" multiple size="6" class="form-control">
                 {% for c in competences_list %}
                     <option value="{{ c }}">{{ c }}</option>
@@ -160,30 +183,29 @@
         </div>
 
         <div class="form-group">
-            <label for="effets_perso">Effets personnels</label>
+            <label for="effets_perso"><i class="fas fa-suitcase"></i> Effets personnels</label>
             <input type="text" name="effets_perso">
         </div>
 
         <div class="form-group">
-            <label for="destination">Destination</label>
+            <label for="destination"><i class="fas fa-location-arrow"></i> Destination</label>
             <input type="text" name="destination">
         </div>
 
         <div class="form-group">
-            <label for="moyen_transport">Moyen de transport</label>
+            <label for="moyen_transport"><i class="fas fa-bus"></i> Moyen de transport</label>
             <input type="text" name="moyen_transport">
         </div>
 
-        <!-- 🕒 Champ caché pour heure d’arrivée -->
+        <!-- Heure d’arrivée (JS) -->
         <input type="hidden" name="heure_arrivee" id="heure_arrivee_js">
 
         <div class="form-group-full">
-            <button type="submit">Enregistrer la fiche</button>
+            <button type="submit"><i class="fas fa-save"></i> Enregistrer la fiche</button>
         </div>
     </form>
 </div>
 
-<!-- 🕒 Script pour heure locale -->
 <script>
 document.querySelector("form").addEventListener("submit", function () {
     const now = new Date();
@@ -197,5 +219,6 @@ document.querySelector("form").addEventListener("submit", function () {
     document.getElementById("heure_arrivee_js").value = formatted;
 });
 </script>
+
 </body>
 </html>

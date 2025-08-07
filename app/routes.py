@@ -433,41 +433,60 @@ def fiche_detail(id):
 
 
 # ✏️ Modification d’une fiche impliqué
+from datetime import datetime
+
 @main_bp.route("/fiche/edit/<int:id>", methods=["GET", "POST"])
 @login_required
 def fiche_edit(id):
     user = get_current_user()
-
     fiche = FicheImplique.query.get_or_404(id)
 
+    # Vérification d'accès à l'évènement
     if fiche.evenement not in user.evenements:
         flash("⛔ Vous n’avez pas accès à cet évènement.", "danger")
         return redirect(url_for("main_bp.evenement_new"))
 
+    # Liste des compétences
+    COMPETENCES_CAI = [
+        "Médecin", "Infirmier", "Sapeur-pompier", "SST", "Psychologue",
+        "Bénévole", "Artisan", "Interprète", "Logisticien", "Conducteur",
+        "Agent sécurité", "Autre"
+    ]
+
     if request.method == "POST":
-        fiche.nom = request.form["nom"]
-        fiche.prenom = request.form["prenom"]
-        fiche.statut = request.form["statut"]
-        fiche.nationalite = request.form["nationalite"]
-        fiche.difficulte = request.form["difficulte"]
-        fiche.telephone = request.form["telephone"]
-        fiche.competence = request.form.get("competence")
+        fiche.nom = request.form.get("nom")
+        fiche.prenom = request.form.get("prenom")
+        fiche.statut = request.form.get("statut")
+        fiche.nationalite = request.form.get("nationalite")
+        fiche.difficultes = request.form.get("difficulte")
+        fiche.telephone = request.form.get("telephone")
+        fiche.competences = ",".join(request.form.getlist("competences"))
         fiche.adresse = request.form.get("adresse")
-        fiche.date_naissance = request.form.get("date_naissance")
-        fiche.est_animal = bool(request.form.get("est_animal"))
         fiche.recherche_personne = request.form.get("recherche_personne")
-        fiche.numero_recherche = request.form.get("numero_recherche")
+        fiche.numero_recherche = request.form.get("numero_recherche") or None
+
+        # ✅ Conversion de la date au bon format
+        date_str = request.form.get("date_naissance")
+        if date_str:
+            try:
+                fiche.date_naissance = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                flash("⚠️ Format de date invalide.", "danger")
+                return redirect(request.url)
+        else:
+            fiche.date_naissance = None
 
         db.session.commit()
         flash("✅ Fiche mise à jour avec succès.", "success")
         return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement.id))
-    COMPETENCES_CAI = [
-    "Médecin", "Infirmier", "Sapeur-pompier", "SST", "Psychologue",
-    "Bénévole", "Artisan", "Interprète", "Logisticien", "Conducteur",
-    "Agent sécurité", "Autre"
-    ]
-    
-    return render_template("fiche_edit.html", fiche=fiche, user=user, competences_list=COMPETENCES_CAI)
+
+    return render_template(
+        "fiche_edit.html",
+        fiche=fiche,
+        user=user,
+        competences_list=COMPETENCES_CAI
+    )
+
 
 
 ########################################################################

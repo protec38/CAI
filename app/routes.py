@@ -168,19 +168,22 @@ def fiche_new():
         flash("⛔ Vous n’avez pas accès à cet évènement.", "danger")
         return redirect(url_for("main_bp.evenement_new"))
 
-    if request.method == "POST":
-        from datetime import datetime
+    # 🔽 Liste fixe des compétences (à passer au template)
+    COMPETENCES_CAI = [
+        "Médecin", "Infirmier", "Sapeur-pompier", "SST", "Psychologue",
+        "Bénévole", "Artisan", "Interprète", "Logisticien", "Conducteur",
+        "Agent sécurité", "Autre"
+    ]
 
-        # 🕒 Heure JS envoyée depuis le client
+    if request.method == "POST":
+        from datetime import datetime, timedelta
+
         heure_js_str = request.form.get("heure_arrivee_js")
         try:
-            from datetime import timedelta
             heure_arrivee = datetime.strptime(heure_js_str, "%Y-%m-%dT%H:%M:%S.%fZ") + timedelta(hours=2)
-
         except Exception:
             heure_arrivee = datetime.utcnow()
 
-        # 📅 Date de naissance
         date_naissance_str = request.form.get("date_naissance")
         if date_naissance_str:
             try:
@@ -190,7 +193,7 @@ def fiche_new():
         else:
             date_naissance = None
 
-        # 🧾 Champs du formulaire
+        # Tous les champs récupérés
         nom = request.form.get("nom")
         prenom = request.form.get("prenom")
         nationalite = request.form.get("nationalite")
@@ -200,7 +203,10 @@ def fiche_new():
         tel_personne_a_prevenir = request.form.get("tel_personne_a_prevenir")
         recherche_personne = request.form.get("recherche_personne")
         difficulte = request.form.get("difficulte")
-        competences = request.form.get("competences")
+
+        # ✅ Compétences multiples → stockées en chaîne séparée par virgules
+        competences = ",".join(request.form.getlist("competences"))
+
         effets_perso = request.form.get("effets_perso")
         destination = request.form.get("destination")
         moyen_transport = request.form.get("moyen_transport")
@@ -208,7 +214,6 @@ def fiche_new():
         humain = request.form.get("humain") == "True"
         numero_recherche = request.form.get("numero_recherche")
 
-        # 🔢 Numérotation automatique
         last_fiche_evt = (
             FicheImplique.query
             .filter_by(evenement_id=evenement.id)
@@ -256,7 +261,7 @@ def fiche_new():
         flash(f"✅ Fiche n°{numero} créée pour l’évènement en cours.", "success")
         return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
 
-    # GET : prévisualisation du prochain numéro
+    # Prévisualisation numéro de fiche
     last_fiche_evt = (
         FicheImplique.query
         .filter_by(evenement_id=evenement.id)
@@ -273,7 +278,14 @@ def fiche_new():
             pass
 
     numero_prevu = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
-    return render_template("fiche_new.html", user=user, numero_prevu=numero_prevu)
+
+    return render_template(
+        "fiche_new.html",
+        user=user,
+        numero_prevu=numero_prevu,
+        competences_options=COMPETENCES_CAI  # 🔁 envoyé au template
+    )
+
 
 
     

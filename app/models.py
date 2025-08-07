@@ -69,7 +69,7 @@ class FicheImplique(db.Model):
     telephone = db.Column(db.String(20), nullable=True)
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=False)
     statut = db.Column(db.String(20), nullable=False, default="présent")  # présent / sorti / supprimé
-
+    heure_arrivee = db.Column(db.DateTime, default=datetime.utcnow)
     difficulte = db.Column(db.String(200), nullable=True)
     competence = db.Column(db.String(200), nullable=True)
 

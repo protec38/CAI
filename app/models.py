@@ -74,6 +74,7 @@ class FicheImplique(db.Model):
     statut = db.Column(db.String(20), nullable=False, default="présent")  # présent / sorti / supprimé
     heure_arrivee = db.Column(db.DateTime, default=datetime.utcnow)
     difficulte = db.Column(db.String(200), nullable=True)
+    difficultes = db.Column(db.Text)
     competence = db.Column(db.String(200), nullable=True)
     destination = db.Column(db.String(255))
     est_animal = db.Column(db.Boolean, default=False)

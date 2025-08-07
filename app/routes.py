@@ -287,7 +287,7 @@ def fiche_new():
         "fiche_new.html",
         user=user,
         numero_prevu=numero_prevu,
-        competences_options=COMPETENCES_CAI,
+        competences_list=COMPETENCES_CAI,
         countries=countries
     )
 
@@ -566,23 +566,3 @@ def fiches_json(evenement_id):
 #####################################################################
 
 
-COMPETENCES_CAI = [
-    "Médecin",
-    "Infirmier(ère)",
-    "Secouriste",
-    "Pompier",
-    "Traducteur",
-    "Artisan",
-    "Psychologue",
-    "Logisticien",
-    "Assistant social",
-    "Conducteur VL/PL",
-    "Agent sécurité",
-    "Cuisinier",
-    "Autre"
-]
-
-
-
-
-####################################################################

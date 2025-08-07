@@ -171,3 +171,32 @@ def admin_utilisateurs():
     utilisateurs = Utilisateur.query.filter_by(evenement_id=user.evenement_id).all()
 
     return render_template("admin_utilisateurs.html", user=user, utilisateurs=utilisateurs)
+
+@main_bp.route("/admin/utilisateur/create", methods=["GET", "POST"])
+@login_required
+def utilisateur_create():
+    user = get_current_user()
+    if not (user.is_admin or user.role in ["responsable", "codep"]):
+        flash("Accès refusé.", "danger")
+        return redirect(url_for("main_bp.dashboard"))
+
+    if request.method == "POST":
+        nom = request.form["nom"]
+        email = request.form["email"]
+        role = request.form["role"]
+        password = request.form["password"]
+
+        new_user = Utilisateur(
+            nom=nom,
+            email=email,
+            role=role,
+            evenement_id=user.evenement_id
+        )
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Utilisateur créé avec succès", "success")
+        return redirect(url_for("main_bp.admin_utilisateurs"))
+
+    return render_template("utilisateur_form.html", mode="create")

@@ -453,33 +453,37 @@ def update_evenement_statut(evenement_id):
 
 #############################################
 
-from flask import jsonify
-
 @main_bp.route("/evenement/<int:evenement_id>/fiches_json")
 @login_required
 def fiches_json(evenement_id):
     user = get_current_user()
     evenement = Evenement.query.get_or_404(evenement_id)
 
-    if evenement not in user.evenements and not user.is_admin and user.role != "codep":
-        return jsonify({"error": "Unauthorized"}), 403
+    if evenement not in user.evenements and not user.is_admin and user.role not in ["codep", "responsable"]:
+        return jsonify({"error": "Accès refusé."}), 403
 
-    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement_id).all()
+    nb_total = len(fiches)
+    nb_present = sum(1 for fiche in fiches if fiche.statut == "présent")
 
-    data = []
-    for fiche in fiches:
-        data.append({
-            "id": fiche.id,
-            "nom": fiche.nom,
-            "prenom": fiche.prenom,
-            "statut": fiche.statut,
-            "heure_arrivee": fiche.heure_arrivee.strftime("%d/%m/%Y %H:%M") if fiche.heure_arrivee else "—",
-            "destination": fiche.destination or "—",
-            "difficultes": fiche.difficultes or "—",
-            "competences": fiche.competences or "—",
-        })
+    fiches_data = [{
+        "id": fiche.id,
+        "numero": fiche.numero,
+        "nom": fiche.nom,
+        "prenom": fiche.prenom,
+        "statut": fiche.statut,
+        "heure_arrivee": fiche.heure_arrivee.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee else "—",
+        "destination": fiche.destination or "—",
+        "difficultes": fiche.difficultes or "—",
+        "competences": fiche.competences or "—"
+    } for fiche in fiches]
 
-    return jsonify(data)
+    return jsonify({
+        "statut_evenement": evenement.statut,
+        "nb_total": nb_total,
+        "nb_present": nb_present,
+        "fiches": fiches_data
+    })
 
 
 

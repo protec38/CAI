@@ -175,14 +175,18 @@
     <script>
     document.querySelector("form").addEventListener("submit", function () {
         const now = new Date();
-        now.setHours(now.getHours() + 2);  // Décalage manuel +2h
-        const localISO = now.getFullYear() + "-" +
-            String(now.getMonth() + 1).padStart(2, '0') + "-" +
-            String(now.getDate()).padStart(2, '0') + "T" +
-            String(now.getHours()).padStart(2, '0') + ":" +
-            String(now.getMinutes()).padStart(2, '0') + ":" +
+
+        // Décalage manuel +2 heures (si besoin)
+        now.setHours(now.getHours() + 2);
+
+        const formatted = now.getFullYear() + '-' +
+            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+            String(now.getDate()).padStart(2, '0') + ' ' +
+            String(now.getHours()).padStart(2, '0') + ':' +
+            String(now.getMinutes()).padStart(2, '0') + ':' +
             String(now.getSeconds()).padStart(2, '0');
-        document.getElementById("heure_arrivee_js").value = localISO;
+
+        document.getElementById("heure_arrivee_js").value = formatted;
     });
 </script>
 

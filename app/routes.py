@@ -461,8 +461,13 @@ def fiche_edit(id):
         db.session.commit()
         flash("✅ Fiche mise à jour avec succès.", "success")
         return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement.id))
-
-    return render_template("fiche_edit.html", fiche=fiche, user=user)
+    COMPETENCES_CAI = [
+    "Médecin", "Infirmier", "Sapeur-pompier", "SST", "Psychologue",
+    "Bénévole", "Artisan", "Interprète", "Logisticien", "Conducteur",
+    "Agent sécurité", "Autre"
+    ]
+    
+    return render_template("fiche_edit.html", fiche=fiche, user=user, competences_list=COMPETENCES_CAI)
 
 
 ########################################################################

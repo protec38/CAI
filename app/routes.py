@@ -169,16 +169,42 @@ def fiche_new():
         return redirect(url_for("main_bp.evenement_new"))
 
     if request.method == "POST":
-        # 🧪 Récupération de l’heure du client (UTC)
-        heure_client_str = request.form.get("heure_arrivee_client")
-        heure_arrivee = None
-        if heure_client_str:
-            try:
-                heure_arrivee = datetime.strptime(heure_client_str, "%Y-%m-%dT%H:%M:%S")
-            except ValueError:
-                pass  # fallback: None → prendra UTC du serveur si jamais vide
+        # Récupération des champs
+        nom = request.form.get("nom")
+        prenom = request.form.get("prenom")
+        statut = "présent"
+        nationalite = request.form.get("nationalite")
+        difficulte = request.form.get("difficulte")
+        competence = request.form.get("competences")
+        adresse = request.form.get("adresse")
+        telephone = request.form.get("telephone")
+        effets_perso = request.form.get("effets_perso")
+        destination = request.form.get("destination")
+        moyen_transport = request.form.get("moyen_transport")
+        personne_a_prevenir = request.form.get("personne_a_prevenir")
+        tel_personne_a_prevenir = request.form.get("tel_personne_a_prevenir")
+        recherche_personne = request.form.get("recherche_personne")
+        est_animal = bool(request.form.get("est_animal"))
+        humain = request.form.get("humain") == "True"
+        numero_recherche = request.form.get("numero_recherche")
 
-        # 🔢 Génération du numéro de fiche
+        # ✅ Conversion date_naissance en format Python `date`
+        date_naissance_str = request.form.get("date_naissance")
+        date_naissance = None
+        if date_naissance_str:
+            try:
+                date_naissance = datetime.strptime(date_naissance_str, "%Y-%m-%d").date()
+            except ValueError:
+                date_naissance = None
+
+        # ✅ Heure d’arrivée client (si JS envoie `heure_arrivee`)
+        heure_client = request.form.get("heure_arrivee")
+        try:
+            heure_arrivee = datetime.fromisoformat(heure_client) if heure_client else datetime.utcnow()
+        except ValueError:
+            heure_arrivee = datetime.utcnow()
+
+        # 🔢 Génération du numéro local
         last_fiche_evt = (
             FicheImplique.query
             .filter_by(evenement_id=evenement.id)
@@ -196,26 +222,30 @@ def fiche_new():
 
         numero = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
 
+        # 💾 Création de la fiche
         fiche = FicheImplique(
             numero=numero,
-            nom=request.form.get("nom"),
-            prenom=request.form.get("prenom"),
-            date_naissance=request.form.get("date_naissance") or None,
-            nationalite=request.form.get("nationalite"),
-            adresse=request.form.get("adresse"),
-            telephone=request.form.get("telephone"),
-            statut="présent",
-            utilisateur_id=user.id,
+            nom=nom,
+            prenom=prenom,
+            statut=statut,
+            nationalite=nationalite,
+            difficulte=difficulte,
+            competence=competence,
+            adresse=adresse,
+            telephone=telephone,
+            effets_perso=effets_perso,
+            destination=destination,
+            moyen_transport=moyen_transport,
+            personne_a_prevenir=personne_a_prevenir,
+            tel_personne_a_prevenir=tel_personne_a_prevenir,
+            recherche_personne=recherche_personne,
+            date_naissance=date_naissance,
+            est_animal=est_animal,
+            humain=humain,
+            numero_recherche=numero_recherche,
             evenement_id=evenement.id,
-            heure_arrivee=heure_arrivee or datetime.utcnow(),  # priorité au client
-            difficultes=request.form.get("difficulte"),
-            competences=request.form.get("competences"),
-            effets_perso=request.form.get("effets_perso"),
-            destination=request.form.get("destination"),
-            moyen_transport=request.form.get("moyen_transport"),
-            recherche_personne=request.form.get("recherche_personne"),
-            personne_a_prevenir=request.form.get("personne_a_prevenir"),
-            tel_personne_a_prevenir=request.form.get("tel_personne_a_prevenir"),
+            utilisateur_id=user.id,
+            heure_arrivee=heure_arrivee
         )
 
         db.session.add(fiche)
@@ -224,7 +254,7 @@ def fiche_new():
         flash(f"✅ Fiche n°{numero} créée pour l’évènement en cours.", "success")
         return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
 
-    # Prévisualisation du numéro
+    # 🧾 Prévisualisation du numéro
     last_fiche_evt = (
         FicheImplique.query
         .filter_by(evenement_id=evenement.id)
@@ -239,9 +269,10 @@ def fiche_new():
                 next_local = int(last_parts[1]) + 1
         except ValueError:
             pass
-
     numero_prevu = f"{str(evenement.id).zfill(3)}-{str(next_local).zfill(4)}"
-    return render_template("fiche_new.html", user=user, numero_prevu=numero_prevu)
+
+    r
+
 
 
 

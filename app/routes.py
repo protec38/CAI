@@ -174,7 +174,9 @@ def fiche_new():
         # 🕒 Heure JS envoyée depuis le client
         heure_js_str = request.form.get("heure_arrivee_js")
         try:
-            heure_arrivee = datetime.strptime(heure_js_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+            from datetime import timedelta
+            heure_arrivee = datetime.strptime(heure_js_str, "%Y-%m-%dT%H:%M:%S.%fZ") + timedelta(hours=2)
+
         except Exception:
             heure_arrivee = datetime.utcnow()
 

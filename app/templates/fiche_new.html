@@ -151,7 +151,7 @@
         <!-- ✅ COMPÉTENCES MULTICHOIX -->
         <div class="form-group">
             <label for="competences">Compétences</label>
-            <select name="competences" id="competences" multiple class="form-control">
+            <select name="competences" id="competences" multiple size="6" class="form-control">
                 {% for c in competences_list %}
                     <option value="{{ c }}">{{ c }}</option>
                 {% endfor %}

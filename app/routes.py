@@ -103,14 +103,20 @@ def select_evenement():
 @login_required
 def dashboard():
     user = get_current_user()
-    if not user.evenement_id:
-        flash("Aucun événement sélectionné.", "warning")
-        return redirect(url_for("main_bp.evenement_new"))
+    evenement = user.evenement if user else None
 
-    evenement = Evenement.query.get(user.evenement_id)
-    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
+    # Récupérer les fiches liées à l’évènement sélectionné
+    fiches = []
+    if evenement:
+        fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
 
-    return render_template("dashboard.html", user=user, evenement=evenement, impliques=fiches)
+    return render_template(
+        "dashboard.html",
+        user=user,
+        evenement=evenement,
+        fiches=fiches
+    )
+
 
 # ➕ Création fiche impliqué
 @main_bp.route("/fiche/new", methods=["GET", "POST"])

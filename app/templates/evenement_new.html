@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Créer un nouvel évènement</title>
+    <title>Créer ou rejoindre un évènement</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <style>
         body {
@@ -11,25 +11,42 @@
             margin: 0;
             padding: 0;
         }
+
+        .header {
+            background-color: #003b71;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header img {
+            height: 80px;
+            margin-bottom: 10px;
+        }
+
         .container {
             max-width: 600px;
-            margin: 60px auto;
+            margin: 40px auto;
             background: #fff;
             padding: 30px;
             border-radius: 10px;
+            border-top: 6px solid #f58220;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+
+        h1, h2 {
             text-align: center;
+            color: #003b71;
             margin-bottom: 30px;
-            color: #333;
         }
+
         label {
             display: block;
             margin-bottom: 6px;
             font-weight: 500;
-            color: #444;
+            color: #333;
         }
+
         input[type="text"],
         input[type="date"],
         select {
@@ -40,48 +57,61 @@
             border-radius: 6px;
             font-size: 14px;
         }
+
         button {
             width: 100%;
             padding: 12px;
-            background-color: #007BFF;
+            background-color: #f58220;
             color: white;
             border: none;
             font-size: 16px;
             border-radius: 6px;
             cursor: pointer;
         }
+
         button:hover {
-            background-color: #0056b3;
+            background-color: #e57210;
+        }
+
+        .form-section {
+            margin-bottom: 50px;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='logo-protection-civile.jpg') }}" alt="Logo Protection Civile">
+        <h2>Protection Civile</h2>
+    </div>
+
     <div class="container">
-        <h1>Créer un nouvel évènement</h1>
-        <form method="post">
-            <label for="nom">Nom de l'évènement</label>
-            <input type="text" id="nom" name="nom" required>
+        <div class="form-section">
+            <h1>Créer un nouvel évènement</h1>
+            <form method="post">
+                <label for="nom_evt">Nom de l'évènement</label>
+                <input type="text" id="nom_evt" name="nom_evt" required>
 
-            <label for="numero">Numéro</label>
-            <input type="text" id="numero" name="numero" required>
+                <label for="type_evt">Type d'évènement</label>
+                <input type="text" id="type_evt" name="type_evt" required>
 
-            <label for="adresse">Adresse</label>
-            <input type="text" id="adresse" name="adresse" required>
+                <button type="submit">Créer l'évènement</button>
+            </form>
+        </div>
 
-            <label for="date_ouverture">Date d'ouverture</label>
-            <input type="date" id="date_ouverture" name="date_ouverture" required>
+        <div class="form-section">
+            <h2>Rejoindre un évènement existant</h2>
+            <form method="post" action="{{ url_for('main_bp.select_evenement') }}">
+                <label for="evenement_id">Sélectionner un évènement</label>
+                <select name="evenement_id" id="evenement_id" required>
+                    <option value="" disabled selected>-- Choisir un évènement --</option>
+                    {% for evt in evenements %}
+                        <option value="{{ evt.id }}">{{ evt.nom }} ({{ evt.numero }})</option>
+                    {% endfor %}
+                </select>
 
-            <label for="statut">Statut</label>
-            <select id="statut" name="statut">
-                <option value="En cours de gréement">En cours de gréement</option>
-                <option value="Ouvert">Ouvert</option>
-                <option value="Effectif dépassé">Effectif dépassé</option>
-                <option value="Complet">Complet</option>
-                <option value="Fermé">Fermé</option>
-            </select>
-
-            <button type="submit">Créer l'évènement</button>
-        </form>
+                <button type="submit">Rejoindre l'évènement</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>

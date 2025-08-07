@@ -421,4 +421,23 @@ def fiche_sortie(id):
     flash(f"🚪 La fiche de {fiche.nom} a été marquée comme sortie.", "info")
     return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
 
+@main_bp.route("/evenement/<int:evenement_id>/update_statut", methods=["POST"])
+@login_required
+def update_evenement_statut(evenement_id):
+    user = get_current_user()
+    evenement = Evenement.query.get_or_404(evenement_id)
+
+    if evenement not in user.evenements and not user.is_admin:
+        flash("⛔ Accès refusé.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
+
+    new_statut = request.form.get("statut_evt")
+    if new_statut:
+        evenement.statut = new_statut
+        db.session.commit()
+        flash("✅ Statut de l’évènement mis à jour.", "success")
+
+    return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
+
+
 

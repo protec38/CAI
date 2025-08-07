@@ -190,13 +190,13 @@ def fiche_new():
 
         # 🕒 Heure client
         heure_js_str = request.form.get("heure_arrivee_js")
-if heure_js_str:
-    try:
-        heure_arrivee = datetime.strptime(heure_js_str, "%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        heure_arrivee = datetime.utcnow()  # fallback
-else:
-    heure_arrivee = datetime.utcnow()
+    if heure_js_str:
+        try:
+            heure_arrivee = datetime.strptime(heure_js_str, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            heure_arrivee = datetime.utcnow()  # fallback
+    else:
+        heure_arrivee = datetime.utcnow()
 
         # 📅 Date de naissance
         date_naissance = request.form.get("date_naissance")

@@ -297,4 +297,16 @@ def utilisateur_delete(id):
     flash("Utilisateur supprimé.", "info")
     return redirect(url_for("main_bp.admin_utilisateurs"))
 
+# 🔍 Détail d’une fiche impliqué
+@main_bp.route("/fiche/<int:id>")
+@login_required
+def fiche_detail(id):
+    user = get_current_user()
+    fiche = FicheImplique.query.get_or_404(id)
+
+    if fiche.evenement not in user.evenements and not user.is_admin and user.role != "codep":
+        flash("⛔ Vous n'avez pas accès à cette fiche.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
+
+    return render_template("fiche_detail.html", fiche=fiche, user=user)
 

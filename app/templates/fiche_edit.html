@@ -4,26 +4,31 @@
     <meta charset="UTF-8">
     <title>Modifier une fiche impliqué</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
-            background-color: #f4f7f9;
+            background: linear-gradient(to right, #002f6c, #ff6f00);
+            color: #333;
         }
 
         .container {
             max-width: 1000px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 40px auto;
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
         h1 {
             text-align: center;
+            color: #002f6c;
             margin-bottom: 30px;
-            color: #2c3e50;
         }
 
         form {
@@ -45,11 +50,7 @@
         label {
             font-weight: bold;
             margin-bottom: 5px;
-        }
-
-        .required::after {
-            content: " *";
-            color: red;
+            color: #002f6c;
         }
 
         input, select, textarea {
@@ -60,24 +61,32 @@
             box-sizing: border-box;
         }
 
+        select[multiple] {
+            min-height: 150px;
+        }
+
+        small {
+            font-size: 13px;
+            color: #777;
+        }
+
         textarea {
             resize: vertical;
         }
 
         button {
-            background-color: #2c3e50;
+            background-color: #ff6f00;
             color: white;
             padding: 14px 25px;
             font-size: 16px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            margin-top: 30px;
             width: 100%;
         }
 
         button:hover {
-            background-color: #1a242f;
+            background-color: #e65c00;
         }
 
         .btn-secondary {
@@ -99,37 +108,39 @@
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>✏️ Modifier la fiche impliqué</h1>
+    <h1><i class="fas fa-user-edit"></i> Modifier la fiche impliqué</h1>
+
     <form method="POST">
         <div class="form-group">
-            <label class="required" for="nom">Nom</label>
-            <input type="text" name="nom" value="{{ fiche.nom }}" maxlength="100" required>
+            <label for="nom">Nom <span style="color:red">*</span></label>
+            <input type="text" name="nom" value="{{ fiche.nom }}" maxlength="40" required>
         </div>
 
         <div class="form-group">
-            <label class="required" for="prenom">Prénom</label>
-            <input type="text" name="prenom" value="{{ fiche.prenom }}" maxlength="100" required>
+            <label for="prenom">Prénom <span style="color:red">*</span></label>
+            <input type="text" name="prenom" value="{{ fiche.prenom }}" maxlength="40" required>
         </div>
 
         <div class="form-group">
-            <label class="required" for="date_naissance">Date de naissance</label>
+            <label for="date_naissance">Date de naissance <span style="color:red">*</span></label>
             <input type="date" name="date_naissance" value="{{ fiche.date_naissance.strftime('%Y-%m-%d') if fiche.date_naissance }}" required>
         </div>
 
         <div class="form-group">
-            <label for="tel_personne_a_prevenir">Téléphone à prévenir</label>
-            <input type="text" name="tel_personne_a_prevenir" maxlength="20">
+            <label for="telephone"><i class="fas fa-phone"></i> Téléphone</label>
+            <input type="text" name="telephone" value="{{ fiche.telephone }}" maxlength="15">
         </div>
 
         <div class="form-group">
-            <label for="adresse">Adresse</label>
-            <input type="text" name="adresse" value="{{ fiche.adresse }}" maxlength="200">
+            <label for="adresse"><i class="fas fa-home"></i> Adresse</label>
+            <input type="text" name="adresse" value="{{ fiche.adresse }}" maxlength="100">
         </div>
 
         <div class="form-group">
-            <label for="nationalite">Nationalité</label>
-            <input type="text" name="nationalite" value="{{ fiche.nationalite }}" maxlength="100">
+            <label for="nationalite"><i class="fas fa-flag"></i> Nationalité</label>
+            <input type="text" name="nationalite" value="{{ fiche.nationalite }}" maxlength="50">
         </div>
 
         <div class="form-group">
@@ -138,18 +149,18 @@
         </div>
 
         <div class="form-group">
-            <label for="recherche_personne">Recherche personne</label>
+            <label for="recherche_personne"><i class="fas fa-search"></i> Recherche personne</label>
             <input type="text" name="recherche_personne" value="{{ fiche.recherche_personne }}" maxlength="200">
         </div>
 
         <div class="form-group">
-            <label for="difficulte">Difficultés</label>
-            <textarea name="difficulte" rows="2" maxlength="500">{{ fiche.difficultes }}</textarea>
+            <label for="difficulte"><i class="fas fa-exclamation-circle"></i> Difficultés</label>
+            <textarea name="difficulte" rows="2" maxlength="200">{{ fiche.difficultes }}</textarea>
         </div>
 
         <div class="form-group">
-            <label for="competences">Compétences</label>
-            <select name="competences" id="competences" multiple size="6" class="form-control">
+            <label for="competences"><i class="fas fa-tools"></i> Compétences</label>
+            <select name="competences" multiple size="6" class="form-control">
                 {% for c in competences_list %}
                     <option value="{{ c }}" {% if c in fiche.competences.split(',') %}selected{% endif %}>{{ c }}</option>
                 {% endfor %}
@@ -158,7 +169,22 @@
         </div>
 
         <div class="form-group">
-            <label for="statut">Statut</label>
+            <label for="effets_perso"><i class="fas fa-suitcase"></i> Effets personnels</label>
+            <input type="text" name="effets_perso" value="{{ fiche.effets_perso }}">
+        </div>
+
+        <div class="form-group">
+            <label for="destination"><i class="fas fa-location-arrow"></i> Destination</label>
+            <input type="text" name="destination" value="{{ fiche.destination }}">
+        </div>
+
+        <div class="form-group">
+            <label for="moyen_transport"><i class="fas fa-bus"></i> Moyen de transport</label>
+            <input type="text" name="moyen_transport" value="{{ fiche.moyen_transport }}">
+        </div>
+
+        <div class="form-group">
+            <label for="statut"><i class="fas fa-traffic-light"></i> Statut</label>
             <select name="statut" required>
                 <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>Présent</option>
                 <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>Sorti</option>
@@ -167,10 +193,11 @@
         </div>
 
         <div class="form-group-full">
-            <button type="submit">💾 Sauvegarder</button>
-            <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn-secondary">← Retour</a>
+            <button type="submit"><i class="fas fa-save"></i> Sauvegarder</button>
+            <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Retour</a>
         </div>
     </form>
 </div>
+
 </body>
 </html>

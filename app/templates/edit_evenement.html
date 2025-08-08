@@ -1,42 +1,36 @@
 {% extends "base.html" %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Modifier l’évènement</h2>
+<div class="container" style="max-width: 700px; margin: 40px auto;">
+    <h1 class="text-center" style="color: #003b71; margin-bottom: 30px;">✏️ Modifier l’évènement</h1>
 
-    <form method="POST">
-        <div class="form-group">
-            <label for="nom">Nom de l’évènement</label>
-            <input type="text" class="form-control" id="nom" name="nom" required value="{{ evenement.nom }}">
-        </div>
+    <form method="POST" style="background: #fff; padding: 30px; border-radius: 10px; border-top: 6px solid #f58220; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        
+        <label for="nom" style="font-weight: bold;">Nom de l’évènement</label>
+        <input type="text" id="nom" name="nom" required value="{{ evenement.nom }}" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ccc;">
 
-        <div class="form-group mt-3">
-            <label for="type">Type d’évènement</label>
-            <select class="form-control" id="type" name="type" required>
-                <option value="CAI" {% if evenement.type_evt == "CAI" %}selected{% endif %}>CAI</option>
-                <option value="CHU" {% if evenement.type_evt == "CHU" %}selected{% endif %}>CHU</option>
-                <option value="PRV" {% if evenement.type_evt == "PRV" %}selected{% endif %}>PRV</option>
-            </select>
-        </div>
+        <label for="type" style="font-weight: bold;">Type d’évènement</label>
+        <select id="type" name="type" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ccc;">
+            <option value="CAI" {% if evenement.type_evt == "CAI" %}selected{% endif %}>CAI</option>
+            <option value="CHU" {% if evenement.type_evt == "CHU" %}selected{% endif %}>CHU</option>
+            <option value="PRV" {% if evenement.type_evt == "PRV" %}selected{% endif %}>PRV</option>
+        </select>
 
-        <div class="form-group mt-3">
-            <label for="adresse">Adresse</label>
-            <input type="text" class="form-control" id="adresse" name="adresse" required value="{{ evenement.adresse }}">
-        </div>
+        <label for="adresse" style="font-weight: bold;">Adresse</label>
+        <input type="text" id="adresse" name="adresse" required value="{{ evenement.adresse }}" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ccc;">
 
-        <div class="form-group mt-3">
-            <label for="statut">Statut</label>
-            <select class="form-control" id="statut" name="statut" required>
-                <option value="En cours de gréement" {% if evenement.statut == "En cours de gréement" %}selected{% endif %}>En cours de gréement</option>
-                <option value="Ouvert" {% if evenement.statut == "Ouvert" %}selected{% endif %}>Ouvert</option>
-                <option value="Effectif dépassé" {% if evenement.statut == "Effectif dépassé" %}selected{% endif %}>Effectif dépassé</option>
-                <option value="Complet" {% if evenement.statut == "Complet" %}selected{% endif %}>Complet</option>
-                <option value="Fermé" {% if evenement.statut == "Fermé" %}selected{% endif %}>Fermé</option>
-            </select>
-        </div>
+        <label for="statut" style="font-weight: bold;">Statut</label>
+        <select id="statut" name="statut" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 30px; border-radius: 6px; border: 1px solid #ccc;">
+            <option value="En cours de gréement" {% if evenement.statut == "En cours de gréement" %}selected{% endif %}>En cours de gréement</option>
+            <option value="Ouvert" {% if evenement.statut == "Ouvert" %}selected{% endif %}>Ouvert</option>
+            <option value="Effectif dépassé" {% if evenement.statut == "Effectif dépassé" %}selected{% endif %}>Effectif dépassé</option>
+            <option value="Complet" {% if evenement.statut == "Complet" %}selected{% endif %}>Complet</option>
+            <option value="Fermé" {% if evenement.statut == "Fermé" %}selected{% endif %}>Fermé</option>
+        </select>
 
-        <div class="mt-4 d-flex justify-content-between">
-            <a href="{{ url_for('main_bp.admin_evenements') }}" class="btn btn-secondary">⬅ Annuler</a>
-            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        <div style="display: flex; justify-content: space-between;">
+            <a href="{{ url_for('main_bp.admin_evenements') }}" class="btn" style="background-color: #6c757d; color: white; border-radius: 6px; padding: 10px 20px;">⬅ Annuler</a>
+            <button type="submit" class="btn" style="background-color: #f58220; color: white; border-radius: 6px; padding: 10px 20px;">💾 Enregistrer</button>
         </div>
     </form>
 </div>

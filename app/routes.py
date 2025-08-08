@@ -784,7 +784,6 @@ def export_evenement_fiches_pdf(evenement_id):
     user = get_current_user()
     evenement = Evenement.query.get_or_404(evenement_id)
 
-    # Restriction d'accès
     if not (user.is_admin or user.role == "codep" or (user.role == "responsable" and user in evenement.utilisateurs)):
         flash("⛔ Accès refusé.", "danger")
         return redirect(url_for("main_bp.dashboard", evenement_id=evenement_id))
@@ -792,7 +791,14 @@ def export_evenement_fiches_pdf(evenement_id):
     fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=20)
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=20,
+        leftMargin=20,
+        topMargin=30,
+        bottomMargin=20
+    )
 
     story = []
     styles = getSampleStyleSheet()
@@ -800,17 +806,17 @@ def export_evenement_fiches_pdf(evenement_id):
     styles.add(ParagraphStyle(name='SectionTitle', fontSize=14, textColor=colors.HexColor("#f58220"), spaceBefore=15, spaceAfter=8))
     styles.add(ParagraphStyle(name='NormalBold', parent=styles['Normal'], fontName='Helvetica-Bold'))
 
-    # Logo (optionnel)
+    # === Logo (optionnel) ===
     logo_path = os.path.join("static", "img", "logo-protection-civile.jpg")
     if os.path.exists(logo_path):
         story.append(Image(logo_path, width=60, height=60))
 
-    # Titre principal
+    # === Titre principal ===
     story.append(Paragraph("Fiches Impliqués – Évènement", styles["Titre"]))
 
-    # Infos évènement
+    # === Infos évènement ===
     story.append(Paragraph("Informations sur l’évènement", styles["SectionTitle"]))
-    data_evt = [
+    evt_data = [
         ["Nom", evenement.nom],
         ["Numéro", evenement.numero],
         ["Adresse", evenement.adresse or "-"],
@@ -818,7 +824,7 @@ def export_evenement_fiches_pdf(evenement_id):
         ["Type", evenement.type_evt or "-"],
         ["Date d'ouverture", evenement.date_ouverture.strftime("%d/%m/%Y %H:%M")],
     ]
-    evt_table = Table(data_evt, colWidths=[4*cm, 10*cm])
+    evt_table = Table(evt_data, colWidths=[4*cm, 10*cm])
     evt_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
@@ -828,44 +834,47 @@ def export_evenement_fiches_pdf(evenement_id):
     story.append(evt_table)
     story.append(Spacer(1, 12))
 
-    # Section fiches
-    story.append(Paragraph("Fiches de l’évènement", styles["SectionTitle"]))
+    # === Fiches ===
+    story.append(Paragraph("Liste des fiches impliqués", styles["SectionTitle"]))
 
+    # En-tête
+    headers = [
+        "Numéro", "Nom", "Prénom", "Naissance", "Nationalité", "Statut",
+        "Téléphone", "Adresse", "Compétences", "Destination", "Effets", "Transport"
+    ]
+
+    # Données
+    data = [headers]
     for fiche in fiches:
-        ligne1 = [
-            ["Numéro", fiche.numero],
-            ["Nom", fiche.nom],
-            ["Prénom", fiche.prenom],
-            ["Date naissance", fiche.date_naissance.strftime("%d/%m/%Y") if fiche.date_naissance else "-"],
-            ["Nationalité", fiche.nationalite or "-"],
-            ["Statut", fiche.statut],
+        row = [
+            fiche.numero,
+            fiche.nom,
+            fiche.prenom,
+            fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else "-",
+            fiche.nationalite or "-",
+            fiche.statut,
+            fiche.telephone or "-",
+            fiche.adresse or "-",
+            fiche.competences or "-",
+            fiche.destination or "-",
+            fiche.effets_perso or "-",
+            fiche.moyen_transport or "-"
         ]
-        ligne2 = [
-            ["Téléphone", fiche.telephone or "-"],
-            ["Adresse", fiche.adresse or "-"],
-            ["Compétences", fiche.competences or "-"],
-            ["Effets persos", fiche.effets_perso or "-"],
-            ["Destination", fiche.destination or "-"],
-            ["Transport", fiche.moyen_transport or "-"],
-        ]
+        data.append(row)
 
-        style = TableStyle([
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-            ('BACKGROUND', (0, 0), (-1, -1), colors.whitesmoke),
-        ])
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#f58220")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ROWBACKGROUNDS', (1, 0), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
+    ]))
 
-        t1 = Table(ligne1, colWidths=[3*cm, 4*cm]*3)
-        t1.setStyle(style)
-
-        t2 = Table(ligne2, colWidths=[3*cm, 4*cm]*3)
-        t2.setStyle(style)
-
-        story.append(t1)
-        story.append(t2)
-        story.append(Spacer(1, 6))
-
+    story.append(table)
     doc.build(story)
     buffer.seek(0)
 
@@ -874,6 +883,8 @@ def export_evenement_fiches_pdf(evenement_id):
         as_attachment=True,
         download_name=f"evenement_{evenement.numero}_fiches.pdf",
         mimetype='application/pdf'
+    )
+
     )
 
 

@@ -724,9 +724,9 @@ def admin_evenements():
 
 ####################################
 
-@main_bp.route("/evenement/<int:evenement_id>/edit", methods=["GET", "POST"])
+@main_bp.route('/evenement/<int:evenement_id>/edit', methods=['GET', 'POST'])
 @login_required
-def evenement_edit(evenement_id):
+def edit_evenement(evenement_id):
     user = get_current_user()
     evenement = Evenement.query.get_or_404(evenement_id)
 
@@ -737,11 +737,12 @@ def evenement_edit(evenement_id):
     if request.method == "POST":
         evenement.nom = request.form["nom"]
         evenement.adresse = request.form["adresse"]
-        evenement.type_evt = request.form["type_evt"]
+        evenement.type_evt = request.form["type"]
         evenement.statut = request.form["statut"]
         db.session.commit()
         flash("✅ Évènement mis à jour.", "success")
         return redirect(url_for("main_bp.admin_evenements"))
 
-    return render_template("evenement_form.html", evenement=evenement, user=user)
+    return render_template("edit_evenement.html", evenement=evenement, user=user)
+
 

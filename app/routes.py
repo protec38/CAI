@@ -704,3 +704,22 @@ def _styled_table(data):
         ('TOPPADDING', (0,0), (-1,-1), 6),
     ]))
     return table
+
+
+
+################################################
+
+
+@main_bp.route("/admin/evenements")
+@login_required
+def admin_evenements():
+    user = get_current_user()
+
+    # Vérifie si l'utilisateur est admin ou codep pour au moins un événement
+    if not user.is_admin and not any(evt.codep_id == user.id for evt in user.evenements_crees):
+        flash("⛔ Accès interdit.", "danger")
+        return redirect(url_for("main_bp.dashboard"))
+
+    evenements = Evenement.query.order_by(Evenement.id.desc()).all()
+    return render_template("admin_evenements.html", evenements=evenements, user=user)
+

@@ -751,22 +751,25 @@ def edit_evenement(evenement_id):
 @main_bp.route("/evenements/<int:evenement_id>/supprimer", methods=["POST"])
 @login_required
 def delete_evenement(evenement_id):
+    user = get_current_user()  # ✅ au lieu de current_user
     evt = Evenement.query.get_or_404(evenement_id)
 
     # 🔐 Vérifie si l'utilisateur est admin OU le créateur (codep)
-    if not current_user.is_admin and evt.createur_id != current_user.id:
-        abort(403)  # Interdiction
+    if not user.is_admin and evt.createur_id != user.id:
+        abort(403)
 
-    # 🧹 Supprime les fiches impliquées associées
+    # 🧹 Supprime les fiches impliquées
     FicheImplique.query.filter_by(evenement_id=evt.id).delete()
 
-    # (optionnel) Supprimer aussi les tickets logistiques liés
+    # 🧹 Supprime les tickets (si tu en as)
+    from .models import Ticket
     Ticket.query.filter_by(evenement_id=evt.id).delete()
 
-    # 🗑 Supprime l'évènement lui-même
+    # 🗑 Supprime l'évènement
     db.session.delete(evt)
     db.session.commit()
 
-    flash("L’évènement et toutes ses fiches associées ont été supprimés.", "success")
+    flash("✅ L’évènement et ses fiches ont été supprimés.", "success")
     return redirect(url_for("main_bp.evenement_new"))
+
 

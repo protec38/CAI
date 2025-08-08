@@ -23,6 +23,9 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.3);
             width: 100%;
             max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         h2 {
@@ -60,27 +63,52 @@
             text-align: center;
             margin-bottom: 15px;
         }
+
+        .contact-info {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .contact-info a {
+            color: #003b71;
+            text-decoration: none;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h2>Connexion</h2>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="error">{{ message }}</div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-        <form method="POST" action="{{ url_for('main_bp.login') }}">
-            <label for="username">Nom d'utilisateur :</label>
-            <input type="text" id="username" name="username" required>
+        <div>
+            <h2>Connexion</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="error">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            <form method="POST" action="{{ url_for('main_bp.login') }}">
+                <label for="username">Nom d'utilisateur :</label>
+                <input type="text" id="username" name="username" required>
 
-            <label for="password">Mot de passe :</label>
-            <input type="password" id="password" name="password" required>
+                <label for="password">Mot de passe :</label>
+                <input type="password" id="password" name="password" required>
 
-            <button type="submit">Se connecter</button>
-        </form>
+                <button type="submit">Se connecter</button>
+            </form>
+        </div>
+
+        <!-- 👇 Contact -->
+        <div class="contact-info">
+            <p>Besoin d’aide ? Contactez-nous à <br>
+               <a href="mailto:si@isere.protection-civile.org">si@isere.protection-civile.org</a>
+            </p>
+        </div>
     </div>
 </body>
 </html>

@@ -131,7 +131,9 @@
         <div class="btn-group">
             <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger mb-3">🚪 Déconnexion</a>
             <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn"><i class="fas fa-users"></i> Gérer les utilisateurs</a>
-            <a href="{{ url_for('main_bp.admin_evenements') }}" class="btn"><i class="fas fa-edit"></i> Éditer les évènements</a>
+        {% if user.is_admin or user.role == "codep" %}
+            <a href="{{ url_for('main_bp.admin_evenements') }}" class="btn btn-info mt-3">🛠 Modifier les événements</a>
+        {% endif %}
         </div>
 
         <!-- 🔧 Création d’évènement -->

@@ -778,7 +778,7 @@ def delete_evenement(evenement_id):
 
 
 
-@app.route("/evenement/<int:evenement_id>/export/pdf")
+@main_bp.route("/evenement/<int:evenement_id>/export/pdf")
 @login_required
 def export_evenement_fiches_pdf(evenement_id):
     evenement = Evenement.query.get_or_404(evenement_id)

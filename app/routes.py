@@ -822,7 +822,7 @@ def export_evenement_fiches_pdf(evenement_id):
         ["Adresse", evenement.adresse or "-"],
         ["Statut", evenement.statut or "-"],
         ["Type", evenement.type_evt or "-"],
-        ["Date d'ouverture", evenement.date_ouverture.strftime("%d/%m/%Y %H:%M")],
+        ["Date d'ouverture", (evenement.date_ouverture + timedelta(hours=2)).strftime("%d/%m/%Y %H:%M")],
     ]
     evt_table = Table(evt_data, colWidths=[4*cm, 10*cm])
     evt_table.setStyle(TableStyle([

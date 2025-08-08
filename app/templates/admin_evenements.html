@@ -11,7 +11,6 @@
                 <th>Type</th>
                 <th>Adresse</th>
                 <th>Statut</th>
-                <th>Créé par</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -23,7 +22,6 @@
                 <td>{{ evt.type }}</td>
                 <td>{{ evt.adresse }}</td>
                 <td>{{ evt.statut }}</td>
-                <td>{{ evt.codep.username }}</td>
                 <td>
                     {% if user.is_admin or evt.codep_id == user.id %}
                         <a href="{{ url_for('main_bp.edit_evenement', evenement_id=evt.id) }}" class="btn btn-sm btn-warning">📝 Modifier</a>

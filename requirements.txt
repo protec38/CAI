@@ -7,4 +7,5 @@ flask_bcrypt
 pytz
 pycountry
 reportlab
+flask-login
 

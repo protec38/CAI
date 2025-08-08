@@ -17,7 +17,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.units import cm
 import os
-
+from io import BytesIO
 main_bp = Blueprint("main_bp", __name__)
 
 # 🔒 Décorateur pour vérifier l’authentification
@@ -621,70 +621,86 @@ COMPETENCE_COLORS = {
 
 #############################################"
 
-@main_bp.route("/fiche/<int:fiche_id>/export_pdf")
+@main_bp.route("/fiche/<int:id>/pdf")
 @login_required
-def export_pdf(fiche_id):
-    fiche = FicheImplique.query.get_or_404(fiche_id)
+def export_pdf_fiche(id):
+    fiche = FicheImplique.query.get_or_404(id)
 
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=60, bottomMargin=40)
 
-    elements = []
+    story = []
+
+    # === STYLES ===
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='TitreBleu', fontSize=16, textColor=colors.HexColor("#003b71"), spaceAfter=10, leading=20))
-    styles.add(ParagraphStyle(name='ChampLabel', fontSize=12, leading=16, spaceAfter=4, textColor=colors.HexColor("#444")))
-    styles.add(ParagraphStyle(name='ChampValue', fontSize=12, leading=14, spaceAfter=12))
+    styles.add(ParagraphStyle(name='Titre', fontSize=22, alignment=1, textColor=colors.HexColor("#002f6c"), spaceAfter=20))
+    styles.add(ParagraphStyle(name='SectionTitle', fontSize=14, textColor=colors.HexColor("#f58220"), spaceBefore=15, spaceAfter=8, underlineWidth=1))
+    styles.add(ParagraphStyle(name='NormalBold', parent=styles['Normal'], fontName='Helvetica-Bold'))
 
-    # 📷 Logo
+    # === LOGO + TITRE ===
     logo_path = os.path.join("static", "img", "logo-protection-civile.jpg")
     if os.path.exists(logo_path):
-        img = Image(logo_path, width=4*cm, height=4*cm)
-        elements.append(img)
+        img = Image(logo_path, width=70, height=70)
+        img.hAlign = 'CENTER'
+        story.append(img)
 
-    elements.append(Paragraph("Fiche Impliqué - Protection Civile", styles["TitreBleu"]))
-    elements.append(Spacer(1, 12))
+    story.append(Paragraph("Fiche Impliqué", styles['Titre']))
 
-    def champ(nom, valeur):
-        return [
-            Paragraph(f"<b>{nom}</b>", styles["ChampLabel"]),
-            Paragraph(valeur or "Non renseigné", styles["ChampValue"])
-        ]
-
-    # 🔹 Bloc Infos personnelles
-    elements.append(Paragraph("Informations personnelles", styles["TitreBleu"]))
-    infos_perso = [
-        champ("Numéro", fiche.numero),
-        champ("Nom", fiche.nom),
-        champ("Prénom", fiche.prenom),
-        champ("Date de naissance", fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else None),
-        champ("Nationalité", fiche.nationalite),
-        champ("Adresse", fiche.adresse),
-        champ("Téléphone", fiche.telephone),
-        champ("Heure d’arrivée", fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee_locale else None),
-        champ("Heure de sortie", fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_sortie_locale else None),
+    # === INFOS PERSO ===
+    story.append(Paragraph("Informations personnelles", styles['SectionTitle']))
+    data_perso = [
+        ["Numéro", fiche.numero],
+        ["Nom", fiche.nom],
+        ["Prénom", fiche.prenom],
+        ["Date de naissance", fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else "Non renseignée"],
+        ["Nationalité", fiche.nationalite or "Non renseignée"],
+        ["Adresse", fiche.adresse or "Non renseignée"],
+        ["Téléphone", fiche.telephone or "Non renseigné"],
     ]
-    for ch in infos_perso: elements.extend(ch)
+    story.append(_styled_table(data_perso))
 
-    # 🔸 Bloc Supplémentaires
-    elements.append(Spacer(1, 12))
-    elements.append(Paragraph("Informations supplémentaires", styles["TitreBleu"]))
-    infos_supp = [
-        champ("Statut", fiche.statut),
-        champ("Difficultés", fiche.difficultes),
-        champ("Compétences", fiche.competences),
-        champ("Est un animal", "Oui" if fiche.est_animal else "Non"),
-        champ("Recherche une personne", fiche.recherche_personne),
-        champ("Numéro de la personne recherchée", fiche.numero_recherche),
-        champ("Évènement", fiche.evenement.nom if fiche.evenement else None),
+    # === INFOS HORAIRES ===
+    story.append(Paragraph("Heures", styles['SectionTitle']))
+    data_horaires = [
+        ["Heure d’arrivée", fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee_locale else "Non renseignée"],
+        ["Heure de sortie", fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_sortie_locale else "Non sortie"]
     ]
-    for ch in infos_supp: elements.extend(ch)
+    story.append(_styled_table(data_horaires))
 
-    # 👣 Footer
-    elements.append(Spacer(1, 24))
-    elements.append(Paragraph("<i>Fiche générée automatiquement - Protection Civile</i>", styles["ChampLabel"]))
+    # === INFOS SUP ===
+    story.append(Paragraph("Informations supplémentaires", styles['SectionTitle']))
+    data_supp = [
+        ["Statut", fiche.statut],
+        ["Difficultés", fiche.difficultes or "Non renseignée"],
+        ["Compétences", fiche.competences or "Non renseignée"],
+        ["Est un animal", "Oui" if fiche.est_animal else "Non"],
+        ["Recherche une personne", fiche.recherche_personne or "Non"],
+        ["N° recherche", fiche.numero_recherche or "Non renseigné"],
+        ["Évènement", fiche.evenement.nom]
+    ]
+    story.append(_styled_table(data_supp))
 
-    doc.build(elements)
+    doc.build(story)
 
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=f"fiche_{fiche.numero}.pdf", mimetype='application/pdf')
-    return response
+    return send_file(buffer, as_attachment=True, download_name="fiche_protection_civile.pdf", mimetype='application/pdf')
+
+
+# === TABLE STYLING UTILITY ===
+from reportlab.lib.units import mm
+def _styled_table(data):
+    table = Table(data, colWidths=[60*mm, 100*mm])
+    table.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,0), (-1,-1), 11),
+        ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke),
+        ('ROWBACKGROUNDS', (0,0), (-1,-1), [colors.whitesmoke, colors.lightgrey]),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.black),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('INNERGRID', (0,0), (-1,-1), 0.3, colors.grey),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+    ]))
+    return table

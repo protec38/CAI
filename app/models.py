@@ -62,8 +62,20 @@ class Evenement(db.Model):
     createur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=True)
     createur = db.relationship('Utilisateur', backref='evenements_crees', foreign_keys=[createur_id])
 
-    impliques = db.relationship('FicheImplique', backref='evenement', lazy=True)
-    tickets = db.relationship('Ticket', backref='evenement', lazy=True)
+    impliques = db.relationship(
+        'FicheImplique',
+        backref='evenement',
+        lazy=True,
+        cascade="all, delete-orphan"
+        )
+
+    tickets = db.relationship(
+        'Ticket',
+        backref='evenement',
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
 
     def __repr__(self):
         return f'<Evenement {self.nom}>'

@@ -102,6 +102,15 @@
             border-radius: 5px;
             border: none;
         }
+
+        #search-bar {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -123,8 +132,6 @@
     </div>
   {% endif %}
 {% endwith %}
-
-    
 
 {% if evenement %}
 <div class="event-info">
@@ -160,6 +167,9 @@
 </div>
 {% endif %}
 
+<!-- 🔍 Barre de recherche -->
+<input type="text" id="search-bar" placeholder="Rechercher par nom, prénom ou date de naissance...">
+
 <table>
     <thead>
         <tr>
@@ -187,6 +197,31 @@ function getStatutHtml(statut) {
     return statut;
 }
 
+function renderCompetenceBadges(raw) {
+    if (!raw) return "<em>Aucune</em>";
+
+    const colorMap = {
+        "Médecin": "#e74c3c",
+        "Infirmier": "#3498db",
+        "Sapeur-pompier": "#e67e22",
+        "SST": "#1abc9c",
+        "Psychologue": "#9b59b6",
+        "Bénévole": "#34495e",
+        "Artisan": "#f39c12",
+        "Interprète": "#2ecc71",
+        "Logisticien": "#16a085",
+        "Conducteur": "#d35400",
+        "Agent sécurité": "#2c3e50",
+        "Autre": "#7f8c8d"
+    };
+
+    return raw.split(',').map(c => {
+        const comp = c.trim();
+        const color = colorMap[comp] || "#999";
+        return `<span class="badge-competence" style="background:${color}">${comp}</span>`;
+    }).join(" ");
+}
+
 function refreshFiches() {
     fetch(`/evenement/{{ evenement.id }}/fiches_json`)
         .then(res => res.json())
@@ -205,7 +240,6 @@ function refreshFiches() {
                         <td>${fiche.destination}</td>
                         <td>${fiche.difficultes}</td>
                         <td>${renderCompetenceBadges(fiche.competences)}</td>
-
                         <td class="actions">
                             <a href="/fiche/${fiche.id}">Voir</a>
                             <a href="/fiche/edit/${fiche.id}">Modifier</a>
@@ -234,35 +268,27 @@ function refreshFiches() {
                 }
                 statutContainer.innerHTML = `<i class="fas fa-${icon}" style="color: ${color};"></i> ${data.statut_evenement}`;
             }
+
+            filterRows(); // applique filtre après chargement
         });
 }
 
-function renderCompetenceBadges(raw) {
-    if (!raw) return "<em>Aucune</em>";
+function filterRows() {
+    const searchTerm = document.getElementById("search-bar").value.toLowerCase();
+    const rows = document.querySelectorAll("#fiches-table-body tr");
 
-    const colorMap = {
-        "Médecin": "#e74c3c",
-        "Infirmier": "#3498db",
-        "Sapeur-pompier": "#e67e22",
-        "SST": "#1abc9c",
-        "Psychologue": "#9b59b6",
-        "Bénévole": "#34495e",
-        "Artisan": "#f39c12",
-        "Interprète": "#2ecc71",
-        "Logisticien": "#16a085",
-        "Conducteur": "#d35400",
-        "Agent sécurité": "#2c3e50",
-        "Autre": "#7f8c8d"
-    };
+    rows.forEach(row => {
+        const nom = row.children[1]?.textContent.toLowerCase() || "";
+        const prenom = row.children[2]?.textContent.toLowerCase() || "";
+        const date = row.children[4]?.textContent.toLowerCase() || "";
 
-    return raw.split(',').map(c => {
-        const comp = c.trim();
-        const color = colorMap[comp] || "#999";
-        return `<span class="badge-competence" style="background:${color}">${comp}</span>`;
-    }).join(" ");
+        const match = nom.includes(searchTerm) || prenom.includes(searchTerm) || date.includes(searchTerm);
+        row.style.display = match ? "" : "none";
+    });
 }
 
-    
+document.getElementById("search-bar").addEventListener("input", filterRows);
+
 setInterval(refreshFiches, 3000);
 window.onload = refreshFiches;
 </script>

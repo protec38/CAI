@@ -2,7 +2,7 @@ from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import pytz  # ✅ Pour conversion UTC → heure locale France
-
+from flask_login import UserMixin
 # 🌍 Fonction utilitaire
 def convertir_heure_locale(dt_utc):
     if not dt_utc:
@@ -18,7 +18,7 @@ utilisateur_evenement = db.Table(
 )
 
 # Utilisateur
-class Utilisateur(db.Model):
+class Utilisateur(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     nom_utilisateur = db.Column(db.String(64), unique=True, nullable=False)
     mot_de_passe_hash = db.Column(db.String(128), nullable=False)

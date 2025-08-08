@@ -12,9 +12,9 @@
         <div class="form-group mt-3">
             <label for="type">Type d’évènement</label>
             <select class="form-control" id="type" name="type" required>
-                <option value="CAI" {% if evenement.type == "CAI" %}selected{% endif %}>CAI</option>
-                <option value="CHU" {% if evenement.type == "CHU" %}selected{% endif %}>CHU</option>
-                <option value="PRV" {% if evenement.type == "PRV" %}selected{% endif %}>PRV</option>
+                <option value="CAI" {% if evenement.type_evt == "CAI" %}selected{% endif %}>CAI</option>
+                <option value="CHU" {% if evenement.type_evt == "CHU" %}selected{% endif %}>CHU</option>
+                <option value="PRV" {% if evenement.type_evt == "PRV" %}selected{% endif %}>PRV</option>
             </select>
         </div>
 

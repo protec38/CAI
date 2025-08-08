@@ -6,6 +6,13 @@ from functools import wraps
 from datetime import datetime
 from flask import jsonify
 
+from flask import make_response
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+import io
+
 main_bp = Blueprint("main_bp", __name__)
 
 # 🔒 Décorateur pour vérifier l’authentification
@@ -604,3 +611,65 @@ COMPETENCE_COLORS = {
     "Agent sécurité": "#2c3e50",
     "Autre": "#7f8c8d"
 }
+
+
+
+#############################################"
+
+@main_bp.route("/fiche/<int:fiche_id>/export_pdf")
+@login_required
+def export_pdf(fiche_id):
+    fiche = FicheImplique.query.get_or_404(fiche_id)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    title = Paragraph(f"Fiche impliqué - N° {fiche.numero}", styles['Title'])
+    subtitle = Paragraph("Protection Civile", styles['Heading2'])
+    elements += [title, subtitle, Spacer(1, 20)]
+
+    def row(label, value):
+        return [label, value or "Non renseigné"]
+
+    data = [
+        ["Nom", fiche.nom],
+        ["Prénom", fiche.prenom],
+        ["Date de naissance", fiche.date_naissance.strftime("%d/%m/%Y") if fiche.date_naissance else "Non renseignée"],
+        ["Nationalité", fiche.nationalite],
+        ["Adresse", fiche.adresse],
+        ["Téléphone", fiche.telephone],
+        ["Statut", fiche.statut],
+        ["Difficultés", fiche.difficultes],
+        ["Compétences", fiche.competences],
+        ["Est un animal", "Oui" if fiche.est_animal else "Non"],
+        ["Recherche personne", fiche.recherche_personne],
+        ["Numéro recherche", fiche.numero_recherche],
+        ["Heure d’arrivée", fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee_locale else "Non renseignée"],
+        ["Heure de sortie", fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_sortie_locale else "Non sortie"],
+        ["Évènement", fiche.evenement.nom],
+    ]
+
+    table = Table(data, hAlign='LEFT')
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (1, 0), colors.HexColor("#003b71")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=fiche_{fiche.numero}.pdf'
+    return response

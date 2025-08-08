@@ -778,80 +778,102 @@ def delete_evenement(evenement_id):
 
 
 
-@main_bp.route("/evenement/<int:evenement_id>/export/pdf")
+@main_bp.route("/evenement/<int:evenement_id>/export/pdf", methods=["GET"])
 @login_required
 def export_evenement_fiches_pdf(evenement_id):
-
     user = get_current_user()
     evenement = Evenement.query.get_or_404(evenement_id)
 
-    # 🔐 Droits d'accès
-    if not user.is_admin and user.role not in ["codep", "responsable"]:
+    # Restriction d'accès
+    if not (user.is_admin or user.role == "codep" or (user.role == "responsable" and user in evenement.utilisateurs)):
         flash("⛔ Accès refusé.", "danger")
-        return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
+        return redirect(url_for("main_bp.dashboard", evenement_id=evenement_id))
 
-    fiches = FicheImplique.query.filter_by(evenement_id=evenement_id).order_by(FicheImplique.id).all()
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
 
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=60, bottomMargin=40)
-    styles = getSampleStyleSheet()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=20)
+
     story = []
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Titre', fontSize=22, alignment=1, textColor=colors.HexColor("#002f6c"), spaceAfter=20))
+    styles.add(ParagraphStyle(name='SectionTitle', fontSize=14, textColor=colors.HexColor("#f58220"), spaceBefore=15, spaceAfter=8))
+    styles.add(ParagraphStyle(name='NormalBold', parent=styles['Normal'], fontName='Helvetica-Bold'))
 
-    title_style = ParagraphStyle(name="Title", fontSize=18, alignment=1, textColor=colors.HexColor("#002f6c"))
-    header_style = ParagraphStyle(name="Header", fontSize=14, textColor=colors.HexColor("#f58220"), spaceAfter=10)
+    # Logo (optionnel)
+    logo_path = os.path.join("static", "img", "logo-protection-civile.jpg")
+    if os.path.exists(logo_path):
+        story.append(Image(logo_path, width=60, height=60))
 
-    # 🟧 Infos de l'évènement
-    story.append(Paragraph("Dossier d’évènement", title_style))
-    story.append(Spacer(1, 12))
-    evt_infos = [
+    # Titre principal
+    story.append(Paragraph("Fiches Impliqués – Évènement", styles["Titre"]))
+
+    # Infos évènement
+    story.append(Paragraph("Informations sur l’évènement", styles["SectionTitle"]))
+    data_evt = [
         ["Nom", evenement.nom],
+        ["Numéro", evenement.numero],
         ["Adresse", evenement.adresse or "-"],
-        ["Type", evenement.type_evt or "-"],
         ["Statut", evenement.statut or "-"],
-        ["Date ouverture", evenement.date_ouverture.strftime('%d/%m/%Y %H:%M')],
+        ["Type", evenement.type_evt or "-"],
+        ["Date d'ouverture", evenement.date_ouverture.strftime("%d/%m/%Y %H:%M")],
     ]
-    story.append(_styled_table(evt_infos))
+    evt_table = Table(data_evt, colWidths=[4*cm, 10*cm])
+    evt_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.whitesmoke),
+    ]))
+    story.append(evt_table)
     story.append(Spacer(1, 12))
 
-    # 🟦 Fiches tableau 2 lignes par fiche
+    # Section fiches
+    story.append(Paragraph("Fiches de l’évènement", styles["SectionTitle"]))
+
     for fiche in fiches:
-        story.append(Paragraph(f"Fiche n° {fiche.numero}", header_style))
-
         ligne1 = [
-            ["Nom", fiche.nom or ""],
-            ["Prénom", fiche.prenom or ""],
-            ["Date naissance", fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else ""],
-            ["Nationalité", fiche.nationalite or ""],
-            ["Statut", fiche.statut or ""],
+            ["Numéro", fiche.numero],
+            ["Nom", fiche.nom],
+            ["Prénom", fiche.prenom],
+            ["Date naissance", fiche.date_naissance.strftime("%d/%m/%Y") if fiche.date_naissance else "-"],
+            ["Nationalité", fiche.nationalite or "-"],
+            ["Statut", fiche.statut],
         ]
-
         ligne2 = [
-            ["Téléphone", fiche.telephone or ""],
-            ["Adresse", fiche.adresse or ""],
-            ["Destination", fiche.destination or ""],
-            ["Compétences", fiche.competences or ""],
-            ["Difficultés", fiche.difficultes or ""]
+            ["Téléphone", fiche.telephone or "-"],
+            ["Adresse", fiche.adresse or "-"],
+            ["Compétences", fiche.competences or "-"],
+            ["Effets persos", fiche.effets_perso or "-"],
+            ["Destination", fiche.destination or "-"],
+            ["Transport", fiche.moyen_transport or "-"],
         ]
 
-        t1 = Table(ligne1, colWidths=[3*cm, 4*cm]*len(ligne1))
-        t1.setStyle(TableStyle([
+        style = TableStyle([
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
             ('BACKGROUND', (0, 0), (-1, -1), colors.whitesmoke),
-        ]))
-        t2 = Table(ligne2, colWidths=[3*cm, 4*cm]*len(ligne2))
-        t2.setStyle(t1.getStyle())
+        ])
+
+        t1 = Table(ligne1, colWidths=[3*cm, 4*cm]*3)
+        t1.setStyle(style)
+
+        t2 = Table(ligne2, colWidths=[3*cm, 4*cm]*3)
+        t2.setStyle(style)
 
         story.append(t1)
         story.append(t2)
-        story.append(Spacer(1, 10))
-
-        # Saut de page toutes les 5 fiches pour aérer
-        if fiches.index(fiche) % 5 == 4:
-            story.append(PageBreak())
+        story.append(Spacer(1, 6))
 
     doc.build(story)
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name="evenement_fiches.pdf", mimetype='application/pdf')
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"evenement_{evenement.numero}_fiches.pdf",
+        mimetype='application/pdf'
+    )
+
 

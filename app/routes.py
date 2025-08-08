@@ -766,3 +766,16 @@ def delete_evenement(evenement_id):
     return redirect(url_for("main_bp.admin_evenements"))
 
 
+##############################################
+
+@main_bp.route("/evenements/edit")
+@login_required
+def edit_evenements():
+    user = get_current_user()
+    if not user.is_admin and user.role != "codep":
+        flash("⛔ Accès réservé à l’administrateur ou au CODEP.", "danger")
+        return redirect(url_for("main_bp.evenement_new"))
+
+    evenements = Evenement.query.order_by(Evenement.id.desc()).all()
+    return render_template("evenement_edit_all.html", evenements=evenements, user=user)
+

@@ -723,3 +723,46 @@ def admin_evenements():
     evenements = Evenement.query.order_by(Evenement.id.desc()).all()
     return render_template("admin_evenements.html", evenements=evenements, user=user)
 
+#######################################
+
+@main_bp.route("/evenement/<int:evenement_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_evenement(evenement_id):
+    user = get_current_user()
+    evenement = Evenement.query.get_or_404(evenement_id)
+
+    if not user.is_admin and evenement.codep_id != user.id:
+        flash("⛔ Vous n'avez pas accès à cette modification.", "danger")
+        return redirect(url_for("main_bp.dashboard"))
+
+    if request.method == "POST":
+        evenement.nom = request.form["nom"]
+        evenement.type = request.form["type"]
+        evenement.adresse = request.form["adresse"]
+        evenement.statut = request.form["statut"]
+        db.session.commit()
+        flash("✅ Évènement mis à jour avec succès.", "success")
+        return redirect(url_for("main_bp.admin_evenements"))
+
+    return render_template("edit_evenement.html", evenement=evenement)
+
+
+
+###############################################
+
+@main_bp.route("/evenement/<int:evenement_id>/delete", methods=["POST"])
+@login_required
+def delete_evenement(evenement_id):
+    user = get_current_user()
+    evenement = Evenement.query.get_or_404(evenement_id)
+
+    if not user.is_admin and evenement.codep_id != user.id:
+        flash("⛔ Action refusée.", "danger")
+        return redirect(url_for("main_bp.admin_evenements"))
+
+    db.session.delete(evenement)
+    db.session.commit()
+    flash("🗑 Évènement supprimé.", "success")
+    return redirect(url_for("main_bp.admin_evenements"))
+
+

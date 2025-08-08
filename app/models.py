@@ -126,6 +126,7 @@ class FicheImplique(db.Model):
 
     @property
     def date_ouverture_locale(self):
+        from .models import convertir_heure_locale  # si nécessaire
         return convertir_heure_locale(self.date_ouverture)
 
 

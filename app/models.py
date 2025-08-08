@@ -124,6 +124,11 @@ class FicheImplique(db.Model):
     def heure_sortie_locale(self):
         return convertir_heure_locale(self.heure_sortie)
 
+    @property
+    def date_ouverture_locale(self):
+        return convertir_heure_locale(self.date_ouverture)
+
+
     def __repr__(self):
         return f"<FicheImplique {self.nom} {self.prenom}>"
 

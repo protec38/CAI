@@ -183,14 +183,17 @@
             <input type="text" name="moyen_transport" value="{{ fiche.moyen_transport }}">
         </div>
 
-        <div class="form-group">
-            <label for="statut"><i class="fas fa-traffic-light"></i> Statut</label>
-            <select name="statut" required>
-                <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>Présent</option>
-                <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>Sorti</option>
-                <option value="supprimé" {% if fiche.statut == "supprimé" %}selected{% endif %}>Supprimé</option>
+        {% set peut_modifier_statut = user.is_admin or user.role == "codep" or (user.role == "responsable" and user in fiche.evenement.utilisateurs) %}
+
+        <div class="form-group mt-3">
+            <label for="statut">Statut</label>
+            <select class="form-control" id="statut" name="statut" {% if not peut_modifier_statut %}disabled{% endif %}>
+                <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>présent</option>
+                <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>sorti</option>
+                <option value="autre" {% if fiche.statut == "autre" %}selected{% endif %}>autre</option>
             </select>
         </div>
+
 
         <div class="form-group-full">
             <button type="submit"><i class="fas fa-save"></i> Sauvegarder</button>

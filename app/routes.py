@@ -7,11 +7,16 @@ from datetime import datetime
 from flask import jsonify
 
 from flask import make_response
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 import io
+from flask import send_file
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.units import cm
+import os
 
 main_bp = Blueprint("main_bp", __name__)
 

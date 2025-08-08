@@ -790,31 +790,26 @@ def export_evenement_fiches_pdf(evenement_id):
 
     fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
 
+    from datetime import timedelta
     buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=landscape(A4),
-        rightMargin=20,
-        leftMargin=20,
-        topMargin=30,
-        bottomMargin=20
-    )
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=20, rightMargin=20, topMargin=30, bottomMargin=20)
 
-    story = []
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name='Titre', fontSize=22, alignment=1, textColor=colors.HexColor("#002f6c"), spaceAfter=20))
     styles.add(ParagraphStyle(name='SectionTitle', fontSize=14, textColor=colors.HexColor("#f58220"), spaceBefore=15, spaceAfter=8))
-    styles.add(ParagraphStyle(name='NormalBold', parent=styles['Normal'], fontName='Helvetica-Bold'))
+    styles.add(ParagraphStyle(name='Small', fontSize=8, leading=10))
+    styles.add(ParagraphStyle(name='HeaderSmall', fontSize=8, leading=10, textColor=colors.white))
 
-    # === Logo (optionnel) ===
+    story = []
+
+    # Logo
     logo_path = os.path.join("static", "img", "logo-protection-civile.jpg")
     if os.path.exists(logo_path):
         story.append(Image(logo_path, width=60, height=60))
 
-    # === Titre principal ===
-    story.append(Paragraph("Fiches Impliqués – Évènement", styles["Titre"]))
+    story.append(Paragraph("Fiches Impliqués – Évènement", styles['Titre']))
 
-    # === Infos évènement ===
+    # Infos évènement
     story.append(Paragraph("Informations sur l’évènement", styles["SectionTitle"]))
     evt_data = [
         ["Nom", evenement.nom],
@@ -824,7 +819,7 @@ def export_evenement_fiches_pdf(evenement_id):
         ["Type", evenement.type_evt or "-"],
         ["Date d'ouverture", (evenement.date_ouverture + timedelta(hours=2)).strftime("%d/%m/%Y %H:%M")],
     ]
-    evt_table = Table(evt_data, colWidths=[4*cm, 10*cm])
+    evt_table = Table(evt_data, colWidths=[4*cm, 12*cm])
     evt_table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
@@ -834,38 +829,42 @@ def export_evenement_fiches_pdf(evenement_id):
     story.append(evt_table)
     story.append(Spacer(1, 12))
 
-    # === Fiches ===
     story.append(Paragraph("Liste des fiches impliqués", styles["SectionTitle"]))
 
-    # En-tête
+    # En-têtes et données
     headers = [
         "Numéro", "Nom", "Prénom", "Naissance", "Nationalité", "Statut",
         "Téléphone", "Adresse", "Compétences", "Destination", "Effets", "Transport"
     ]
+    data = [[Paragraph(h, styles["HeaderSmall"]) for h in headers]]
 
-    # Données
-    data = [headers]
     for fiche in fiches:
         row = [
-            fiche.numero,
-            fiche.nom,
-            fiche.prenom,
-            fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else "-",
-            fiche.nationalite or "-",
-            fiche.statut,
-            fiche.telephone or "-",
-            fiche.adresse or "-",
-            fiche.competences or "-",
-            fiche.destination or "-",
-            fiche.effets_perso or "-",
-            fiche.moyen_transport or "-"
+            Paragraph(fiche.numero, styles["Small"]),
+            Paragraph(fiche.nom or "-", styles["Small"]),
+            Paragraph(fiche.prenom or "-", styles["Small"]),
+            Paragraph(fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else "-", styles["Small"]),
+            Paragraph(fiche.nationalite or "-", styles["Small"]),
+            Paragraph(fiche.statut or "-", styles["Small"]),
+            Paragraph(fiche.telephone or "-", styles["Small"]),
+            Paragraph(fiche.adresse or "-", styles["Small"]),
+            Paragraph(fiche.competences or "-", styles["Small"]),
+            Paragraph(fiche.destination or "-", styles["Small"]),
+            Paragraph(fiche.effets_perso or "-", styles["Small"]),
+            Paragraph(fiche.moyen_transport or "-", styles["Small"]),
         ]
         data.append(row)
 
-    table = Table(data, repeatRows=1)
+    # Définir la table avec largeur flexible
+    col_widths = [
+        3*cm, 3*cm, 3*cm, 2.5*cm, 3*cm, 2.5*cm,
+        3.5*cm, 5*cm, 5*cm, 3*cm, 3*cm, 3*cm
+    ]
+
+    table = Table(data, repeatRows=1, colWidths=col_widths)
     table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('FONTSIZE', (0, 0), (-1, -1), 7),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),

@@ -32,8 +32,8 @@
         <hr>
         <h4 class="mt-4">Informations supplémentaires</h4>
         <p><strong>Statut :</strong> {{ fiche.statut }}</p>
-        <p><strong>Difficulté :</strong> {{ fiche.difficulte or 'Non renseignée' }}</p>
-        <p><strong>Compétence :</strong> {{ fiche.competence or 'Non renseignée' }}</p>
+        <p><strong>Difficultés :</strong> {{ fiche.difficultes or 'Non renseignée' }}</p>
+        <p><strong>Compétences :</strong> {{ fiche.competences or 'Non renseignée' }}</p>
         <p><strong>Est un animal :</strong> {{ 'Oui' if fiche.est_animal else 'Non' }}</p>
         <p><strong>Recherche une personne :</strong> {{ fiche.recherche_personne or 'Non' }}</p>
         <p><strong>Numéro de la personne recherchée :</strong> {{ fiche.numero_recherche or 'Non renseigné' }}</p>

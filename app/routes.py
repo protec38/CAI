@@ -745,4 +745,26 @@ def edit_evenement(evenement_id):
 
     return render_template("edit_evenement.html", evenement=evenement, user=user)
 
+#########################################
+
+
+@main_bp.route('/evenement/<int:evenement_id>/delete', methods=['POST'])
+@login_required
+def delete_evenement(evenement_id):
+    evt = Evenement.query.get_or_404(evenement_id)
+
+    # Vérifie si l'utilisateur est autorisé à supprimer (admin ou propriétaire)
+    if not current_user.is_admin and evt.codep_id != current_user.id:
+        flash("Vous n'êtes pas autorisé à supprimer cet évènement.", "danger")
+        return redirect(url_for('main_bp.admin_evenements'))
+
+    try:
+        db.session.delete(evt)
+        db.session.commit()
+        flash("Évènement supprimé avec succès.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Erreur lors de la suppression de l’évènement.", "danger")
+
+    return redirect(url_for('main_bp.admin_evenements'))
 

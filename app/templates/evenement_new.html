@@ -86,6 +86,20 @@
             font-weight: bold;
             color: #003b71;
         }
+
+        /* ✅ Flash message styles */
+        .flash {
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .flash-success { background-color: #d4edda; color: #155724; }
+        .flash-danger { background-color: #f8d7da; color: #721c24; }
+        .flash-warning { background-color: #fff3cd; color: #856404; }
+        .flash-info { background-color: #d1ecf1; color: #0c5460; }
     </style>
 </head>
 <body>
@@ -96,7 +110,24 @@
 
     <div class="container">
 
-        <!-- ✅ Boutons d'accès haut -->
+        <!-- ✅ Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div id="flash-messages">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+            <script>
+              setTimeout(() => {
+                const flashDiv = document.getElementById("flash-messages");
+                if (flashDiv) flashDiv.style.display = "none";
+              }, 10000); // 10 secondes
+            </script>
+          {% endif %}
+        {% endwith %}
+
+        <!-- ✅ Boutons d'accès -->
         <div class="btn-group">
             <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger mb-3">🚪 Déconnexion</a>
             <a href="{{ url_for('main_bp.admin_utilisateurs') }}" class="btn"><i class="fas fa-users"></i> Gérer les utilisateurs</a>
@@ -151,7 +182,6 @@
         </div>
     </div>
 
-    <!-- 📜 Script statut dynamique -->
     <script>
     function afficherStatut() {
         const select = document.getElementById("evenement_id");

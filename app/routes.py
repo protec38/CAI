@@ -627,54 +627,64 @@ def export_pdf(fiche_id):
     fiche = FicheImplique.query.get_or_404(fiche_id)
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2*cm, bottomMargin=2*cm)
 
-    styles = getSampleStyleSheet()
     elements = []
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='TitreBleu', fontSize=16, textColor=colors.HexColor("#003b71"), spaceAfter=10, leading=20))
+    styles.add(ParagraphStyle(name='ChampLabel', fontSize=12, leading=16, spaceAfter=4, textColor=colors.HexColor("#444")))
+    styles.add(ParagraphStyle(name='ChampValue', fontSize=12, leading=14, spaceAfter=12))
 
-    title = Paragraph(f"Fiche impliqué - N° {fiche.numero}", styles['Title'])
-    subtitle = Paragraph("Protection Civile", styles['Heading2'])
-    elements += [title, subtitle, Spacer(1, 20)]
+    # 📷 Logo
+    logo_path = os.path.join("static", "img", "logo-protection-civile.jpg")
+    if os.path.exists(logo_path):
+        img = Image(logo_path, width=4*cm, height=4*cm)
+        elements.append(img)
 
-    def row(label, value):
-        return [label, value or "Non renseigné"]
+    elements.append(Paragraph("Fiche Impliqué - Protection Civile", styles["TitreBleu"]))
+    elements.append(Spacer(1, 12))
 
-    data = [
-        ["Nom", fiche.nom],
-        ["Prénom", fiche.prenom],
-        ["Date de naissance", fiche.date_naissance.strftime("%d/%m/%Y") if fiche.date_naissance else "Non renseignée"],
-        ["Nationalité", fiche.nationalite],
-        ["Adresse", fiche.adresse],
-        ["Téléphone", fiche.telephone],
-        ["Statut", fiche.statut],
-        ["Difficultés", fiche.difficultes],
-        ["Compétences", fiche.competences],
-        ["Est un animal", "Oui" if fiche.est_animal else "Non"],
-        ["Recherche personne", fiche.recherche_personne],
-        ["Numéro recherche", fiche.numero_recherche],
-        ["Heure d’arrivée", fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee_locale else "Non renseignée"],
-        ["Heure de sortie", fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_sortie_locale else "Non sortie"],
-        ["Évènement", fiche.evenement.nom],
+    def champ(nom, valeur):
+        return [
+            Paragraph(f"<b>{nom}</b>", styles["ChampLabel"]),
+            Paragraph(valeur or "Non renseigné", styles["ChampValue"])
+        ]
+
+    # 🔹 Bloc Infos personnelles
+    elements.append(Paragraph("Informations personnelles", styles["TitreBleu"]))
+    infos_perso = [
+        champ("Numéro", fiche.numero),
+        champ("Nom", fiche.nom),
+        champ("Prénom", fiche.prenom),
+        champ("Date de naissance", fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else None),
+        champ("Nationalité", fiche.nationalite),
+        champ("Adresse", fiche.adresse),
+        champ("Téléphone", fiche.telephone),
+        champ("Heure d’arrivée", fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee_locale else None),
+        champ("Heure de sortie", fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_sortie_locale else None),
     ]
+    for ch in infos_perso: elements.extend(ch)
 
-    table = Table(data, hAlign='LEFT')
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (1, 0), colors.HexColor("#003b71")),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]))
+    # 🔸 Bloc Supplémentaires
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("Informations supplémentaires", styles["TitreBleu"]))
+    infos_supp = [
+        champ("Statut", fiche.statut),
+        champ("Difficultés", fiche.difficultes),
+        champ("Compétences", fiche.competences),
+        champ("Est un animal", "Oui" if fiche.est_animal else "Non"),
+        champ("Recherche une personne", fiche.recherche_personne),
+        champ("Numéro de la personne recherchée", fiche.numero_recherche),
+        champ("Évènement", fiche.evenement.nom if fiche.evenement else None),
+    ]
+    for ch in infos_supp: elements.extend(ch)
 
-    elements.append(table)
+    # 👣 Footer
+    elements.append(Spacer(1, 24))
+    elements.append(Paragraph("<i>Fiche générée automatiquement - Protection Civile</i>", styles["ChampLabel"]))
 
     doc.build(elements)
-    pdf = buffer.getvalue()
-    buffer.close()
 
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'attachment; filename=fiche_{fiche.numero}.pdf'
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f"fiche_{fiche.numero}.pdf", mimetype='application/pdf')
     return response

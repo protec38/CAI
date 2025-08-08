@@ -773,3 +773,79 @@ def delete_evenement(evenement_id):
     return redirect(url_for("main_bp.evenement_new"))
 
 
+
+###################################################
+
+
+
+@main_bp.route("/evenement/<int:evenement_id>/export_pdf")
+@login_required
+def export_pdf_evenement(evenement_id):
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+    from reportlab.lib.pagesizes import landscape, A4
+    from reportlab.lib import colors
+    from io import BytesIO
+    from reportlab.lib.styles import getSampleStyleSheet
+
+    user = get_current_user()
+    evenement = Evenement.query.get_or_404(evenement_id)
+
+    if not (user.is_admin or user.role == "codep" or (user.role == "responsable" and user in evenement.utilisateurs)):
+        flash("⛔ Accès interdit.", "danger")
+        return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
+
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=20, rightMargin=20, topMargin=20, bottomMargin=20)
+    styles = getSampleStyleSheet()
+    story = []
+
+    # Titre
+    story.append(Paragraph(f"Liste des fiches – Évènement : {evenement.nom}", styles['Title']))
+    story.append(Paragraph(f"Nombre de fiches : {len(fiches)}", styles['Normal']))
+    story.append(Paragraph(" ", styles['Normal']))
+
+    # En-têtes de tableau
+    data = [[
+        "Numéro", "Nom", "Prénom", "Statut", "Nationalité",
+        "Téléphone", "Date de naissance", "Adresse",
+        "Heure arrivée", "Heure sortie", "Compétences", "Destination"
+    ]]
+
+    for f in fiches:
+        data.append([
+            f.numero,
+            f.nom or "",
+            f.prenom or "",
+            f.statut or "",
+            f.nationalite or "",
+            f.telephone or "",
+            f.date_naissance.strftime("%d/%m/%Y") if f.date_naissance else "",
+            f.adresse or "",
+            f.heure_arrivee_locale.strftime("%d/%m/%Y %H:%M") if f.heure_arrivee_locale else "",
+            f.heure_sortie_locale.strftime("%d/%m/%Y %H:%M") if f.heure_sortie_locale else "",
+            f.competences or "",
+            f.destination or ""
+        ])
+
+    table = Table(data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#002f6c")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.whitesmoke, colors.lightgrey]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+    ]))
+
+    story.append(table)
+    doc.build(story)
+
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=f"fiches_evenement_{evenement.numero}.pdf", mimetype='application/pdf')
+

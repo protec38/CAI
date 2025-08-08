@@ -77,6 +77,11 @@ class Evenement(db.Model):
     )
 
 
+    @property
+    def date_ouverture_locale(self):
+        from .models import convertir_heure_locale  # si nécessaire
+        return convertir_heure_locale(self.date_ouverture)
+
     def __repr__(self):
         return f'<Evenement {self.nom}>'
 
@@ -123,11 +128,6 @@ class FicheImplique(db.Model):
     @property
     def heure_sortie_locale(self):
         return convertir_heure_locale(self.heure_sortie)
-
-    @property
-    def date_ouverture_locale(self):
-        from .models import convertir_heure_locale  # si nécessaire
-        return convertir_heure_locale(self.date_ouverture)
 
 
     def __repr__(self):

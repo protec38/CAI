@@ -778,111 +778,121 @@ def delete_evenement(evenement_id):
 
 
 
-@main_bp.route("/evenement/<int:evenement_id>/export/pdf", methods=["GET"])
+@app.route("/evenement/<int:evenement_id>/export/pdf")
 @login_required
 def export_evenement_fiches_pdf(evenement_id):
-    user = get_current_user()
     evenement = Evenement.query.get_or_404(evenement_id)
 
-    if not (user.is_admin or user.role == "codep" or (user.role == "responsable" and user in evenement.utilisateurs)):
-        flash("⛔ Accès refusé.", "danger")
-        return redirect(url_for("main_bp.dashboard", evenement_id=evenement_id))
+    if not (current_user.is_admin or current_user.role in ["codep", "responsable"]):
+        flash("Accès non autorisé", "danger")
+        return redirect(url_for("main_bp.dashboard"))
 
-    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
-
-    from datetime import timedelta
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=20, rightMargin=20, topMargin=30, bottomMargin=20)
+    doc = SimpleDocTemplate(
+        buffer, pagesize=landscape(A4),
+        rightMargin=20, leftMargin=20,
+        topMargin=20, bottomMargin=20
+    )
 
+    elements = []
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='Titre', fontSize=22, alignment=1, textColor=colors.HexColor("#002f6c"), spaceAfter=20))
-    styles.add(ParagraphStyle(name='SectionTitle', fontSize=14, textColor=colors.HexColor("#f58220"), spaceBefore=15, spaceAfter=8))
-    styles.add(ParagraphStyle(name='Small', fontSize=8, leading=10))
-    styles.add(ParagraphStyle(name='HeaderSmall', fontSize=8, leading=10, textColor=colors.white))
+    styleN = styles["Normal"]
+    styleH = styles["Heading1"]
+    title_style = ParagraphStyle(
+        name="Title",
+        fontSize=14,
+        textColor=colors.HexColor("#f77f00"),
+        spaceAfter=10,
+        leading=16
+    )
 
-    story = []
+    # Titre principal
+    elements.append(Paragraph("Fiches Impliqués – Évènement", styles["Title"]))
+    elements.append(Spacer(1, 12))
 
-    # Logo
-    logo_path = os.path.join("static", "img", "logo-protection-civile.jpg")
-    if os.path.exists(logo_path):
-        story.append(Image(logo_path, width=60, height=60))
+    # Convertir date UTC vers heure locale
+    paris = pytz.timezone("Europe/Paris")
+    date_ouverture_locale = evenement.date_ouverture.astimezone(paris) if evenement.date_ouverture else None
 
-    story.append(Paragraph("Fiches Impliqués – Évènement", styles['Titre']))
-
-    # Infos évènement
-    story.append(Paragraph("Informations sur l’évènement", styles["SectionTitle"]))
-    evt_data = [
+    # Informations sur l’évènement
+    elements.append(Paragraph("Informations sur l’évènement", title_style))
+    data_evt = [
         ["Nom", evenement.nom],
         ["Numéro", evenement.numero],
         ["Adresse", evenement.adresse or "-"],
         ["Statut", evenement.statut or "-"],
         ["Type", evenement.type_evt or "-"],
-        ["Date d'ouverture", evenement.date_ouverture_locale.strftime('%d/%m/%Y %H:%M') if evenement.date_ouverture_locale else "-"]
+        ["Date d’ouverture", date_ouverture_locale.strftime("%d/%m/%Y %H:%M") if date_ouverture_locale else "-"]
     ]
-    evt_table = Table(evt_data, colWidths=[4*cm, 12*cm])
-    evt_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-        ('BACKGROUND', (0, 0), (-1, -1), colors.whitesmoke),
+
+    t_evt = Table(data_evt, colWidths=[4 * cm, 12 * cm])
+    t_evt.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("BACKGROUND", (0, 0), (-1, -1), colors.whitesmoke),
+        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
     ]))
-    story.append(evt_table)
-    story.append(Spacer(1, 12))
+    elements.append(t_evt)
+    elements.append(Spacer(1, 20))
 
-    story.append(Paragraph("Liste des fiches impliqués", styles["SectionTitle"]))
+    # Liste des fiches
+    elements.append(Paragraph("Liste des fiches impliqués", title_style))
 
-    # En-têtes et données
-    headers = [
-        "Numéro", "Nom", "Prénom", "Naissance", "Nationalité", "Statut",
-        "Téléphone", "Adresse", "Compétences", "Destination", "Effets", "Transport"
-    ]
-    data = [[Paragraph(h, styles["HeaderSmall"]) for h in headers]]
+    table_data = [[
+        "Prénom", "Nom", "Naissance", "Nationalité", "Statut", "Téléphone",
+        "Adresse", "Compétences", "Destination", "Effets", "Transport",
+        "Heure arrivée", "Heure sortie"
+    ]]
 
-    for fiche in fiches:
-        row = [
-            Paragraph(fiche.numero, styles["Small"]),
-            Paragraph(fiche.nom or "-", styles["Small"]),
-            Paragraph(fiche.prenom or "-", styles["Small"]),
-            Paragraph(fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else "-", styles["Small"]),
-            Paragraph(fiche.nationalite or "-", styles["Small"]),
-            Paragraph(fiche.statut or "-", styles["Small"]),
-            Paragraph(fiche.telephone or "-", styles["Small"]),
-            Paragraph(fiche.adresse or "-", styles["Small"]),
-            Paragraph(fiche.competences or "-", styles["Small"]),
-            Paragraph(fiche.destination or "-", styles["Small"]),
-            Paragraph(fiche.effets_perso or "-", styles["Small"]),
-            Paragraph(fiche.moyen_transport or "-", styles["Small"]),
+    for fiche in evenement.impliques:
+        row1 = [
+            fiche.prenom or "-",
+            fiche.nom or "-",
+            fiche.date_naissance.strftime("%d/%m/%Y") if fiche.date_naissance else "-",
+            fiche.nationalite or "-",
+            fiche.statut or "-",
+            fiche.telephone or "-",
+            fiche.adresse or "-",
+            fiche.competences or "-",
+            fiche.destination or "-",
+            fiche.effets_perso or "-",
+            fiche.moyen_transport or "-",
+            fiche.heure_arrivee_locale.strftime("%d/%m/%Y %H:%M") if fiche.heure_arrivee_locale else "-",
+            fiche.heure_sortie_locale.strftime("%d/%m/%Y %H:%M") if fiche.heure_sortie_locale else "-"
         ]
-        data.append(row)
+        row2 = [
+            Paragraph(f"<b>À prévenir:</b> {fiche.personne_a_prevenir or '-'}", styleN),
+            Paragraph(f"<b>Tél:</b> {fiche.tel_personne_a_prevenir or '-'}", styleN),
+            Paragraph(f"<b>Recherche:</b> {fiche.recherche_personne or '-'}", styleN),
+            "", "", "", "", "", "", "", "", "", ""
+        ]
 
-    # Définir la table avec largeur flexible
-    col_widths = [
-        3*cm, 3*cm, 3*cm, 2.5*cm, 3*cm, 2.5*cm,
-        3.5*cm, 5*cm, 5*cm, 3*cm, 3*cm, 3*cm
-    ]
+        table_data.append(row1)
+        table_data.append(row2)
 
-    table = Table(data, repeatRows=1, colWidths=col_widths)
-    table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 7),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#f58220")),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ROWBACKGROUNDS', (1, 0), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
+    t = Table(table_data, repeatRows=1, colWidths=[
+        2.5*cm, 2.5*cm, 2.3*cm, 2.5*cm, 2.2*cm, 3*cm,
+        3.5*cm, 3*cm, 2.8*cm, 2.8*cm, 3*cm, 3.5*cm, 3.5*cm
+    ])
+    t.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+        ("GRID", (0, 0), (-1, -1), 0.3, colors.grey),
+        ("VALIGN", (0, 1), (-1, -1), "TOP"),
     ]))
+    elements.append(t)
 
-    story.append(table)
-    doc.build(story)
+    doc.build(elements)
     buffer.seek(0)
 
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=f"evenement_{evenement.numero}_fiches.pdf",
-        mimetype='application/pdf'
-    )
+    filename = f"evenement_{evenement.numero}_fiches.pdf"
+    return send_file(buffer, as_attachment=True, download_name=filename, mimetype="application/pdf")
 
     
 

@@ -121,7 +121,7 @@
         <a href="{{ url_for('main_bp.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
         <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
         {% if user.is_admin or user.role == "codep" or (user.role == "responsable" and user in evenement.utilisateurs) %}
-        <a href="{{ url_for('main_bp.export_pdf_evenement', evenement_id=evenement.id) }}" class="btn btn-primary mb-3">
+        <a href="{{ url_for('main_bp.export_evenement_fiches_pdf', evenement_id=evenement.id) }}" class="btn btn-primary mb-3">
         📄 Exporter toutes les fiches en PDF
         </a>
         {% endif %}

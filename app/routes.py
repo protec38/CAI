@@ -748,23 +748,25 @@ def edit_evenement(evenement_id):
 #########################################
 
 
-@main_bp.route('/evenement/<int:evenement_id>/delete', methods=['POST'])
+@main_bp.route("/evenements/<int:evenement_id>/supprimer", methods=["POST"])
 @login_required
 def delete_evenement(evenement_id):
     evt = Evenement.query.get_or_404(evenement_id)
 
-    # Vérifie si l'utilisateur est autorisé à supprimer (admin ou propriétaire)
-    if not current_user.is_admin and evt.codep_id != current_user.id:
-        flash("Vous n'êtes pas autorisé à supprimer cet évènement.", "danger")
-        return redirect(url_for('main_bp.admin_evenements'))
+    # 🔐 Vérifie si l'utilisateur est admin OU le créateur (codep)
+    if not current_user.is_admin and evt.createur_id != current_user.id:
+        abort(403)  # Interdiction
 
-    try:
-        db.session.delete(evt)
-        db.session.commit()
-        flash("Évènement supprimé avec succès.", "success")
-    except Exception as e:
-        db.session.rollback()
-        flash("Erreur lors de la suppression de l’évènement.", "danger")
+    # 🧹 Supprime les fiches impliquées associées
+    FicheImplique.query.filter_by(evenement_id=evt.id).delete()
 
-    return redirect(url_for('main_bp.admin_evenements'))
+    # (optionnel) Supprimer aussi les tickets logistiques liés
+    Ticket.query.filter_by(evenement_id=evt.id).delete()
+
+    # 🗑 Supprime l'évènement lui-même
+    db.session.delete(evt)
+    db.session.commit()
+
+    flash("L’évènement et toutes ses fiches associées ont été supprimés.", "success")
+    return redirect(url_for("main_bp.evenement_new"))
 

@@ -781,118 +781,96 @@ def delete_evenement(evenement_id):
 @main_bp.route("/evenement/<int:evenement_id>/export/pdf")
 @login_required
 def export_evenement_fiches_pdf(evenement_id):
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib import colors
+    from reportlab.lib.units import cm
+    import io
+    import pytz
+
     evenement = Evenement.query.get_or_404(evenement_id)
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement_id).all()
 
-    if not (current_user.is_admin or current_user.role in ["codep", "responsable"]):
-        flash("Accès non autorisé", "danger")
-        return redirect(url_for("main_bp.dashboard"))
-
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer, pagesize=landscape(A4),
-        rightMargin=20, leftMargin=20,
-        topMargin=20, bottomMargin=20
-    )
-
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
     elements = []
+
     styles = getSampleStyleSheet()
-    styleN = styles["Normal"]
-    styleH = styles["Heading1"]
-    title_style = ParagraphStyle(
-        name="Title",
-        fontSize=14,
-        textColor=colors.HexColor("#f77f00"),
-        spaceAfter=10,
-        leading=16
-    )
+    styles.add(ParagraphStyle(name='CenterTitle', alignment=1, fontSize=18, spaceAfter=20))
+    styles.add(ParagraphStyle(name='SubHeader', textColor=colors.orange, fontSize=14, spaceAfter=10))
 
-    # Titre principal
-    elements.append(Paragraph("Fiches Impliqués – Évènement", styles["Title"]))
-    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("Fiches Impliqués – Évènement", styles['CenterTitle']))
+    elements.append(Paragraph("Informations sur l’évènement", styles['SubHeader']))
 
-    # Convertir date UTC vers heure locale
-    paris = pytz.timezone("Europe/Paris")
-    date_ouverture_locale = evenement.date_ouverture.astimezone(paris) if evenement.date_ouverture else None
+    # Date locale
+    def convertir_heure_locale(dt_utc):
+        if not dt_utc:
+            return "Non renseignée"
+        paris = pytz.timezone("Europe/Paris")
+        return dt_utc.astimezone(paris).strftime("%d/%m/%Y %H:%M")
 
-    # Informations sur l’évènement
-    elements.append(Paragraph("Informations sur l’évènement", title_style))
-    data_evt = [
+    infos_evt = [
         ["Nom", evenement.nom],
         ["Numéro", evenement.numero],
-        ["Adresse", evenement.adresse or "-"],
-        ["Statut", evenement.statut or "-"],
-        ["Type", evenement.type_evt or "-"],
-        ["Date d’ouverture", date_ouverture_locale.strftime("%d/%m/%Y %H:%M") if date_ouverture_locale else "-"]
+        ["Adresse", evenement.adresse],
+        ["Statut", evenement.statut],
+        ["Type", evenement.type_evt],
+        ["Date d'ouverture", convertir_heure_locale(evenement.date_ouverture)]
     ]
-
-    t_evt = Table(data_evt, colWidths=[4 * cm, 12 * cm])
-    t_evt.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("BACKGROUND", (0, 0), (-1, -1), colors.whitesmoke),
-        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
+    table_evt = Table(infos_evt, hAlign='LEFT', colWidths=[4*cm, 12*cm])
+    table_evt.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
     ]))
-    elements.append(t_evt)
+    elements.append(table_evt)
     elements.append(Spacer(1, 20))
 
-    # Liste des fiches
-    elements.append(Paragraph("Liste des fiches impliqués", title_style))
+    elements.append(Paragraph("Liste des fiches impliquées", styles['SubHeader']))
 
-    table_data = [[
-        "Prénom", "Nom", "Naissance", "Nationalité", "Statut", "Téléphone",
-        "Adresse", "Compétences", "Destination", "Effets", "Transport",
-        "Heure arrivée", "Heure sortie"
-    ]]
+    header = [
+        "Nom", "Prénom", "Naissance", "Nationalité", "Statut",
+        "Téléphone", "Adresse", "Compétences", "Destination", "Effets perso"
+    ]
+    data = [header]
 
-    for fiche in evenement.impliques:
-        row1 = [
-            fiche.prenom or "-",
-            fiche.nom or "-",
-            fiche.date_naissance.strftime("%d/%m/%Y") if fiche.date_naissance else "-",
-            fiche.nationalite or "-",
-            fiche.statut or "-",
-            fiche.telephone or "-",
-            fiche.adresse or "-",
-            fiche.competences or "-",
-            fiche.destination or "-",
-            fiche.effets_perso or "-",
-            fiche.moyen_transport or "-",
-            fiche.heure_arrivee_locale.strftime("%d/%m/%Y %H:%M") if fiche.heure_arrivee_locale else "-",
-            fiche.heure_sortie_locale.strftime("%d/%m/%Y %H:%M") if fiche.heure_sortie_locale else "-"
+    for f in fiches:
+        row = [
+            f.nom or "-",
+            f.prenom or "-",
+            f.date_naissance.strftime("%d/%m/%Y") if f.date_naissance else "-",
+            f.nationalite or "-",
+            f.statut or "-",
+            f.telephone or "-",
+            f.adresse or "-",
+            f.competences or "-",
+            f.destination or "-",
+            f.effets_perso or "-",
         ]
-        row2 = [
-            Paragraph(f"<b>À prévenir:</b> {fiche.personne_a_prevenir or '-'}", styleN),
-            Paragraph(f"<b>Tél:</b> {fiche.tel_personne_a_prevenir or '-'}", styleN),
-            Paragraph(f"<b>Recherche:</b> {fiche.recherche_personne or '-'}", styleN),
-            "", "", "", "", "", "", "", "", "", ""
-        ]
+        data.append(row)
 
-        table_data.append(row1)
-        table_data.append(row2)
-
-    t = Table(table_data, repeatRows=1, colWidths=[
-        2.5*cm, 2.5*cm, 2.3*cm, 2.5*cm, 2.2*cm, 3*cm,
-        3.5*cm, 3*cm, 2.8*cm, 2.8*cm, 3*cm, 3.5*cm, 3.5*cm
-    ])
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 7),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
-        ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
-        ("GRID", (0, 0), (-1, -1), 0.3, colors.grey),
-        ("VALIGN", (0, 1), (-1, -1), "TOP"),
+    table_fiches = Table(data, repeatRows=1, hAlign='LEFT')
+    table_fiches.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey)
     ]))
-    elements.append(t)
+    elements.append(table_fiches)
 
     doc.build(elements)
     buffer.seek(0)
 
-    filename = f"evenement_{evenement.numero}_fiches.pdf"
-    return send_file(buffer, as_attachment=True, download_name=filename, mimetype="application/pdf")
+    return send_file(buffer, as_attachment=True, download_name=f"evenement_{evenement.numero}_fiches.pdf", mimetype='application/pdf')
 
     
 

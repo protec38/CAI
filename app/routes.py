@@ -777,5 +777,5 @@ def edit_evenements():
         return redirect(url_for("main_bp.evenement_new"))
 
     evenements = Evenement.query.order_by(Evenement.id.desc()).all()
-    return render_template("evenement_edit_all.html", evenements=evenements, user=user)
+    return render_template("admin_evenements.html", evenements=evenements, user=user)
 

@@ -183,15 +183,20 @@
             <input type="text" name="moyen_transport" value="{{ fiche.moyen_transport }}">
         </div>
 
-        {% set peut_modifier_statut = user.is_admin or user.role == "codep" or (user.role == "responsable" and user in fiche.evenement.utilisateurs) %}
+        <div class="mb-3">
+            <label for="statut" class="form-label">Statut</label>
 
-        <div class="form-group mt-3">
-            <label for="statut">Statut</label>
-            <select class="form-control" id="statut" name="statut" {% if not peut_modifier_statut %}disabled{% endif %}>
-                <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>présent</option>
-                <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>sorti</option>
-                <option value="autre" {% if fiche.statut == "autre" %}selected{% endif %}>autre</option>
+            {% set peut_modifier_statut = user.is_admin or user.role == "codep" or (user.role == "responsable" and user in fiche.evenement.utilisateurs) %}
+
+            <select id="statut" name="statut" class="form-select" {% if not peut_modifier_statut %}disabled{% endif %}>
+                <option value="présent" {% if fiche.statut == "présent" %}selected{% endif %}>Présent</option>
+                <option value="sorti" {% if fiche.statut == "sorti" %}selected{% endif %}>Sorti</option>
             </select>
+
+            {% if not peut_modifier_statut %}
+                <!-- Permet de soumettre quand même la valeur du statut en lecture seule -->
+                <input type="hidden" name="statut" value="{{ fiche.statut }}">
+            {% endif %}
         </div>
 
 

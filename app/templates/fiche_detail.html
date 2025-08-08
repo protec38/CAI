@@ -42,7 +42,8 @@
 
     <div class="mt-4 d-flex gap-3">
         <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn btn-secondary">⬅ Retour au dashboard</a>
-        <a href="{{ url_for('main_bp.export_pdf', fiche_id=fiche.id) }}" class="btn btn-warning">🧾 Exporter en PDF</a>
+        <a href="{{ url_for('main_bp.export_pdf_fiche', id=fiche.id) }}" class="btn btn-warning">🧾 Exporter en PDF</a>
+
     </div>
 </div>
 {% endblock %}

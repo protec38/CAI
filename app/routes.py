@@ -885,6 +885,6 @@ def export_evenement_fiches_pdf(evenement_id):
         mimetype='application/pdf'
     )
 
-    )
+    
 
 

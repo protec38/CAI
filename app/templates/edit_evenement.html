@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Modifier l’évènement</h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="nom">Nom de l’évènement</label>
+            <input type="text" class="form-control" id="nom" name="nom" required value="{{ evenement.nom }}">
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="type">Type d’évènement</label>
+            <select class="form-control" id="type" name="type" required>
+                <option value="CAI" {% if evenement.type == "CAI" %}selected{% endif %}>CAI</option>
+                <option value="CHU" {% if evenement.type == "CHU" %}selected{% endif %}>CHU</option>
+                <option value="PRV" {% if evenement.type == "PRV" %}selected{% endif %}>PRV</option>
+            </select>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="adresse">Adresse</label>
+            <input type="text" class="form-control" id="adresse" name="adresse" required value="{{ evenement.adresse }}">
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="statut">Statut</label>
+            <select class="form-control" id="statut" name="statut" required>
+                <option value="En cours de gréement" {% if evenement.statut == "En cours de gréement" %}selected{% endif %}>En cours de gréement</option>
+                <option value="Ouvert" {% if evenement.statut == "Ouvert" %}selected{% endif %}>Ouvert</option>
+                <option value="Effectif dépassé" {% if evenement.statut == "Effectif dépassé" %}selected{% endif %}>Effectif dépassé</option>
+                <option value="Complet" {% if evenement.statut == "Complet" %}selected{% endif %}>Complet</option>
+                <option value="Fermé" {% if evenement.statut == "Fermé" %}selected{% endif %}>Fermé</option>
+            </select>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+            <a href="{{ url_for('main_bp.admin_evenements') }}" class="btn btn-secondary">⬅ Annuler</a>
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

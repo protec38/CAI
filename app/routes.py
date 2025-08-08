@@ -781,82 +781,77 @@ def delete_evenement(evenement_id):
 @main_bp.route("/evenement/<int:evenement_id>/export/pdf")
 @login_required
 def export_evenement_fiches_pdf(evenement_id):
+
     user = get_current_user()
     evenement = Evenement.query.get_or_404(evenement_id)
 
-    # 🔒 Restriction d'accès
-    if not (user.is_admin or user.role in ["codep", "responsable"]):
-        flash("⛔ Accès refusé", "danger")
-        return redirect(url_for("main_bp.dashboard", evenement_id=evenement_id))
+    # 🔐 Droits d'accès
+    if not user.is_admin and user.role not in ["codep", "responsable"]:
+        flash("⛔ Accès refusé.", "danger")
+        return redirect(url_for("main_bp.dashboard", evenement_id=evenement.id))
 
-    # 📄 Préparation du PDF
+    fiches = FicheImplique.query.filter_by(evenement_id=evenement_id).order_by(FicheImplique.id).all()
+
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
-
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=60, bottomMargin=40)
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='Titre', fontSize=16, spaceAfter=12, alignment=1, textColor=colors.HexColor("#002f6c")))
-    styles.add(ParagraphStyle(name='Section', fontSize=12, spaceAfter=6, textColor=colors.HexColor("#f58220")))
-
     story = []
 
-    # 🔰 Infos de l'évènement
-    story.append(Paragraph("Export des fiches de l’évènement", styles["Titre"]))
-    story.append(Paragraph(f"<b>Nom :</b> {evenement.nom}", styles["Normal"]))
-    story.append(Paragraph(f"<b>Adresse :</b> {evenement.adresse or 'Non renseignée'}", styles["Normal"]))
-    story.append(Paragraph(f"<b>Statut :</b> {evenement.statut}", styles["Normal"]))
-    story.append(Paragraph(f"<b>Date d’ouverture :</b> {evenement.date_ouverture.strftime('%d/%m/%Y %H:%M')}", styles["Normal"]))
+    title_style = ParagraphStyle(name="Title", fontSize=18, alignment=1, textColor=colors.HexColor("#002f6c"))
+    header_style = ParagraphStyle(name="Header", fontSize=14, textColor=colors.HexColor("#f58220"), spaceAfter=10)
+
+    # 🟧 Infos de l'évènement
+    story.append(Paragraph("Dossier d’évènement", title_style))
+    story.append(Spacer(1, 12))
+    evt_infos = [
+        ["Nom", evenement.nom],
+        ["Adresse", evenement.adresse or "-"],
+        ["Type", evenement.type_evt or "-"],
+        ["Statut", evenement.statut or "-"],
+        ["Date ouverture", evenement.date_ouverture.strftime('%d/%m/%Y %H:%M')],
+    ]
+    story.append(_styled_table(evt_infos))
     story.append(Spacer(1, 12))
 
-    # 📋 Données des fiches
-    fiches = FicheImplique.query.filter_by(evenement_id=evenement.id).all()
+    # 🟦 Fiches tableau 2 lignes par fiche
+    for fiche in fiches:
+        story.append(Paragraph(f"Fiche n° {fiche.numero}", header_style))
 
-    if not fiches:
-        story.append(Paragraph("Aucune fiche enregistrée pour cet évènement.", styles["Normal"]))
-    else:
-        # En-têtes du tableau
-        headers = [
-            "Numéro", "Nom", "Prénom", "Naissance", "Nationalité", "Adresse",
-            "Téléphone", "Statut", "Heure arrivée", "Heure sortie",
-            "Compétences", "Destination", "Transport", "Personne à prévenir", "Tel personne"
+        ligne1 = [
+            ["Nom", fiche.nom or ""],
+            ["Prénom", fiche.prenom or ""],
+            ["Date naissance", fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else ""],
+            ["Nationalité", fiche.nationalite or ""],
+            ["Statut", fiche.statut or ""],
         ]
 
-        # Lignes des fiches
-        data = [headers]
-        for fiche in fiches:
-            data.append([
-                fiche.numero,
-                fiche.nom,
-                fiche.prenom,
-                fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else "",
-                fiche.nationalite or "",
-                fiche.adresse or "",
-                fiche.telephone or "",
-                fiche.statut,
-                fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_arrivee_locale else "",
-                fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') if fiche.heure_sortie_locale else "",
-                fiche.competences or "",
-                fiche.destination or "",
-                fiche.moyen_transport or "",
-                fiche.personne_a_prevenir or "",
-                fiche.tel_personne_a_prevenir or ""
-            ])
+        ligne2 = [
+            ["Téléphone", fiche.telephone or ""],
+            ["Adresse", fiche.adresse or ""],
+            ["Destination", fiche.destination or ""],
+            ["Compétences", fiche.competences or ""],
+            ["Difficultés", fiche.difficultes or ""]
+        ]
 
-        # 🧾 Style du tableau
-        table = Table(data, repeatRows=1)
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#002f6c")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        t1 = Table(ligne1, colWidths=[3*cm, 4*cm]*len(ligne1))
+        t1.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.whitesmoke),
         ]))
-        story.append(table)
+        t2 = Table(ligne2, colWidths=[3*cm, 4*cm]*len(ligne2))
+        t2.setStyle(t1.getStyle())
 
-    # 📤 Finalisation
+        story.append(t1)
+        story.append(t2)
+        story.append(Spacer(1, 10))
+
+        # Saut de page toutes les 5 fiches pour aérer
+        if fiches.index(fiche) % 5 == 4:
+            story.append(PageBreak())
+
     doc.build(story)
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=f"fiches_evenement_{evenement.id}.pdf", mimetype='application/pdf')
+    return send_file(buffer, as_attachment=True, download_name="evenement_fiches.pdf", mimetype='application/pdf')
 

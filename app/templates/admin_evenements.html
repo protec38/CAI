@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Gestion des évènements</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>Adresse</th>
+                <th>Statut</th>
+                <th>Créé par</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evt in evenements %}
+            <tr>
+                <td>{{ evt.id }}</td>
+                <td>{{ evt.nom }}</td>
+                <td>{{ evt.type }}</td>
+                <td>{{ evt.adresse }}</td>
+                <td>{{ evt.statut }}</td>
+                <td>{{ evt.codep.username }}</td>
+                <td>
+                    {% if user.is_admin or evt.codep_id == user.id %}
+                        <a href="{{ url_for('main_bp.edit_evenement', evenement_id=evt.id) }}" class="btn btn-sm btn-warning">📝 Modifier</a>
+                        <form method="POST" action="{{ url_for('main_bp.delete_evenement', evenement_id=evt.id) }}" style="display:inline;" onsubmit="return confirm('Supprimer cet évènement ?');">
+                            <button type="submit" class="btn btn-sm btn-danger">🗑 Supprimer</button>
+                        </form>
+                    {% else %}
+                        <em>🔒</em>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('main_bp.dashboard') }}" class="btn btn-secondary mt-3">⬅ Retour</a>
+</div>
+{% endblock %}

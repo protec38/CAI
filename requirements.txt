@@ -6,4 +6,5 @@ bcrypt
 flask_bcrypt
 pytz
 pycountry
+reportlab
 

@@ -486,6 +486,10 @@ def fiche_edit(id):
         fiche.competences = ",".join(request.form.getlist("competences"))
         fiche.adresse = request.form.get("adresse")
         fiche.recherche_personne = request.form.get("recherche_personne")
+        fiche.destination = (request.form.get("destination") or "").strip() or None
+        fiche.moyen_transport = (request.form.get("moyen_transport") or "").strip() or None
+        # (optionnel) si tu veux aussi permettre de modifier les effets perso :
+        fiche.effets_perso = (request.form.get("effets_perso") or "").strip() or None
         fiche.numero_recherche = request.form.get("numero_recherche") or None
 
         # ✅ Autres informations (trim + limite 200)

@@ -61,6 +61,21 @@
         .badge.sorti { background: #e67e22; color: white; }
         .badge.supprime { background: #c0392b; color: white; }
 
+        /* Badges bagage (petits pills) */
+        .badge-bagage {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 2px 4px 2px 0;
+            border-radius: 999px;
+            background: #002f6c;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 1px 3px rgba(0,0,0,.2);
+            white-space: nowrap;
+        }
+        .bagages-cell { min-width: 160px; }
+
         table {
             width: 100%;
             margin-top: 30px;
@@ -101,10 +116,10 @@
         .btn-action i { font-size: 14px; }
 
         /* Couleurs */
-        .btn-blue   { background: #1976d2; color: #fff; }  /* Voir */
-        .btn-yellow { background: #f1c40f; color: #000; }  /* Modifier */
-        .btn-orange { background: #e67e22; color: #fff; }  /* Sortie/Bagage */
-        .btn-red    { background: #c0392b; color: #fff; }  /* Supprimer */
+        .btn-blue   { background: #1976d2; color: #fff; }
+        .btn-yellow { background: #f1c40f; color: #000; }
+        .btn-orange { background: #e67e22; color: #fff; }
+        .btn-red    { background: #c0392b; color: #fff; }
 
         /* Hover */
         .btn-blue:hover,
@@ -117,7 +132,7 @@
         .actions a:hover { text-decoration: none; }
         .actions form { display: inline-block; margin: 0; }
         .actions form button {
-            all: unset; /* enlève styles par défaut */
+            all: unset;
             display: inline-flex;
         }
 
@@ -178,14 +193,16 @@
         }
         .modal-footer { display:flex; gap:8px; justify-content:flex-end; border-top: 1px solid #e6e6e6; }
 
-        /* Responsive */
+        @media (max-width: 1100px) {
+            .bagages-cell { min-width: 120px; }
+        }
         @media (max-width: 900px) {
             .actions { gap: 6px; }
             .btn-action { padding: 7px 9px; font-size: 13px; }
             table th, table td { padding: 8px; }
         }
         @media (max-width: 600px) {
-            .btn-action span { display: none; } /* ne garder que l’icône */
+            .btn-action span { display: none; }
         }
     </style>
 </head>
@@ -196,60 +213,14 @@
         <a href="{{ url_for('main_bp.evenement_new') }}" class="btn">Gestion des évènements</a>
         <a href="{{ url_for('main_bp.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
         <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
-
         {% if user.is_admin or user.role == "codep" or (user.role == "responsable" and user in evenement.utilisateurs) %}
-        <a href="{{ url_for('main_bp.export_evenement_fiches_pdf', evenement_id=evenement.id) }}" class="btn btn-primary mb-3">
+        <a href="{{ url_for('main_bp.export_evenement_fiches_pdf', evenement_id=evenement.id) }}" class="btn">
             📄 Exporter toutes les fiches en PDF
         </a>
         {% endif %}
     </div>
 </div>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div class="flashes">
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
-
-{% if evenement %}
-<div class="event-info">
-    <h2><i class="fas fa-calendar-alt"></i> {{ evenement.nom }}</h2>
-    <p><strong>📍 Adresse :</strong> {{ evenement.adresse }}</p>
-    <p><strong>✅ Statut de l’évènement :</strong>
-        {% if peut_modifier_statut %}
-        <form method="POST" action="{{ url_for('main_bp.update_evenement_statut', evenement_id=evenement.id) }}">
-            <select name="statut_evt" onchange="this.form.submit()">
-                {% for option in ['En cours de gréement', 'Ouvert', 'Effectif dépassé', 'Complet', 'Fermé'] %}
-                <option value="{{ option }}" {% if evenement.statut == option %}selected{% endif %}>{{ option }}</option>
-                {% endfor %}
-            </select>
-        </form>
-        {% else %}
-        <span id="statut-lecture-seule">
-            {% if evenement.statut == "En cours de gréement" %}
-                <i class="fas fa-tools" style="color: gray;"></i>
-            {% elif evenement.statut == "Ouvert" %}
-                <i class="fas fa-door-open" style="color: limegreen;"></i>
-            {% elif evenement.statut == "Effectif dépassé" %}
-                <i class="fas fa-users-slash" style="color: darkorange;"></i>
-            {% elif evenement.statut == "Complet" %}
-                <i class="fas fa-ban" style="color: red;"></i>
-            {% elif evenement.statut == "Fermé" %}
-                <i class="fas fa-door-closed" style="color: navy;"></i>
-            {% endif %}
-            {{ evenement.statut }}
-        </span>
-        {% endif %}
-    </p>
-    <p>👥 <strong>Présents :</strong> <span id="nb_present">{{ nb_present }}</span> / <span id="nb_total">{{ nb_total }}</span></p>
-</div>
-{% endif %}
-
-<!-- 🔍 Barre de recherche -->
 <input type="text" id="search-bar" placeholder="Rechercher par nom ou prénom">
 
 <table>
@@ -260,39 +231,35 @@
             <th>Prénom</th>
             <th>Statut</th>
             <th>Heure d’arrivée</th>
-            <th>Destination</th>
             <th>Difficultés</th>
             <th>Compétences</th>
+            <th>Bagages</th>
             <th>Actions</th>
         </tr>
     </thead>
-    <tbody id="fiches-table-body">
-        <!-- rempli par JS -->
-    </tbody>
+    <tbody id="fiches-table-body"></tbody>
 </table>
 
-<!-- ===== Modal réutilisable : ajout de bagage(s) ===== -->
+<!-- ===== Modal Bagage ===== -->
 <div id="modal-bagage" class="modal">
   <div class="modal-content">
     <div class="modal-header">
       <h3><i class="fa-solid fa-suitcase-rolling"></i> Rattacher bagage(s)</h3>
-      <button class="close" onclick="fermerModalBagage()" aria-label="Fermer">&times;</button>
+      <button class="close" onclick="fermerModalBagage()">&times;</button>
     </div>
     <form id="form-bagage" method="post">
+      <input type="hidden" id="bagage-fiche-id" name="fiche_id">
       <div class="form-group">
         <label>Fiche</label>
-        <input type="text" id="bagage-fiche-numero" value="" readonly />
-        <input type="hidden" id="bagage-fiche-id" name="fiche_id" value="">
+        <input type="text" id="bagage-fiche-numero" readonly />
       </div>
       <div class="form-group">
-        <label for="numeros">Numéro(s) de bagage</label>
-        <textarea name="numeros" id="numeros" rows="3"
-                  placeholder="Ex : BAG-001, BAG-002 BAG-003"></textarea>
-        <small class="hint">Séparez par virgules, espaces ou retours à la ligne.</small>
+        <label>Numéro(s) de bagage</label>
+        <textarea name="numeros" id="numeros" rows="3"></textarea>
       </div>
       <div class="modal-footer">
         <button type="submit" class="btn-action btn-orange">
-          <i class="fa-solid fa-plus"></i> <span>Ajouter</span>
+          <i class="fa-solid fa-plus"></i> <span>Enregistrer</span>
         </button>
         <button type="button" class="btn-action" onclick="fermerModalBagage()">
           <i class="fa-solid fa-xmark"></i> <span>Annuler</span>
@@ -303,26 +270,19 @@
 </div>
 
 <script>
-function getStatutHtml(statut) {
-    if (statut === 'présent') return '<span class="badge present"><i class="fas fa-check-circle"></i> Présent</span>';
-    if (statut === 'sorti') return '<span class="badge sorti"><i class="fas fa-sign-out-alt"></i> Sorti</span>';
-    if (statut === 'supprimé') return '<span class="badge supprime"><i class="fas fa-trash-alt"></i> Supprimé</span>';
-    return statut;
+function getStatutHtml(s) {
+    if (s === 'présent') return '<span class="badge present">Présent</span>';
+    if (s === 'sorti') return '<span class="badge sorti">Sorti</span>';
+    if (s === 'supprimé') return '<span class="badge supprime">Supprimé</span>';
+    return s;
 }
-
 function renderCompetenceBadges(raw) {
     if (!raw) return "<em>Aucune</em>";
-    const colorMap = {
-        "Médecin": "#e74c3c", "Infirmier": "#3498db", "Sapeur-pompier": "#e67e22",
-        "SST": "#1abc9c", "Psychologue": "#9b59b6", "Bénévole": "#34495e",
-        "Artisan": "#f39c12", "Interprète": "#2ecc71", "Logisticien": "#16a085",
-        "Conducteur": "#d35400", "Agent sécurité": "#2c3e50", "Autre": "#7f8c8d"
-    };
-    return raw.split(',').map(c => {
-        const comp = c.trim();
-        const color = colorMap[comp] || "#999";
-        return `<span class="badge-competence" style="background:${color}">${comp}</span>`;
-    }).join(" ");
+    return raw.split(',').map(c => `<span class="badge-competence">${c.trim()}</span>`).join(" ");
+}
+function renderBagageBadges(nums) {
+    if (!nums || !nums.length) return '<em>Aucun</em>';
+    return nums.map(n => `<span class="badge-bagage">${n}</span>`).join(' ');
 }
 
 function refreshFiches() {
@@ -331,91 +291,47 @@ function refreshFiches() {
         .then(data => {
             const tbody = document.getElementById("fiches-table-body");
             tbody.innerHTML = "";
-
-            data.fiches.forEach(fiche => {
-                const row = `
-                    <tr>
-                        <td>${fiche.numero}</td>
-                        <td>${fiche.nom}</td>
-                        <td>${fiche.prenom}</td>
-                        <td>${getStatutHtml(fiche.statut)}</td>
-                        <td>${fiche.heure_arrivee}</td>
-                        <td>${fiche.destination}</td>
-                        <td>${fiche.difficultes}</td>
-                        <td>${renderCompetenceBadges(fiche.competences)}</td>
-                        <td class="actions">
-                            <a class="btn-action btn-blue" href="/fiche/${fiche.id}" title="Voir la fiche">
-                                <i class="fa-solid fa-eye"></i> <span>Voir</span>
-                            </a>
-                            <a class="btn-action btn-yellow" href="/fiche/edit/${fiche.id}" title="Modifier la fiche">
-                                <i class="fa-solid fa-pen-to-square"></i> <span>Modifier</span>
-                            </a>
-                            <a class="btn-action btn-orange" href="/fiche/${fiche.id}/sortie" title="Déclarer la sortie">
-                                <i class="fa-solid fa-person-walking-arrow-right"></i> <span>Sortie</span>
-                            </a>
-                            <button class="btn-action btn-orange" type="button"
-                                    title="Ajouter un ou plusieurs bagages"
-                                    onclick="ouvrirModalBagage(${fiche.id}, '${fiche.numero}')">
-                                <i class="fa-solid fa-suitcase-rolling"></i> <span>Bagage</span>
-                            </button>
-                            <form method="POST" action="/fiche/delete/${fiche.id}" onsubmit="return confirm('Confirmer la suppression ?');">
-                                <button type="submit" class="btn-action btn-red" title="Supprimer la fiche">
-                                    <i class="fa-solid fa-trash-can"></i> <span>Supprimer</span>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>`;
-                tbody.innerHTML += row;
+            data.fiches.forEach(f => {
+                tbody.innerHTML += `
+                <tr>
+                    <td>${f.numero}</td>
+                    <td>${f.nom}</td>
+                    <td>${f.prenom}</td>
+                    <td>${getStatutHtml(f.statut)}</td>
+                    <td>${f.heure_arrivee}</td>
+                    <td>${f.difficultes}</td>
+                    <td>${renderCompetenceBadges(f.competences)}</td>
+                    <td id="bagages-${f.id}"><em>Chargement…</em></td>
+                    <td class="actions">
+                        <button class="btn-action btn-orange" type="button"
+                                onclick="ouvrirModalBagage(${f.id}, '${f.numero}')">
+                            <i class="fa-solid fa-suitcase-rolling"></i> <span>Bagage</span>
+                        </button>
+                    </td>
+                </tr>`;
+                fetch(`/fiche/${f.id}/bagages_json`)
+                  .then(r => r.json())
+                  .then(d => {
+                      document.getElementById(`bagages-${f.id}`).innerHTML = renderBagageBadges(d.numeros);
+                  });
             });
-
-            document.getElementById("nb_present").textContent = data.nb_present;
-            document.getElementById("nb_total").textContent = data.nb_total;
-
-            const statutContainer = document.getElementById("statut-lecture-seule");
-            if (statutContainer) {
-                let icon = "", color = "";
-                switch (data.statut_evenement) {
-                    case "En cours de gréement": icon = "tools"; color = "gray"; break;
-                    case "Ouvert": icon = "door-open"; color = "limegreen"; break;
-                    case "Effectif dépassé": icon = "users-slash"; color = "darkorange"; break;
-                    case "Complet": icon = "ban"; color = "red"; break;
-                    case "Fermé": icon = "door-closed"; color = "navy"; break;
-                }
-                statutContainer.innerHTML = `<i class="fas fa-${icon}" style="color: ${color};"></i> ${data.statut_evenement}`;
-            }
-
-            filterRows(); // applique filtre après chargement
         });
 }
 
-function filterRows() {
-    const searchTerm = document.getElementById("search-bar").value.toLowerCase();
-    const rows = document.querySelectorAll("#fiches-table-body tr");
-    rows.forEach(row => {
-        const nom = row.children[1]?.textContent.toLowerCase() || "";
-        const prenom = row.children[2]?.textContent.toLowerCase() || "";
-        const date = row.children[4]?.textContent.toLowerCase() || "";
-        const match = nom.includes(searchTerm) || prenom.includes(searchTerm) || date.includes(searchTerm);
-        row.style.display = match ? "" : "none";
-    });
-}
-
-/* ===== JS pour la popup Bagage ===== */
-function ouvrirModalBagage(ficheId, ficheNumero) {
-    const form = document.getElementById('form-bagage');
-    // Route directe (évite dépendance à url_for ici) :
-    form.action = "/fiche/" + ficheId + "/bagages/ajouter";
-    document.getElementById('bagage-fiche-id').value = ficheId;
-    document.getElementById('bagage-fiche-numero').value = ficheNumero || ("#" + ficheId);
-    document.getElementById('numeros').value = "";
-    document.getElementById('modal-bagage').style.display = 'flex';
-    setTimeout(() => document.getElementById('numeros').focus(), 50);
+function ouvrirModalBagage(id, num) {
+    document.getElementById('form-bagage').action = `/fiche/${id}/bagages/ajouter`;
+    document.getElementById('bagage-fiche-id').value = id;
+    document.getElementById('bagage-fiche-numero').value = num;
+    fetch(`/fiche/${id}/bagages_json`)
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('numeros').value = (d.numeros || []).join(", ");
+        document.getElementById('modal-bagage').style.display = 'flex';
+      });
 }
 function fermerModalBagage() {
     document.getElementById('modal-bagage').style.display = 'none';
 }
-
-document.getElementById("search-bar").addEventListener("input", filterRows);
 
 setInterval(refreshFiches, 3000);
 window.onload = refreshFiches;

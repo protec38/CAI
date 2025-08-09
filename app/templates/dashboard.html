@@ -70,7 +70,7 @@
       width: 100%; padding: 10px; margin-top: 20px; font-size: 16px; border-radius: 5px; border: none;
     }
 
-    /* Modal Bagage */
+    /* Modal générique */
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: #f3f6fb; color: #000; width: min(520px, 92vw); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35); overflow: hidden; }
     .modal-header, .modal-footer { padding: 12px 16px; background: #fff; border-bottom: 1px solid #e6e6e6; }
@@ -193,6 +193,39 @@
     </div>
   </div>
 
+  <!-- ===== Modal : Sortie (destination + moyen de transport) ===== -->
+  <div id="modal-sortie" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-person-walking-arrow-right"></i> Déclarer la sortie</h3>
+        <button class="close" onclick="fermerModalSortie()" aria-label="Fermer">&times;</button>
+      </div>
+      <form id="form-sortie" method="post">
+        <div class="form-group">
+          <label>Fiche</label>
+          <input type="text" id="sortie-fiche-numero" value="" readonly />
+          <input type="hidden" id="sortie-fiche-id" value="">
+        </div>
+        <div class="form-group">
+          <label for="sortie-destination">Destination</label>
+          <input type="text" id="sortie-destination" name="destination" maxlength="100" placeholder="Ex : Domicile, CHU, Famille…">
+        </div>
+        <div class="form-group">
+          <label for="sortie-moyen">Moyen de transport</label>
+          <input type="text" id="sortie-moyen" name="moyen_transport" maxlength="100" placeholder="Ex : Bus, Ambulance, Véhicule perso…">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn-action btn-orange">
+            <i class="fa-solid fa-check"></i> <span>Valider la sortie</span>
+          </button>
+          <button type="button" class="btn-action" onclick="fermerModalSortie()">
+            <i class="fa-solid fa-xmark"></i> <span>Annuler</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     /* ===== Anti-clignotement ===== */
     function setHTMLIfChanged(el, html) {
@@ -234,7 +267,7 @@
       return numeros.map(n => `<span class="badge-bagage"><i class="fa-solid fa-suitcase-rolling"></i> ${n}</span>`).join(' ');
     }
 
-    /* ===== Actions (desktop) ===== */
+    /* ===== Actions ===== */
     function actionsHTML(f) {
       return `
         <div class="actions">
@@ -244,9 +277,10 @@
           <a class="btn-action btn-yellow" href="/fiche/edit/${f.id}" title="Modifier la fiche">
             <i class="fa-solid fa-pen-to-square"></i> <span>Modifier</span>
           </a>
-          <a class="btn-action btn-orange" href="/fiche/${f.id}/sortie" title="Déclarer la sortie">
+          <button class="btn-action btn-orange" type="button" title="Déclarer la sortie"
+                  onclick="ouvrirModalSortie(${f.id}, '${f.numero}')">
             <i class="fa-solid fa-person-walking-arrow-right"></i> <span>Sortie</span>
-          </a>
+          </button>
           <button class="btn-action btn-orange" type="button"
                   title="Ajouter / modifier les bagages"
                   onclick="ouvrirModalBagage(${f.id}, '${f.numero}')">
@@ -390,6 +424,19 @@
         });
     }
     function fermerModalBagage() { document.getElementById('modal-bagage').style.display = 'none'; }
+
+    /* ===== Popup Sortie ===== */
+    function ouvrirModalSortie(ficheId, ficheNumero, destination = "", moyen = "") {
+      const form = document.getElementById('form-sortie');
+      form.action = "/fiche/" + ficheId + "/sortie";   // POST
+      document.getElementById('sortie-fiche-id').value = ficheId;
+      document.getElementById('sortie-fiche-numero').value = ficheNumero || ("#" + ficheId);
+      document.getElementById('sortie-destination').value = destination || "";
+      document.getElementById('sortie-moyen').value = moyen || "";
+      document.getElementById('modal-sortie').style.display = 'flex';
+      setTimeout(() => document.getElementById('sortie-destination').focus(), 50);
+    }
+    function fermerModalSortie() { document.getElementById('modal-sortie').style.display = 'none'; }
 
     /* ===== Lancement ===== */
     setInterval(refreshFiches, 3000);

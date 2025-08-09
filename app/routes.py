@@ -681,30 +681,24 @@ def export_pdf_fiche(id):
     ]
     story.append(_styled_table(data_supp))
 
+    # === BAGAGES ===
+    story.append(Paragraph("Bagages", styles['SectionTitle']))
+    try:
+        bag_list = sorted(
+            [b.numero for b in (fiche.bagages or []) if b and b.numero],
+            key=lambda x: x
+        )
+    except Exception:
+        bag_list = []
+
+    bagages_str = ", ".join(bag_list) if bag_list else "Aucun"
+    story.append(_styled_table([["Bagages rattachés", bagages_str]]))
+
     doc.build(story)
 
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name="fiche_protection_civile.pdf", mimetype='application/pdf')
 
-
-# === TABLE STYLING UTILITY ===
-from reportlab.lib.units import mm
-def _styled_table(data):
-    table = Table(data, colWidths=[60*mm, 100*mm])
-    table.setStyle(TableStyle([
-        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
-        ('FONTSIZE', (0,0), (-1,-1), 11),
-        ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke),
-        ('ROWBACKGROUNDS', (0,0), (-1,-1), [colors.whitesmoke, colors.lightgrey]),
-        ('TEXTCOLOR', (0,0), (-1,-1), colors.black),
-        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('INNERGRID', (0,0), (-1,-1), 0.3, colors.grey),
-        ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-    ]))
-    return table
 
 
 

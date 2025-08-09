@@ -622,6 +622,24 @@ COMPETENCE_COLORS = {
 
 #############################################"
 
+def _styled_table(data):
+    table = Table(data, colWidths=[60*mm, 100*mm])
+    table.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+        ('FONTSIZE', (0,0), (-1,-1), 11),
+        ('BACKGROUND', (0,0), (-1,-1), colors.whitesmoke),
+        ('ROWBACKGROUNDS', (0,0), (-1,-1), [colors.whitesmoke, colors.lightgrey]),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.black),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('INNERGRID', (0,0), (-1,-1), 0.3, colors.grey),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+    ]))
+    return table
+
+
 @main_bp.route("/fiche/<int:id>/pdf")
 @login_required
 def export_pdf_fiche(id):
@@ -698,7 +716,6 @@ def export_pdf_fiche(id):
 
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name="fiche_protection_civile.pdf", mimetype='application/pdf')
-
 
 
 

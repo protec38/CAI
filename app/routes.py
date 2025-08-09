@@ -879,80 +879,96 @@ def export_evenement_fiches_pdf(evenement_id):
 
 
 
-# ➕ ROUTE : ajout d’un ou plusieurs bagages sur une fiche
 @main_bp.route("/fiche/<int:fiche_id>/bagages/ajouter", methods=["POST"])
 @login_required
 def fiche_bagages_ajouter(fiche_id):
     user = get_current_user()
     fiche = FicheImplique.query.get_or_404(fiche_id)
 
-    # ✅ accès à l’évènement
     if fiche.evenement not in user.evenements and not user.is_admin and user.role != "codep":
         flash("⛔ Vous n’avez pas accès à cet évènement.", "danger")
         return redirect(url_for("main_bp.evenement_new"))
 
-    # ✅ autorisations de l’action "bagage"
     role = (user.role or "").lower()
     if not (user.is_admin or role in {"bagages", "bagagerie", "responsable", "codep"}):
-        flash("⛔ Vous n’êtes pas autorisé à ajouter des bagages.", "danger")
+        flash("⛔ Vous n’êtes pas autorisé à modifier les bagages.", "danger")
         return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
 
-    # 📥 récupération et parsing
     raw = (request.form.get("numeros") or "").strip()
-    if not raw:
-        flash("Veuillez saisir au moins un numéro de bagage.", "warning")
-        return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
-
-    # split sur espaces / virgules / points-virgules / retours ligne
-    tokens = [t.strip() for t in re.split(r"[\s,;]+", raw) if t.strip()]
-    # dédoublonner en conservant l’ordre
+    # Découpe par virgules, espaces, points-virgules et retours à la ligne
+    nouveaux = [t.strip() for t in re.split(r"[\s,;]+", raw) if t.strip()]
+    # Dédoublonner en conservant l’ordre
     uniques, vus = [], set()
-    for t in tokens:
+    for t in nouveaux:
         if t not in vus:
             uniques.append(t)
             vus.add(t)
+    nouveaux_set = set(uniques)
 
-    if not uniques:
-        flash("Aucun numéro de bagage valide détecté.", "warning")
-        return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
+    # État actuel
+    existants = Bagage.query.filter_by(fiche_id=fiche.id).all()
+    existants_map = {b.numero: b for b in existants}
+    existants_set = set(existants_map.keys())
 
-    # 🔎 existence dans le centre (unicité par évènement)
-    existants = {
-        b.numero: b
-        for b in Bagage.query.filter(
-            Bagage.evenement_id == fiche.evenement_id,
-            Bagage.numero.in_(uniques)
-        ).all()
-    }
+    # Diff
+    a_supprimer = existants_set - nouveaux_set
+    a_ajouter = nouveaux_set - existants_set
 
-    ajoutes, deja_sur_cette_fiche, deja_sur_autre_fiche = [], [], []
-    for num in uniques:
-        b = existants.get(num)
-        if b:
-            if b.fiche_id == fiche.id:
-                deja_sur_cette_fiche.append(num)
-            else:
-                deja_sur_autre_fiche.append(num)
+    deja_autre_fiche = []
+    ajoutes = []
+    supprimes = []
+
+    # Unicité au niveau évènement : un numéro ne peut pas être utilisé par une autre fiche du même centre
+    if a_ajouter:
+        doublons_centre = {
+            b.numero: b
+            for b in Bagage.query.filter(
+                Bagage.evenement_id == fiche.evenement_id,
+                Bagage.numero.in_(list(a_ajouter))
+            ).all()
+        }
+    else:
+        doublons_centre = {}
+
+    # Ajouter
+    for num in a_ajouter:
+        autre = doublons_centre.get(num)
+        if autre and autre.fiche_id != fiche.id:
+            deja_autre_fiche.append(num)
             continue
-
-        # ✅ création
-        nouveau = Bagage(numero=num, fiche_id=fiche.id, evenement_id=fiche.evenement_id)
-        db.session.add(nouveau)
+        db.session.add(Bagage(numero=num, fiche_id=fiche.id, evenement_id=fiche.evenement_id))
         ajoutes.append(num)
+
+    # Supprimer
+    for num in a_supprimer:
+        db.session.delete(existants_map[num])
+        supprimes.append(num)
 
     db.session.commit()
 
-    # 🗣️ feedback
-    messages = []
-    if ajoutes:
-        messages.append(f"Ajouté: {', '.join(ajoutes)}")
-    if deja_sur_cette_fiche:
-        messages.append(f"Déjà sur cette fiche: {', '.join(deja_sur_cette_fiche)}")
-    if deja_sur_autre_fiche:
-        messages.append(f"Déjà utilisés par une autre fiche: {', '.join(deja_sur_autre_fiche)}")
+    # Feedback
+    parts = []
+    if ajoutes: parts.append(f"Ajouté: {', '.join(sorted(ajoutes))}")
+    if supprimes: parts.append(f"Supprimé: {', '.join(sorted(supprimes))}")
+    if deja_autre_fiche: parts.append(f"En conflit (déjà utilisés par une autre fiche): {', '.join(sorted(deja_autre_fiche))}")
+    flash(" | ".join(parts) if parts else "Aucune modification.", "success" if (ajoutes or supprimes) else "info")
 
-    flash(" | ".join(messages) if messages else "Aucun bagage ajouté.", "success" if ajoutes else "info")
     return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
+
+
+##################################
+
+@main_bp.route("/fiche/<int:fiche_id>/bagages_json")
+@login_required
+def fiche_bagages_json(fiche_id):
+    user = get_current_user()
+    fiche = FicheImplique.query.get_or_404(fiche_id)
+
+    if fiche.evenement not in user.evenements and not user.is_admin and user.role != "codep":
+        return jsonify({"error": "unauthorized"}), 403
+
+    numeros = [b.numero for b in Bagage.query.filter_by(fiche_id=fiche.id).order_by(Bagage.id.asc()).all()]
+    return jsonify({"fiche_id": fiche.id, "numero_fiche": fiche.numero, "numeros": numeros})
 
 
 

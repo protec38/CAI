@@ -15,7 +15,7 @@ import io
 from flask import send_file
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
-from reportlab.lib.units import cm
+from reportlab.lib.units import cm, mm
 import os
 from io import BytesIO
 import re

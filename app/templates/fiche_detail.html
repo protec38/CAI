@@ -1,60 +1,279 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Détail de la fiche impliqué</h2>
+<style>
+  :root{
+    --bleu:#002f6c;
+    --orange:#f58220;
+    --jaune:#ffcc00;
+    --bg:#0e1b2a;
+  }
+  .fd-wrap{
+    font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    color:#0f1720;
+  }
+  .fd-hero{
+    background: linear-gradient(135deg, rgba(0,47,108,.95), rgba(245,130,32,.9)), url('{{ url_for("static", filename="img/pattern.png") }}');
+    background-size: cover;
+    border-radius: 16px;
+    color: #fff;
+    padding: 22px 22px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+  }
+  .fd-hero h2{ margin:0 0 6px 0; font-weight:800; letter-spacing:.2px; }
+  .fd-hero .meta{ display:flex; gap:14px; flex-wrap:wrap; font-weight:600; opacity:.95; }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.12); color:#fff;
+    font-weight:700; font-size:14px; backdrop-filter: blur(4px);
+  }
+  .chip i{ font-size:14px; }
 
-    <div class="card p-4">
-        <h4 class="mb-3">Informations personnelles</h4>
-        <p><strong>Numéro :</strong> {{ fiche.numero }}</p>
-        <p><strong>Nom :</strong> {{ fiche.nom }}</p>
-        <p><strong>Prénom :</strong> {{ fiche.prenom }}</p>
-        <p><strong>Date de naissance :</strong> {{ fiche.date_naissance or 'Non renseignée' }}</p>
-        <p><strong>Nationalité :</strong> {{ fiche.nationalite or 'Non renseignée' }}</p>
-        <p><strong>Adresse :</strong> {{ fiche.adresse or 'Non renseignée' }}</p>
-        <p><strong>Téléphone :</strong> {{ fiche.telephone or 'Non renseigné' }}</p>
+  .fd-card{
+    background:#ffffff;
+    border-radius:14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    padding:18px 18px;
+    border: 1px solid #eef0f4;
+  }
 
-        <p><strong>Heure d’arrivée :</strong>
-          {% if fiche.heure_arrivee_locale %}
-            {{ fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') }}
-          {% else %}
-            Non renseignée
-          {% endif %}
-        </p>
+  .fd-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:18px;
+  }
+  @media (max-width: 900px){
+    .fd-grid{ grid-template-columns: 1fr; }
+  }
 
-        <p><strong>Heure de sortie :</strong>
-          {% if fiche.heure_sortie_locale %}
-            {{ fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') }}
-          {% else %}
-            Non sortie
-          {% endif %}
-        </p>
+  .fd-section h4{
+    margin:0 0 12px 0; color: var(--bleu);
+    font-weight:800; letter-spacing:.2px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .fd-list{
+    display:grid; grid-template-columns: 1fr 1fr;
+    gap:10px 16px;
+  }
+  @media (max-width: 700px){ .fd-list{ grid-template-columns: 1fr; } }
 
-        <hr>
-        <h4 class="mt-4">Informations supplémentaires</h4>
-        <p><strong>Statut :</strong> {{ fiche.statut }}</p>
-        <p><strong>Difficultés :</strong> {{ fiche.difficultes or 'Non renseignée' }}</p>
-        <p><strong>Compétences :</strong> {{ fiche.competences or 'Non renseignée' }}</p>
-        <p><strong>Est un animal :</strong> {{ 'Oui' if fiche.est_animal else 'Non' }}</p>
-        <p><strong>Recherche une personne :</strong> {{ fiche.recherche_personne or 'Non' }}</p>
-        <p><strong>Numéro de la personne recherchée :</strong> {{ fiche.numero_recherche or 'Non renseigné' }}</p>
-        <p><strong>Évènement :</strong> {{ fiche.evenement.nom }}</p>
+  .fd-item{
+    background:#f7f9fc; border:1px solid #eef1f6; border-radius:10px;
+    padding:12px 12px;
+  }
+  .fd-item .lbl{ display:block; font-size:12px; font-weight:800; color:#5b6b7d; text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+  .fd-item .val{ font-weight:700; color:#0b1523; }
 
-        {% if fiche.bagages %}
-          <p><strong>Bagages :</strong>
-            {% for bag in fiche.bagages %}
-              <span class="badge bg-primary">
-                <i class="fa-solid fa-suitcase-rolling"></i> {{ bag.numero }}
-              </span>
-            {% endfor %}
-          </p>
-        {% else %}
-          <p><strong>Bagages :</strong> Aucun</p>
-        {% endif %}
+  .fd-badges{
+    display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;
+  }
+  .badge-competence, .badge-bagage{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px; font-weight:800; font-size:12px; color:#fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+  .badge-bagage{ background: var(--bleu); }
+  .badge-competence.medecin{ background:#e74c3c; }
+  .badge-competence.infirmier{ background:#3498db; }
+  .badge-competence.pompier{ background:#e67e22; }
+  .badge-competence.sst{ background:#1abc9c; }
+  .badge-competence.psy{ background:#9b59b6; }
+  .badge-competence.benevole{ background:#34495e; }
+  .badge-competence.artisan{ background:#f39c12; }
+  .badge-competence.interprete{ background:#2ecc71; }
+  .badge-competence.logisticien{ background:#16a085; }
+  .badge-competence.conducteur{ background:#d35400; }
+  .badge-competence.securite{ background:#2c3e50; }
+  .badge-competence.autre{ background:#7f8c8d; }
+
+  .statut-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px; font-weight:900; letter-spacing:.2px; color:#fff;
+  }
+  .statut-present{ background:#2ecc71; }
+  .statut-sorti{ background:#e67e22; }
+  .statut-supprime{ background:#c0392b; }
+
+  .fd-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-soft{
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+    padding:10px 14px; border-radius:10px; font-weight:800;
+    border:1px solid #e7ebf3; background:#fff; color:#0b1523;
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    transition: transform .03s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  .btn-soft:hover{ box-shadow: 0 10px 24px rgba(0,0,0,.12); opacity:.95; }
+  .btn-secondary{ background:#f7f9fc; }
+  .btn-warning{ background:#ffe9c7; color:#5b3a00; border-color:#ffd697; }
+  .btn-primary{ background:#e7efff; color:#0d2a66; border-color:#bad0ff; }
+</style>
+
+<div class="fd-wrap container my-4">
+
+  <!-- Bandeau -->
+  <div class="fd-hero mb-4">
+    <h2>Détail de la fiche impliqué</h2>
+    <div class="meta">
+      <span class="chip"><i class="fa-solid fa-hashtag"></i> {{ fiche.numero }}</span>
+      <span class="chip"><i class="fa-solid fa-user"></i> {{ fiche.nom }} {{ fiche.prenom }}</span>
+      <span class="chip">
+        {% if fiche.statut == 'présent' %}<i class="fa-solid fa-circle-check"></i>
+        {% elif fiche.statut == 'sorti' %}<i class="fa-solid fa-person-walking-arrow-right"></i>
+        {% else %}<i class="fa-solid fa-trash-can"></i>{% endif %}
+        {{ fiche.statut|capitalize }}
+      </span>
+      {% if fiche.heure_arrivee_locale %}
+        <span class="chip"><i class="fa-solid fa-clock"></i>
+          Arrivé {{ fiche.heure_arrivee_locale.strftime('%d/%m/%Y %H:%M') }}
+        </span>
+      {% endif %}
+      {% if fiche.heure_sortie_locale %}
+        <span class="chip"><i class="fa-solid fa-door-open"></i>
+          Sortie {{ fiche.heure_sortie_locale.strftime('%d/%m/%Y %H:%M') }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="fd-grid">
+
+    <!-- Informations personnelles -->
+    <div class="fd-card fd-section">
+      <h4><i class="fa-solid fa-id-card-clip"></i> Informations personnelles</h4>
+      <div class="fd-list">
+        <div class="fd-item">
+          <span class="lbl">Nom</span>
+          <span class="val">{{ fiche.nom }}</span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">Prénom</span>
+          <span class="val">{{ fiche.prenom }}</span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">Date de naissance</span>
+          <span class="val">
+            {{ fiche.date_naissance.strftime('%d/%m/%Y') if fiche.date_naissance else 'Non renseignée' }}
+          </span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">Nationalité</span>
+          <span class="val">{{ fiche.nationalite or 'Non renseignée' }}</span>
+        </div>
+        <div class="fd-item" style="grid-column: span 2;">
+          <span class="lbl">Adresse</span>
+          <span class="val">{{ fiche.adresse or 'Non renseignée' }}</span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">Téléphone</span>
+          <span class="val">{{ fiche.telephone or 'Non renseigné' }}</span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">Évènement</span>
+          <span class="val">{{ fiche.evenement.nom }}</span>
+        </div>
+      </div>
     </div>
 
-    <div class="mt-4 d-flex gap-3">
-        <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn btn-secondary">⬅ Retour au dashboard</a>
-        <a href="{{ url_for('main_bp.export_pdf_fiche', id=fiche.id) }}" class="btn btn-warning">🧾 Exporter en PDF</a>
+    <!-- Statut & infos -->
+    <div class="fd-card fd-section">
+      <h4><i class="fa-solid fa-circle-info"></i> Statut & informations</h4>
+
+      <div class="fd-list">
+        <div class="fd-item">
+          <span class="lbl">Statut</span>
+          <span class="val">
+            {% if fiche.statut == 'présent' %}
+              <span class="statut-badge statut-present"><i class="fa-solid fa-circle-check"></i> Présent</span>
+            {% elif fiche.statut == 'sorti' %}
+              <span class="statut-badge statut-sorti"><i class="fa-solid fa-person-walking-arrow-right"></i> Sorti</span>
+            {% else %}
+              <span class="statut-badge statut-supprime"><i class="fa-solid fa-trash-can"></i> Supprimé</span>
+            {% endif %}
+          </span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">Personne à prévenir</span>
+          <span class="val">
+            {% if fiche.personne_a_prevenir %}
+              {{ fiche.personne_a_prevenir }}{% if fiche.tel_personne_a_prevenir %} – {{ fiche.tel_personne_a_prevenir }}{% endif %}
+            {% else %}Non renseigné{% endif %}
+          </span>
+        </div>
+        <div class="fd-item" style="grid-column: span 2;">
+          <span class="lbl">Difficultés</span>
+          <span class="val">{{ fiche.difficultes or 'Non renseignée' }}</span>
+        </div>
+
+        <div class="fd-item">
+          <span class="lbl">Recherche une personne</span>
+          <span class="val">{{ fiche.recherche_personne or 'Non' }}</span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">N° de la personne recherchée</span>
+          <span class="val">{{ fiche.numero_recherche or 'Non renseigné' }}</span>
+        </div>
+
+        <div class="fd-item">
+          <span class="lbl">Animal</span>
+          <span class="val">{{ 'Oui' if fiche.est_animal else 'Non' }}</span>
+        </div>
+        <div class="fd-item">
+          <span class="lbl">Effets personnels</span>
+          <span class="val">{{ fiche.effets_perso or 'Non renseigné' }}</span>
+        </div>
+
+        <div class="fd-item" style="grid-column: span 2;">
+          <span class="lbl">Compétences</span>
+          {% set comps = (fiche.competences or '').split(',') if fiche.competences else [] %}
+          {% if comps %}
+            <div class="fd-badges">
+              {% for c in comps %}
+                {% set t = c.strip() %}
+                {% set cls =
+                  'medecin' if t=='Médecin'
+                  else 'infirmier' if t=='Infirmier'
+                  else 'pompier' if t=='Sapeur-pompier'
+                  else 'sst' if t=='SST'
+                  else 'psy' if t=='Psychologue'
+                  else 'benevole' if t=='Bénévole'
+                  else 'artisan' if t=='Artisan'
+                  else 'interprete' if t=='Interprète'
+                  else 'logisticien' if t=='Logisticien'
+                  else 'conducteur' if t=='Conducteur'
+                  else 'securite' if t=='Agent sécurité'
+                  else 'autre' %}
+                <span class="badge-competence {{ cls }}"><i class="fa-solid fa-award"></i> {{ t }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <span class="val">Non renseignée</span>
+          {% endif %}
+        </div>
+
+        <div class="fd-item" style="grid-column: span 2;">
+          <span class="lbl">Bagages</span>
+          {% if fiche.bagages and fiche.bagages|length > 0 %}
+            <div class="fd-badges">
+              {% for bag in fiche.bagages %}
+                <span class="badge-bagage"><i class="fa-solid fa-suitcase-rolling"></i> {{ bag.numero }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <span class="val">Aucun</span>
+          {% endif %}
+        </div>
+      </div>
     </div>
+
+  </div>
+
+  <!-- Actions -->
+  <div class="mt-4 fd-actions">
+    <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn-soft btn-secondary">
+      <i class="fa-solid fa-arrow-left-long"></i> Retour au dashboard
+    </a>
+    <a href="{{ url_for('main_bp.export_pdf_fiche', id=fiche.id) }}" class="btn-soft btn-warning">
+      <i class="fa-solid fa-file-pdf"></i> Exporter en PDF
+    </a>
+  </div>
 </div>
 {% endblock %}

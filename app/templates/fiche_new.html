@@ -187,15 +187,7 @@
             <input type="text" name="effets_perso">
         </div>
 
-        <div class="form-group">
-            <label for="destination"><i class="fas fa-location-arrow"></i> Destination</label>
-            <input type="text" name="destination">
-        </div>
-
-        <div class="form-group">
-            <label for="moyen_transport"><i class="fas fa-bus"></i> Moyen de transport</label>
-            <input type="text" name="moyen_transport">
-        </div>
+        <!-- ⚠️ Destination & Moyen de transport supprimés ici -->
 
         <div class="form-group">
             <label for="autres_informations">Autres informations</label>
@@ -228,13 +220,10 @@ function limitCompetenceSelection(select) {
     const selected = Array.from(select.selectedOptions);
     if (selected.length > 4) {
         alert("⛔ Vous ne pouvez sélectionner que 4 compétences maximum.");
-        // Deselect the last one selected
         selected[selected.length - 1].selected = false;
     }
-}    
+}
 </script>
 
-
-    
 </body>
 </html>

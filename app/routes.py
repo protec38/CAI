@@ -544,23 +544,34 @@ def fiche_delete(id):
 
 
 
-@main_bp.route("/fiche/<int:id>/sortie", methods=["GET", "POST"])
+@main_bp.route("/fiche/<int:id>/sortie", methods=["POST"])
 @login_required
 def fiche_sortie(id):
     fiche = FicheImplique.query.get_or_404(id)
-
     user = get_current_user()
+
     if fiche.evenement not in user.evenements:
         flash("⛔ Vous n’avez pas accès à cette fiche.", "danger")
         return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
 
-    # Marquer la fiche comme "sortie"
+    # Récupère les champs envoyés par la popup
+    destination = (request.form.get("destination") or "").strip()
+    moyen_transport = (request.form.get("moyen_transport") or "").strip()
+
+    # Met à jour + sortie
+    if destination:
+        fiche.destination = destination
+    if moyen_transport:
+        fiche.moyen_transport = moyen_transport
+
     fiche.statut = "sorti"
-    fiche.heure_sortie = datetime.utcnow()  # ⬅️ Ajout de l'heure de sortie
+    fiche.heure_sortie = datetime.utcnow()
+
     db.session.commit()
 
-    flash(f"🚪 La fiche de {fiche.nom} a été marquée comme sortie.", "info")
+    flash(f"🚪 {fiche.nom} {fiche.prenom} est marqué comme 'sorti'.", "info")
     return redirect(url_for("main_bp.dashboard", evenement_id=fiche.evenement_id))
+
 
 
 

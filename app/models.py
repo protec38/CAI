@@ -167,3 +167,18 @@ class Animal(db.Model):
 
     def __repr__(self):
         return f"<Animal {self.nom}>"
+
+
+# Bagage
+class Bagage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    numero = db.Column(db.String(50), nullable=False)  # Numéro du bagage (non unique globalement)
+    fiche_id = db.Column(db.Integer, db.ForeignKey('fiche_implique.id'), nullable=False)
+    evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'), nullable=False)
+
+    fiche = db.relationship('FicheImplique', backref=db.backref('bagages', lazy=True, cascade="all, delete-orphan"))
+    evenement = db.relationship('Evenement', backref=db.backref('bagages', lazy=True, cascade="all, delete-orphan"))
+
+    def __repr__(self):
+        return f"<Bagage {self.numero}>"
+

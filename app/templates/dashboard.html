@@ -3,128 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tableau de bord</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root{
-      --bleu:#002f6c;
-      --orange:#ff6f00;
-      --jaune:#ffcc00;
-      --shadow:0 2px 6px rgba(0,0,0,.15);
+    body { font-family: 'Roboto', sans-serif; background: linear-gradient(to right, #002f6c, #ff6f00); color: #fff; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    h1 { color: #ffcc00; margin: 0; }
+
+    /* Boutons génériques (haut de page) */
+    .btn {
+      background-color: #ffcc00; color: #000;
+      padding: 10px 15px; text-decoration: none; border-radius: 5px;
+      margin-right: 10px; display: inline-block; font-weight: 700;
+    }
+    .btn-green { background-color: #27ae60; color: #fff; } /* Créer une fiche impliquée -> vert */
+    .btn:hover { opacity: .92; }
+
+    .event-info {
+      background-color: rgba(255,255,255,0.1);
+      padding: 15px; border-left: 5px solid #ffcc00; border-radius: 5px;
+      margin-top: 10px; margin-bottom: 30px;
     }
 
-    body { font-family: 'Roboto', sans-serif; background: linear-gradient(to right, var(--bleu), var(--orange)); color: #fff; padding: 20px; margin: 0; }
-
-    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    h1 { color: var(--jaune); margin: 0; }
-
-    /* Boutons génériques haut de page */
-    .btn { background-color: var(--jaune); color: #000; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-right: 10px; display: inline-block; font-weight: 700; box-shadow: var(--shadow); }
-
-    .event-info { background-color: rgba(255,255,255,0.12); padding: 12px; border-left: 5px solid var(--jaune); border-radius: 8px; margin-top: 10px; margin-bottom: 18px; box-shadow: 0 4px 18px rgba(0,0,0,.12); }
-
-    .badge-competence { display: inline-block; padding: 4px 8px; margin: 2px; border-radius: 12px; font-size: 12px; color: white; font-weight: bold; }
+    .badge-competence {
+      display: inline-block; padding: 4px 8px; margin: 2px; border-radius: 12px;
+      font-size: 12px; color: white; font-weight: bold;
+    }
     .badge { padding: 5px 10px; border-radius: 20px; font-weight: bold; display: inline-block; }
     .badge.present { background: limegreen; color: #fff; }
-    .badge.sorti { background: #e67e22; color: #fff; }
-    .badge.supprime { background: #c0392b; color: #fff; }
+    .badge.sorti   { background: #e67e22; color: #fff; }
+    .badge.supprime{ background: #c0392b; color: #fff; }
 
-    /* Badges bagage */
+    /* Bagages */
     .badge-bagage { display: inline-block; padding: 3px 8px; margin: 2px 4px 2px 0; border-radius: 999px; background: #002f6c; color: #fff; font-size: 12px; font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,.2); white-space: nowrap; }
     .bagages-cell { min-width: 160px; }
 
-    /* Barre de recherche */
-    #search-bar { width: 100%; padding: 12px; margin-top: 10px; font-size: 16px; border-radius: 8px; border: none; box-shadow: var(--shadow); }
+    table { width: 100%; margin-top: 30px; border-collapse: collapse; background: #fff; color: #000; }
+    table th, table td { padding: 10px; border: 1px solid #ccc; text-align: left; vertical-align: middle; }
 
-    /* Table + wrapper responsive ultra-fiable */
-    .table-wrap{
-      margin-top: 12px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.18);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch; /* iOS smooth */
-    }
-    table { width: 100%; border-collapse: collapse; background: #fff; color: #000; min-width: 760px; }
-    thead th { background: #f7f8fb; position: relative; z-index: 1; }
-    table th, table td { padding: 10px; border: 1px solid #ddd; text-align: left; vertical-align: middle; }
-
-    /* Actions (desktop) */
+    /* Actions */
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn-action { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: transform .05s ease, opacity .15s ease; font-size: 14px; line-height: 1; box-shadow: var(--shadow); white-space: nowrap; }
+    .btn-action {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 10px; border-radius: 8px; font-weight: 700;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: transform .05s ease, opacity .15s ease; font-size: 14px; line-height: 1;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15); white-space: nowrap;
+    }
     .btn-action:active { transform: translateY(1px); }
     .btn-action i { font-size: 14px; }
 
-    /* Couleurs des actions */
     .btn-blue   { background: #1976d2; color: #fff; }  /* Voir */
     .btn-yellow { background: #f1c40f; color: #000; }  /* Modifier */
     .btn-orange { background: #e67e22; color: #fff; }  /* Sortie / Bagage */
     .btn-red    { background: #c0392b; color: #fff; }  /* Supprimer */
 
-    .btn-blue:hover, .btn-yellow:hover, .btn-orange:hover, .btn-red:hover { opacity: .92; }
-
-    /* Neutralisation anciens styles inline */
     .actions a { color: inherit; font-weight: inherit; text-decoration: none; }
     .actions a:hover { text-decoration: none; }
     .actions form { display: inline-block; margin: 0; }
     .actions form button { all: unset; display: inline-flex; }
 
-    select[name="statut_evt"] { padding: 6px 8px; font-weight: bold; background: #fff; color: #000; border-radius: 6px; border: 1px solid #ddd; }
+    select[name="statut_evt"] { padding: 5px; font-weight: bold; background: #fff; color: #000; border-radius: 5px; border: none; }
 
-    /* ===== Mobile actions (≤600px) ===== */
-    .actions-desktop { display: flex; gap: 8px; flex-wrap: wrap; }
-    .actions-mobile { display: none; position: relative; }
-    .btn-more { background: #1976d2; color: #fff; border: none; border-radius: 8px; padding: 8px 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow); }
-    .menu-actions {
-      position: absolute; right: 0; top: 38px; background: #fff; color: #000;
-      border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.25); padding: 8px;
-      display: none; z-index: 5; min-width: 190px;
-    }
-    .menu-actions .menu-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; margin: 4px 0; }
-    .menu-item i { width: 16px; text-align: center; }
-    .menu-item.view   { background: #1976d2; color: #fff; }
-    .menu-item.edit   { background: #f1c40f; color: #000; }
-    .menu-item.exit   { background: #e67e22; color: #fff; }
-    .menu-item.bag    { background: #e67e22; color: #fff; }
-    .menu-item.delete { background: #c0392b; color: #fff; }
-    .menu-actions form { margin: 0; }
-    .menu-actions form button { all: unset; display: flex; align-items: center; gap: 8px; width: 100%; }
-
-    /* ======= 📱 Responsive ======= */
-    @media (max-width: 900px){
-      table th, table td { padding: 8px; }
+    #search-bar {
+      width: 100%; padding: 10px; margin-top: 20px; font-size: 16px; border-radius: 5px; border: none;
     }
 
-    @media (max-width: 600px){
-      /* Boutons header en grille fluide */
-      .header > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .btn { margin: 0; text-align: center; padding: 12px; }
-
-      /* Masquer colonnes lourdes (on garde Numéro, Nom, Prénom, Statut, Bagages, Actions) */
-      table th:nth-child(5), table td:nth-child(5),  /* Heure d’arrivée */
-      table th:nth-child(6), table td:nth-child(6),  /* Difficultés */
-      table th:nth-child(7), table td:nth-child(7)   /* Compétences */
-      { display: none; }
-
-      /* Actions : version mobile */
-      .actions-desktop { display: none; }
-      .actions-mobile  { display: block; }
-
-      .btn-action span { display: none; }
-      .btn-more { padding: 10px 12px; }
-      td[data-col="actions"]{ min-width: 120px; }
-      .bagages-cell{ min-width: 120px; }
-
-      /* Le scroll horizontal se fait via le wrapper */
-      .table-wrap{ border-radius: 12px; }
-    }
-
-    /* Très petits écrans */
-    @media (max-width: 400px){
-      body{ padding-left: 12px; padding-right: 12px; }
-      .header > div{ grid-template-columns: 1fr; }
-    }
+    /* Modal Bagage */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: #f3f6fb; color: #000; width: min(520px, 92vw); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35); overflow: hidden; }
+    .modal-header, .modal-footer { padding: 12px 16px; background: #fff; border-bottom: 1px solid #e6e6e6; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h3 { margin: 0; font-size: 18px; }
+    .modal-content form { padding: 14px 16px; }
+    .modal .form-group { margin-bottom: 12px; }
+    .modal label { display: block; font-weight: 700; margin-bottom: 6px; }
+    .modal input[type="text"], .modal textarea { width: 100%; border: 1px solid #d6d6d6; border-radius: 8px; padding: 10px; font-size: 14px; background: #fff; }
+    .modal small.hint { display:block; color:#444; margin-top:4px; }
+    .modal .close { background: transparent; border: 0; font-size: 22px; cursor: pointer; color:#333; }
+    .modal-footer { display:flex; gap:8px; justify-content:flex-end; border-top: 1px solid #e6e6e6; }
   </style>
 </head>
 <body>
@@ -132,7 +90,7 @@
     <h1>Tableau de bord</h1>
     <div>
       <a href="{{ url_for('main_bp.evenement_new') }}" class="btn">Gestion des évènements</a>
-      <a href="{{ url_for('main_bp.fiche_new') }}" class="btn">Créer une fiche impliquée</a>
+      <a href="{{ url_for('main_bp.fiche_new') }}" class="btn btn-green">Créer une fiche impliquée</a>
       <a href="{{ url_for('main_bp.logout') }}" class="btn">Déconnexion</a>
       {% if user.is_admin or user.role == "codep" or (user.role == "responsable" and user in evenement.utilisateurs) %}
       <a href="{{ url_for('main_bp.export_evenement_fiches_pdf', evenement_id=evenement.id) }}" class="btn">📄 Exporter toutes les fiches en PDF</a>
@@ -165,11 +123,16 @@
         </form>
       {% else %}
         <span id="statut-lecture-seule">
-          {% if evenement.statut == "En cours de gréement" %}<i class="fas fa-tools" style="color: gray;"></i>
-          {% elif evenement.statut == "Ouvert" %}<i class="fas fa-door-open" style="color: limegreen;"></i>
-          {% elif evenement.statut == "Effectif dépassé" %}<i class="fas fa-users-slash" style="color: darkorange;"></i>
-          {% elif evenement.statut == "Complet" %}<i class="fas fa-ban" style="color: red;"></i>
-          {% elif evenement.statut == "Fermé" %}<i class="fas fa-door-closed" style="color: navy;"></i>
+          {% if evenement.statut == "En cours de gréement" %}
+            <i class="fas fa-tools" style="color: gray;"></i>
+          {% elif evenement.statut == "Ouvert" %}
+            <i class="fas fa-door-open" style="color: limegreen;"></i>
+          {% elif evenement.statut == "Effectif dépassé" %}
+            <i class="fas fa-users-slash" style="color: darkorange;"></i>
+          {% elif evenement.statut == "Complet" %}
+            <i class="fas fa-ban" style="color: red;"></i>
+          {% elif evenement.statut == "Fermé" %}
+            <i class="fas fa-door-closed" style="color: navy;"></i>
           {% endif %}
           {{ evenement.statut }}
         </span>
@@ -179,29 +142,27 @@
   </div>
   {% endif %}
 
-  <!-- Recherche -->
+  <!-- 🔍 Barre de recherche -->
   <input type="text" id="search-bar" placeholder="Rechercher par nom ou prénom">
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Numéro</th>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Statut</th>
-          <th>Heure d’arrivée</th>
-          <th>Difficultés</th>
-          <th>Compétences</th>
-          <th>Bagages</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="fiches-table-body"></tbody>
-    </table>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Numéro</th>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Statut</th>
+        <th>Heure d’arrivée</th>
+        <th>Difficultés</th>
+        <th>Compétences</th>
+        <th>Bagages</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="fiches-table-body"></tbody>
+  </table>
 
-  <!-- Modal Bagage -->
+  <!-- ===== Modal : ajout / maj bagage(s) ===== -->
   <div id="modal-bagage" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -216,19 +177,24 @@
         </div>
         <div class="form-group">
           <label for="numeros">Numéro(s) de bagage</label>
-          <textarea name="numeros" id="numeros" rows="3" maxlength="20" placeholder="Ex : BAG-001, BAG-002 BAG-003"></textarea>
+          <textarea name="numeros" id="numeros" rows="3" maxlength="30"
+                    placeholder="Ex : BAG-001, BAG-002 BAG-003"></textarea>
           <small class="hint">Séparez par virgules, espaces ou retours à la ligne.</small>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn-action btn-orange"><i class="fa-solid fa-plus"></i> <span>Enregistrer</span></button>
-          <button type="button" class="btn-action" onclick="fermerModalBagage()"><i class="fa-solid fa-xmark"></i> <span>Annuler</span></button>
+          <button type="submit" class="btn-action btn-orange">
+            <i class="fa-solid fa-plus"></i> <span>Enregistrer</span>
+          </button>
+          <button type="button" class="btn-action" onclick="fermerModalBagage()">
+            <i class="fa-solid fa-xmark"></i> <span>Annuler</span>
+          </button>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    // ===== Helpers anti-clignotement
+    /* ===== Anti-clignotement ===== */
     function setHTMLIfChanged(el, html) {
       if (!el) return;
       const next = (html || "").trim();
@@ -251,7 +217,12 @@
 
     function renderCompetenceBadges(raw) {
       if (!raw) return "<em>Aucune</em>";
-      const colorMap = {"Médecin":"#e74c3c","Infirmier":"#3498db","Sapeur-pompier":"#e67e22","SST":"#1abc9c","Psychologue":"#9b59b6","Bénévole":"#34495e","Artisan":"#f39c12","Interprète":"#2ecc71","Logisticien":"#16a085","Conducteur":"#d35400","Agent sécurité":"#2c3e50","Autre":"#7f8c8d"};
+      const colorMap = {
+        "Médecin": "#e74c3c", "Infirmier": "#3498db", "Sapeur-pompier": "#e67e22",
+        "SST": "#1abc9c", "Psychologue": "#9b59b6", "Bénévole": "#34495e",
+        "Artisan": "#f39c12", "Interprète": "#2ecc71", "Logisticien": "#16a085",
+        "Conducteur": "#d35400", "Agent sécurité": "#2c3e50", "Autre": "#7f8c8d"
+      };
       return raw.split(',').map(c => {
         const comp = c.trim(); const color = colorMap[comp] || "#999";
         return `<span class="badge-competence" style="background:${color}">${comp}</span>`;
@@ -263,37 +234,29 @@
       return numeros.map(n => `<span class="badge-bagage"><i class="fa-solid fa-suitcase-rolling"></i> ${n}</span>`).join(' ');
     }
 
-    // ===== Ligne HTML initiale (desktop + mobile)
-    function actionsDesktopHTML(f) {
+    /* ===== Actions (desktop) ===== */
+    function actionsHTML(f) {
       return `
-        <div class="actions actions-desktop">
-          <a class="btn-action btn-blue" href="/fiche/${f.id}" title="Voir la fiche"><i class="fa-solid fa-eye"></i> <span>Voir</span></a>
-          <a class="btn-action btn-yellow" href="/fiche/edit/${f.id}" title="Modifier la fiche"><i class="fa-solid fa-pen-to-square"></i> <span>Modifier</span></a>
-          <a class="btn-action btn-orange" href="/fiche/${f.id}/sortie" title="Déclarer la sortie"><i class="fa-solid fa-person-walking-arrow-right"></i> <span>Sortie</span></a>
-          <button class="btn-action btn-orange" type="button" title="Ajouter / modifier les bagages" onclick="ouvrirModalBagage(${f.id}, '${f.numero}')"><i class="fa-solid fa-suitcase-rolling"></i> <span>Bagage</span></button>
-          <form method="POST" action="/fiche/delete/${f.id}" onsubmit="return confirm('Confirmer la suppression ?');">
-            <button type="submit" class="btn-action btn-red" title="Supprimer la fiche"><i class="fa-solid fa-trash-can"></i> <span>Supprimer</span></button>
-          </form>
-        </div>
-      `;
-    }
-
-    function actionsMobileHTML(f) {
-      const menuId = `menu-actions-${f.id}`;
-      return `
-        <div class="actions-mobile">
-          <button class="btn-more" type="button" onclick="toggleActionsMenu('${menuId}')">
-            <i class="fa-solid fa-ellipsis-vertical"></i> <span>Actions</span>
+        <div class="actions">
+          <a class="btn-action btn-blue" href="/fiche/${f.id}" title="Voir la fiche">
+            <i class="fa-solid fa-eye"></i> <span>Voir</span>
+          </a>
+          <a class="btn-action btn-yellow" href="/fiche/edit/${f.id}" title="Modifier la fiche">
+            <i class="fa-solid fa-pen-to-square"></i> <span>Modifier</span>
+          </a>
+          <a class="btn-action btn-orange" href="/fiche/${f.id}/sortie" title="Déclarer la sortie">
+            <i class="fa-solid fa-person-walking-arrow-right"></i> <span>Sortie</span>
+          </a>
+          <button class="btn-action btn-orange" type="button"
+                  title="Ajouter / modifier les bagages"
+                  onclick="ouvrirModalBagage(${f.id}, '${f.numero}')">
+            <i class="fa-solid fa-suitcase-rolling"></i> <span>Bagage</span>
           </button>
-          <div id="${menuId}" class="menu-actions" data-menu>
-            <a class="menu-item view" href="/fiche/${f.id}"><i class="fa-solid fa-eye"></i> Voir</a>
-            <a class="menu-item edit" href="/fiche/edit/${f.id}"><i class="fa-solid fa-pen-to-square"></i> Modifier</a>
-            <a class="menu-item exit" href="/fiche/${f.id}/sortie"><i class="fa-solid fa-person-walking-arrow-right"></i> Sortie</a>
-            <div class="menu-item bag" onclick="ouvrirModalBagage(${f.id}, '${f.numero}')" role="button"><i class="fa-solid fa-suitcase-rolling"></i> Bagage</div>
-            <form method="POST" action="/fiche/delete/${f.id}" onsubmit="return confirm('Confirmer la suppression ?');">
-              <button type="submit" class="menu-item delete"><i class="fa-solid fa-trash-can"></i> Supprimer</button>
-            </form>
-          </div>
+          <form method="POST" action="/fiche/delete/${f.id}" onsubmit="return confirm('Confirmer la suppression ?');">
+            <button type="submit" class="btn-action btn-red" title="Supprimer la fiche">
+              <i class="fa-solid fa-trash-can"></i> <span>Supprimer</span>
+            </button>
+          </form>
         </div>
       `;
     }
@@ -309,14 +272,11 @@
           <td data-col="difficultes">${f.difficultes || ""}</td>
           <td data-col="competences">${renderCompetenceBadges(f.competences)}</td>
           <td class="bagages-cell"><div id="bagages-${f.id}"><em>Chargement…</em></div></td>
-          <td data-col="actions">
-            ${actionsDesktopHTML(f)}
-            ${actionsMobileHTML(f)}
-          </td>
+          <td data-col="actions">${actionsHTML(f)}</td>
         </tr>`;
     }
 
-    // ===== Cache + upsert
+    /* ===== Cache + upsert ===== */
     const rowsCache = new Map();
 
     function upsertRow(f) {
@@ -370,8 +330,10 @@
           });
 
           // compteurs + statut
-          setTextIfChanged(document.getElementById("nb_present"), String(data.nb_present));
-          setTextIfChanged(document.getElementById("nb_total"), String(data.nb_total));
+          const nbp = document.getElementById("nb_present");
+          const nbt = document.getElementById("nb_total");
+          if (nbp) setTextIfChanged(nbp, String(data.nb_present));
+          if (nbt) setTextIfChanged(nbt, String(data.nb_total));
 
           const statutContainer = document.getElementById("statut-lecture-seule");
           if (statutContainer) {
@@ -381,7 +343,7 @@
               case "Ouvert": icon = "door-open"; color = "limegreen"; break;
               case "Effectif dépassé": icon = "users-slash"; color = "darkorange"; break;
               case "Complet": icon = "ban"; color = "red"; break;
-              case "Fermé": icon = "door-closed": color = "navy"; break;
+              case "Fermé": icon = "door-closed"; color = "navy"; break;
             }
             const nouveau = `<i class="fas fa-${icon}" style="color: ${color};"></i> ${data.statut_evenement}`;
             setHTMLIfChanged(statutContainer, nouveau);
@@ -391,7 +353,7 @@
         });
     }
 
-    // ===== Filtre
+    /* ===== Filtre ===== */
     function filterRows() {
       const searchTerm = document.getElementById("search-bar").value.toLowerCase();
       const rows = document.querySelectorAll("#fiches-table-body tr");
@@ -403,8 +365,9 @@
         row.style.display = match ? "" : "none";
       });
     }
+    document.getElementById("search-bar").addEventListener("input", filterRows);
 
-    // ===== Popup Bagage (préremplie)
+    /* ===== Popup Bagage (préremplie) ===== */
     function ouvrirModalBagage(ficheId, ficheNumero) {
       const form = document.getElementById('form-bagage');
       form.action = "/fiche/" + ficheId + "/bagages/ajouter";
@@ -428,22 +391,7 @@
     }
     function fermerModalBagage() { document.getElementById('modal-bagage').style.display = 'none'; }
 
-    // ===== Menu actions mobile
-    function toggleActionsMenu(id) {
-      document.querySelectorAll('.menu-actions').forEach(m => { if (m.id !== id) m.style.display = 'none'; });
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-    }
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('.btn-more');
-      const menu = e.target.closest('.menu-actions');
-      if (!btn && !menu) {
-        document.querySelectorAll('.menu-actions').forEach(m => m.style.display = 'none');
-      }
-    });
-
-    document.getElementById("search-bar").addEventListener("input", filterRows);
+    /* ===== Lancement ===== */
     setInterval(refreshFiches, 3000);
     window.onload = refreshFiches;
   </script>

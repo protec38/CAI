@@ -198,9 +198,16 @@
             {% else %}Non renseigné{% endif %}
           </span>
         </div>
+
         <div class="fd-item" style="grid-column: span 2;">
           <span class="lbl">Difficultés</span>
           <span class="val">{{ fiche.difficultes or 'Non renseignée' }}</span>
+        </div>
+
+        <!-- 🆕 Autres informations -->
+        <div class="fd-item" style="grid-column: span 2;">
+          <span class="lbl">Autres informations</span>
+          <span class="val">{{ fiche.autres_informations or 'Non renseigné' }}</span>
         </div>
 
         <div class="fd-item">

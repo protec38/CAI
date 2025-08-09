@@ -18,6 +18,7 @@ from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.units import cm
 import os
 from io import BytesIO
+import re
 main_bp = Blueprint("main_bp", __name__)
 
 # 🔒 Décorateur pour vérifier l’authentification

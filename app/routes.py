@@ -230,7 +230,12 @@ def fiche_new():
         est_animal = bool(request.form.get("est_animal"))
         humain = request.form.get("humain") == "True"
         numero_recherche = request.form.get("numero_recherche")
-        autres_informations=request.form.get('autres_informations')
+
+        # ✅ Autres informations (trim + limite 200)
+        autres_infos = (request.form.get("autres_informations") or "").strip()
+        if len(autres_infos) > 200:
+            flash("Le champ « Autres informations » ne peut pas dépasser 200 caractères.", "danger")
+            return redirect(request.url)
 
         # 🔢 Numérotation automatique
         last_fiche_evt = (
@@ -271,8 +276,9 @@ def fiche_new():
             heure_arrivee=heure_arrivee,
             date_naissance=date_naissance,
             utilisateur_id=user.id,
-            autres_informations=autres_infos,
             evenement_id=evenement.id,
+            # ✅ nouveau champ
+            autres_informations=autres_infos,
         )
 
         db.session.add(fiche)
@@ -451,6 +457,7 @@ def fiche_detail(id):
 # ✏️ Modification d’une fiche impliqué
 from datetime import datetime
 
+# ✏️ Modification d’une fiche impliqué
 @main_bp.route("/fiche/edit/<int:id>", methods=["GET", "POST"])
 @login_required
 def fiche_edit(id):
@@ -479,8 +486,14 @@ def fiche_edit(id):
         fiche.competences = ",".join(request.form.getlist("competences"))
         fiche.adresse = request.form.get("adresse")
         fiche.recherche_personne = request.form.get("recherche_personne")
-        fiche.autres_informations = request.form.get("autres_informations")
         fiche.numero_recherche = request.form.get("numero_recherche") or None
+
+        # ✅ Autres informations (trim + limite 200)
+        autres_infos = (request.form.get("autres_informations") or "").strip()
+        if len(autres_infos) > 200:
+            flash("Le champ « Autres informations » ne peut pas dépasser 200 caractères.", "danger")
+            return redirect(request.url)
+        fiche.autres_informations = autres_infos
 
         # ✅ Conversion de la date au bon format
         date_str = request.form.get("date_naissance")
@@ -503,6 +516,7 @@ def fiche_edit(id):
         user=user,
         competences_list=COMPETENCES_CAI
     )
+
 
 
 

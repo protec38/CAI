@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Tableau de bord</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -28,7 +29,7 @@
     table { width: 100%; margin-top: 30px; border-collapse: collapse; background: #fff; color: #000; }
     table th, table td { padding: 10px; border: 1px solid #ccc; text-align: left; vertical-align: middle; }
 
-    /* Actions */
+    /* Actions (desktop) */
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn-action { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 8px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: transform .05s ease, opacity .15s ease; font-size: 14px; line-height: 1; box-shadow: 0 2px 6px rgba(0,0,0,.15); white-space: nowrap; }
     .btn-action:active { transform: translateY(1px); }
@@ -65,9 +66,34 @@
     .modal .close { background: transparent; border: 0; font-size: 22px; cursor: pointer; color: #333; }
     .modal-footer { display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid #e6e6e6; }
 
+    /* ===== Mobile actions (≤600px) ===== */
+    .actions-desktop { display: flex; gap: 8px; flex-wrap: wrap; }
+    .actions-mobile { display: none; position: relative; }
+    .btn-more { background: #1976d2; color: #fff; border: none; border-radius: 8px; padding: 8px 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+    .menu-actions {
+      position: absolute; right: 0; top: 38px; background: #fff; color: #000;
+      border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.25); padding: 8px;
+      display: none; z-index: 5; min-width: 190px;
+    }
+    .menu-actions .menu-item { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; margin: 4px 0; }
+    .menu-item i { width: 16px; text-align: center; }
+
+    .menu-item.view   { background: #1976d2; color: #fff; }
+    .menu-item.edit   { background: #f1c40f; color: #000; }
+    .menu-item.exit   { background: #e67e22; color: #fff; }
+    .menu-item.bag    { background: #e67e22; color: #fff; }
+    .menu-item.delete { background: #c0392b; color: #fff; }
+
+    .menu-actions form { margin: 0; }
+    .menu-actions form button { all: unset; display: flex; align-items: center; gap: 8px; width: 100%; }
+
     @media (max-width: 1100px) { .bagages-cell { min-width: 120px; } }
-    @media (max-width: 900px)  { .actions { gap: 6px; } .btn-action { padding: 7px 9px; font-size: 13px; } table th, table td { padding: 8px; } }
-    @media (max-width: 600px)  { .btn-action span { display: none; } }
+    @media (max-width: 900px)  { table th, table td { padding: 8px; } }
+    @media (max-width: 600px)  {
+      .actions-desktop { display: none; }
+      .actions-mobile  { display: block; }
+      .btn-action span { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -169,6 +195,20 @@
   </div>
 
   <script>
+    // ===== Helpers anti-clignotement
+    function setHTMLIfChanged(el, html) {
+      if (!el) return;
+      const next = (html || "").trim();
+      const prev = (el.innerHTML || "").trim();
+      if (next !== prev) el.innerHTML = html;
+    }
+    function setTextIfChanged(el, text) {
+      if (!el) return;
+      const next = (text || "").trim();
+      const prev = (el.textContent || "").trim();
+      if (next !== prev) el.textContent = text;
+    }
+
     function getStatutHtml(statut) {
       if (statut === 'présent') return '<span class="badge present"><i class="fas fa-check-circle"></i> Présent</span>';
       if (statut === 'sorti')   return '<span class="badge sorti"><i class="fas fa-sign-out-alt"></i> Sorti</span>';
@@ -190,51 +230,115 @@
       return numeros.map(n => `<span class="badge-bagage"><i class="fa-solid fa-suitcase-rolling"></i> ${n}</span>`).join(' ');
     }
 
+    // ===== Ligne HTML initiale (desktop + mobile)
+    function actionsDesktopHTML(f) {
+      return `
+        <div class="actions actions-desktop">
+          <a class="btn-action btn-blue" href="/fiche/${f.id}" title="Voir la fiche"><i class="fa-solid fa-eye"></i> <span>Voir</span></a>
+          <a class="btn-action btn-yellow" href="/fiche/edit/${f.id}" title="Modifier la fiche"><i class="fa-solid fa-pen-to-square"></i> <span>Modifier</span></a>
+          <a class="btn-action btn-orange" href="/fiche/${f.id}/sortie" title="Déclarer la sortie"><i class="fa-solid fa-person-walking-arrow-right"></i> <span>Sortie</span></a>
+          <button class="btn-action btn-orange" type="button" title="Ajouter / modifier les bagages" onclick="ouvrirModalBagage(${f.id}, '${f.numero}')"><i class="fa-solid fa-suitcase-rolling"></i> <span>Bagage</span></button>
+          <form method="POST" action="/fiche/delete/${f.id}" onsubmit="return confirm('Confirmer la suppression ?');">
+            <button type="submit" class="btn-action btn-red" title="Supprimer la fiche"><i class="fa-solid fa-trash-can"></i> <span>Supprimer</span></button>
+          </form>
+        </div>
+      `;
+    }
+
+    function actionsMobileHTML(f) {
+      const menuId = `menu-actions-${f.id}`;
+      return `
+        <div class="actions-mobile">
+          <button class="btn-more" type="button" onclick="toggleActionsMenu('${menuId}')">
+            <i class="fa-solid fa-ellipsis-vertical"></i> <span>Actions</span>
+          </button>
+          <div id="${menuId}" class="menu-actions" data-menu>
+            <a class="menu-item view" href="/fiche/${f.id}"><i class="fa-solid fa-eye"></i> Voir</a>
+            <a class="menu-item edit" href="/fiche/edit/${f.id}"><i class="fa-solid fa-pen-to-square"></i> Modifier</a>
+            <a class="menu-item exit" href="/fiche/${f.id}/sortie"><i class="fa-solid fa-person-walking-arrow-right"></i> Sortie</a>
+            <div class="menu-item bag" onclick="ouvrirModalBagage(${f.id}, '${f.numero}')" role="button"><i class="fa-solid fa-suitcase-rolling"></i> Bagage</div>
+            <form method="POST" action="/fiche/delete/${f.id}" onsubmit="return confirm('Confirmer la suppression ?');">
+              <button type="submit" class="menu-item delete"><i class="fa-solid fa-trash-can"></i> Supprimer</button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
     function ligneFicheHTML(f) {
       return `
-        <tr>
-          <td>${f.numero}</td>
-          <td>${f.nom}</td>
-          <td>${f.prenom}</td>
-          <td>${getStatutHtml(f.statut)}</td>
-          <td>${f.heure_arrivee}</td>
-          <td>${f.difficultes}</td>
-          <td>${renderCompetenceBadges(f.competences)}</td>
+        <tr id="fiche-row-${f.id}">
+          <td data-col="numero">${f.numero}</td>
+          <td data-col="nom">${f.nom}</td>
+          <td data-col="prenom">${f.prenom}</td>
+          <td data-col="statut">${getStatutHtml(f.statut)}</td>
+          <td data-col="heure_arrivee">${f.heure_arrivee}</td>
+          <td data-col="difficultes">${f.difficultes || ""}</td>
+          <td data-col="competences">${renderCompetenceBadges(f.competences)}</td>
           <td class="bagages-cell"><div id="bagages-${f.id}"><em>Chargement…</em></div></td>
-          <td class="actions">
-            <a class="btn-action btn-blue" href="/fiche/${f.id}" title="Voir la fiche"><i class="fa-solid fa-eye"></i> <span>Voir</span></a>
-            <a class="btn-action btn-yellow" href="/fiche/edit/${f.id}" title="Modifier la fiche"><i class="fa-solid fa-pen-to-square"></i> <span>Modifier</span></a>
-            <a class="btn-action btn-orange" href="/fiche/${f.id}/sortie" title="Déclarer la sortie"><i class="fa-solid fa-person-walking-arrow-right"></i> <span>Sortie</span></a>
-            <button class="btn-action btn-orange" type="button" title="Ajouter / modifier les bagages" onclick="ouvrirModalBagage(${f.id}, '${f.numero}')"><i class="fa-solid fa-suitcase-rolling"></i> <span>Bagage</span></button>
-            <form method="POST" action="/fiche/delete/${f.id}" onsubmit="return confirm('Confirmer la suppression ?');">
-              <button type="submit" class="btn-action btn-red" title="Supprimer la fiche"><i class="fa-solid fa-trash-can"></i> <span>Supprimer</span></button>
-            </form>
+          <td data-col="actions">
+            ${actionsDesktopHTML(f)}
+            ${actionsMobileHTML(f)}
           </td>
         </tr>`;
+    }
+
+    // ===== Cache + upsert
+    const rowsCache = new Map();
+
+    function upsertRow(f) {
+      const tbody = document.getElementById("fiches-table-body");
+      let tr = document.getElementById(`fiche-row-${f.id}`);
+      if (!tr) {
+        tbody.insertAdjacentHTML('beforeend', ligneFicheHTML(f));
+      } else {
+        setTextIfChanged(tr.querySelector('[data-col="numero"]'), f.numero);
+        setTextIfChanged(tr.querySelector('[data-col="nom"]'), f.nom);
+        setTextIfChanged(tr.querySelector('[data-col="prenom"]'), f.prenom);
+        setHTMLIfChanged(tr.querySelector('[data-col="statut"]'), getStatutHtml(f.statut));
+        setTextIfChanged(tr.querySelector('[data-col="heure_arrivee"]'), f.heure_arrivee);
+        setTextIfChanged(tr.querySelector('[data-col="difficultes"]'), f.difficultes || "");
+        setHTMLIfChanged(tr.querySelector('[data-col="competences"]'), renderCompetenceBadges(f.competences));
+        // actions ne changent pas si l'id est le même
+      }
+      rowsCache.set(f.id, f);
+      majBagagesCell(f.id);
+    }
+
+    function majBagagesCell(ficheId) {
+      fetch(`/fiche/${ficheId}/bagages_json`)
+        .then(r => r.json())
+        .then(d => {
+          const cible = document.getElementById(`bagages-${ficheId}`);
+          if (!cible) return;
+          const html = (d && Array.isArray(d.numeros)) ? renderBagageBadges(d.numeros) : '<em>Aucun</em>';
+          setHTMLIfChanged(cible, html);
+        })
+        .catch(() => {
+          const cible = document.getElementById(`bagages-${ficheId}`);
+          setHTMLIfChanged(cible, '<em>—</em>');
+        });
     }
 
     function refreshFiches() {
       fetch(`/evenement/{{ evenement.id }}/fiches_json`)
         .then(res => res.json())
         .then(data => {
-          const tbody = document.getElementById("fiches-table-body");
-          tbody.innerHTML = "";
-          data.fiches.forEach(f => { tbody.innerHTML += ligneFicheHTML(f); });
-          // Charger les bagages pour chaque fiche (badges + cohérence popup)
-          data.fiches.forEach(f => {
-            fetch(`/fiche/${f.id}/bagages_json`)
-              .then(r => r.json())
-              .then(d => {
-                const cible = document.getElementById(`bagages-${f.id}`);
-                if (d && Array.isArray(d.numeros)) { cible.innerHTML = renderBagageBadges(d.numeros); }
-                else { cible.innerHTML = '<em>Aucun</em>'; }
-              })
-              .catch(() => { const cible = document.getElementById(`bagages-${f.id}`); if (cible) cible.innerHTML = '<em>—</em>'; });
+          const idsActuels = new Set();
+          data.fiches.forEach(f => { idsActuels.add(f.id); upsertRow(f); });
+
+          // supprimer lignes disparues
+          Array.from(rowsCache.keys()).forEach(id => {
+            if (!idsActuels.has(id)) {
+              const tr = document.getElementById(`fiche-row-${id}`);
+              if (tr) tr.remove();
+              rowsCache.delete(id);
+            }
           });
 
-          // Compteurs + statut
-          const nbp = document.getElementById("nb_present"); if (nbp) nbp.textContent = data.nb_present;
-          const nbt = document.getElementById("nb_total"); if (nbt) nbt.textContent = data.nb_total;
+          // compteurs + statut
+          setTextIfChanged(document.getElementById("nb_present"), String(data.nb_present));
+          setTextIfChanged(document.getElementById("nb_total"), String(data.nb_total));
 
           const statutContainer = document.getElementById("statut-lecture-seule");
           if (statutContainer) {
@@ -246,13 +350,15 @@
               case "Complet": icon = "ban"; color = "red"; break;
               case "Fermé": icon = "door-closed"; color = "navy"; break;
             }
-            statutContainer.innerHTML = `<i class="fas fa-${icon}" style="color: ${color};"></i> ${data.statut_evenement}`;
+            const nouveau = `<i class="fas fa-${icon}" style="color: ${color};"></i> ${data.statut_evenement}`;
+            setHTMLIfChanged(statutContainer, nouveau);
           }
 
-          filterRows(); // applique filtre après chargement
+          filterRows();
         });
     }
 
+    // ===== Filtre
     function filterRows() {
       const searchTerm = document.getElementById("search-bar").value.toLowerCase();
       const rows = document.querySelectorAll("#fiches-table-body tr");
@@ -265,7 +371,7 @@
       });
     }
 
-    /* Popup Bagage préremplie */
+    // ===== Popup Bagage (préremplie)
     function ouvrirModalBagage(ficheId, ficheNumero) {
       const form = document.getElementById('form-bagage');
       form.action = "/fiche/" + ficheId + "/bagages/ajouter";
@@ -288,6 +394,23 @@
         });
     }
     function fermerModalBagage() { document.getElementById('modal-bagage').style.display = 'none'; }
+
+    // ===== Menu actions mobile
+    function toggleActionsMenu(id) {
+      // ferme les autres menus
+      document.querySelectorAll('.menu-actions').forEach(m => { if (m.id !== id) m.style.display = 'none'; });
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+    // fermer menu si clic hors
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-more');
+      const menu = e.target.closest('.menu-actions');
+      if (!btn && !menu) {
+        document.querySelectorAll('.menu-actions').forEach(m => m.style.display = 'none');
+      }
+    });
 
     document.getElementById("search-bar").addEventListener("input", filterRows);
     setInterval(refreshFiches, 3000);

@@ -158,11 +158,18 @@
             <textarea name="difficulte" rows="2" maxlength="200">{{ fiche.difficultes }}</textarea>
         </div>
 
+        <!-- 🆕 Autres informations (200 max) -->
+        <div class="form-group">
+            <label for="autres_informations"><i class="fas fa-info-circle"></i> Autres informations</label>
+            <textarea id="autres_informations" name="autres_informations" rows="3" maxlength="200" placeholder="Ajoutez toute information supplémentaire ici...">{{ fiche.autres_informations }}</textarea>
+            <small>Maximum 200 caractères.</small>
+        </div>
+
         <div class="form-group">
             <label for="competences"><i class="fas fa-tools"></i> Compétences</label>
             <select name="competences" multiple size="6" class="form-control" onchange="limitCompetenceSelection(this)">
                 {% for c in competences_list %}
-                    <option value="{{ c }}" {% if c in fiche.competences.split(',') %}selected{% endif %}>{{ c }}</option>
+                    <option value="{{ c }}" {% if fiche.competences and c in fiche.competences.split(',') %}selected{% endif %}>{{ c }}</option>
                 {% endfor %}
             </select>
             <small>Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs compétences.</small>
@@ -199,7 +206,6 @@
             {% endif %}
         </div>
 
-
         <div class="form-group-full">
             <button type="submit"><i class="fas fa-save"></i> Sauvegarder</button>
             <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn-secondary"><i class="fas fa-arrow-left"></i> Retour</a>
@@ -216,6 +222,5 @@ function limitCompetenceSelection(select) {
 }
 </script>
 
-    
 </body>
 </html>

@@ -173,7 +173,7 @@
       </div>
     </div>
 
-    <!-- Statut & infos -->
+    <!-- Statut & informations -->
     <div class="fd-card fd-section">
       <h4><i class="fa-solid fa-circle-info"></i> Statut & informations</h4>
 
@@ -190,6 +190,7 @@
             {% endif %}
           </span>
         </div>
+
         <div class="fd-item">
           <span class="lbl">Personne à prévenir</span>
           <span class="val">
@@ -204,10 +205,22 @@
           <span class="val">{{ fiche.difficultes or 'Non renseignée' }}</span>
         </div>
 
-        <!-- 🆕 Autres informations -->
+        <!-- Autres informations -->
         <div class="fd-item" style="grid-column: span 2;">
           <span class="lbl">Autres informations</span>
           <span class="val">{{ fiche.autres_informations or 'Non renseigné' }}</span>
+        </div>
+
+        <!-- 🆕 Destination -->
+        <div class="fd-item">
+          <span class="lbl">Destination</span>
+          <span class="val">{{ fiche.destination or 'Non renseignée' }}</span>
+        </div>
+
+        <!-- 🆕 Moyen de transport -->
+        <div class="fd-item">
+          <span class="lbl">Moyen de transport</span>
+          <span class="val">{{ fiche.moyen_transport or 'Non renseigné' }}</span>
         </div>
 
         <div class="fd-item">

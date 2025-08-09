@@ -38,12 +38,23 @@
         <p><strong>Recherche une personne :</strong> {{ fiche.recherche_personne or 'Non' }}</p>
         <p><strong>Numéro de la personne recherchée :</strong> {{ fiche.numero_recherche or 'Non renseigné' }}</p>
         <p><strong>Évènement :</strong> {{ fiche.evenement.nom }}</p>
+
+        {% if fiche.bagages %}
+          <p><strong>Bagages :</strong>
+            {% for bag in fiche.bagages %}
+              <span class="badge bg-primary">
+                <i class="fa-solid fa-suitcase-rolling"></i> {{ bag.numero }}
+              </span>
+            {% endfor %}
+          </p>
+        {% else %}
+          <p><strong>Bagages :</strong> Aucun</p>
+        {% endif %}
     </div>
 
     <div class="mt-4 d-flex gap-3">
         <a href="{{ url_for('main_bp.dashboard', evenement_id=fiche.evenement.id) }}" class="btn btn-secondary">⬅ Retour au dashboard</a>
         <a href="{{ url_for('main_bp.export_pdf_fiche', id=fiche.id) }}" class="btn btn-warning">🧾 Exporter en PDF</a>
-
     </div>
 </div>
 {% endblock %}

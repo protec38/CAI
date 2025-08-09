@@ -116,7 +116,7 @@ class FicheImplique(db.Model):
 
     statut = db.Column(db.String(20), nullable=False, default="présent")
     heure_arrivee = db.Column(db.DateTime, default=datetime.utcnow)
-
+    autres_informations = db.Column(db.Text, nullable=True)
     evenement_id = db.Column(db.Integer, db.ForeignKey('evenement.id'), nullable=False)
     utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateur.id'), nullable=False)
 

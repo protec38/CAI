@@ -230,6 +230,7 @@ def fiche_new():
         est_animal = bool(request.form.get("est_animal"))
         humain = request.form.get("humain") == "True"
         numero_recherche = request.form.get("numero_recherche")
+        autres_informations=request.form.get('autres_informations')
 
         # 🔢 Numérotation automatique
         last_fiche_evt = (

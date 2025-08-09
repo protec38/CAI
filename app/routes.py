@@ -478,6 +478,7 @@ def fiche_edit(id):
         fiche.competences = ",".join(request.form.getlist("competences"))
         fiche.adresse = request.form.get("adresse")
         fiche.recherche_personne = request.form.get("recherche_personne")
+        fiche.autres_informations = request.form.get("autres_informations")
         fiche.numero_recherche = request.form.get("numero_recherche") or None
 
         # ✅ Conversion de la date au bon format
